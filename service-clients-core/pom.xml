@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Poseidon Service Clients Core</name>
+    <description>Poseidon Service Clients Core</description>
+
+    <parent>
+        <groupId>com.flipkart.poseidon</groupId>
+        <artifactId>poseidon</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>service-clients-core</artifactId>
+    <version>2.0.0</version>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.codemodel</groupId>
+            <artifactId>codemodel</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsonschema2pojo</groupId>
+            <artifactId>jsonschema2pojo-core</artifactId>
+            <version>0.4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>com.flipkart.phantom</groupId>
+            <artifactId>task</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.flipkart.poseidon</groupId>
+            <artifactId>http-handler</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>2.2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.flipkart.lego</groupId>
+            <artifactId>lego</artifactId>
+        </dependency>
+
+        <!--Test Dependencies-->
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!--Test Dependencies-->
+    </dependencies>
+
+</project>

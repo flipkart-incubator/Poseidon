@@ -1,0 +1,15 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "description": "Some comment about POJO",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Some comment about property"
+    },
+    "name": {
+      "type": "string",
+      "description": "Some comment about property"
+    }
+  }
+}

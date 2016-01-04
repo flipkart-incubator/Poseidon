@@ -1,0 +1,30 @@
+{
+  "service": {
+    "baseUri": "/",
+    "description": [
+      "${artifactId} Service Client"
+    ]
+  },
+  "parameters": {
+    "id": {
+      "type": "int",
+      "description": [
+        "Some comment about parameter"
+      ]
+    }
+  },
+  "endPoints": {
+    "update": {
+      "httpMethod": "PUT",
+      "uri": "{parameters.id}",
+      "parameters": [
+        "id"
+      ],
+      "requestObject": "Pojo",
+      "responseObject": "Pojo",
+      "description": [
+        "Some comment about endPoint"
+      ]
+    }
+  }
+}
