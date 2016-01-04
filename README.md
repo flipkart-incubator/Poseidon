@@ -7,7 +7,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
-| Version 2.0.0             | Jan 04 2015      |    First public release
+| Version 2.0.0             | Jan 04 2016      |    First public release
 
 ## Changelog
 
@@ -31,7 +31,7 @@ Please follow the [contribution guidelines](https://github.com/flipkart-incubato
 
 ## License
 
-Copyright 2015 Flipkart Internet, pvt ltd.
+Copyright 2016 Flipkart Internet, pvt ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
