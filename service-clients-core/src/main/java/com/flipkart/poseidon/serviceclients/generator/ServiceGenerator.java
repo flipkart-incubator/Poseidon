@@ -306,6 +306,12 @@ public class ServiceGenerator {
 
             if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
                 invocation = invocation.arg(endPoint.getCommandName());
+            } else {
+                invocation.arg(JExpr._null());
+            }
+
+            if (endPoint.isRequestCachingEnabled()) {
+                invocation = invocation.arg(JExpr.lit(true));
             }
             block._return(invocation);
         }

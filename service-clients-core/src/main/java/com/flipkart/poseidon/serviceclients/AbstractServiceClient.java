@@ -57,6 +57,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
                                   Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
+        return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, false);
+    }
+
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
@@ -66,6 +70,9 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Map<String, String> params = new HashMap<>();
         params.put("uri", uri);
         params.put("method", httpMethod);
+        if (requestCachingEnabled) {
+            params.put("X-Cache-Request", "true");
+        }
         if (headersMap != null && !headersMap.isEmpty()) {
             try {
                 params.put("headers", objectMapper.writeValueAsString(headersMap));

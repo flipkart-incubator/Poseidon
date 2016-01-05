@@ -29,6 +29,7 @@ public class EndPoint {
     private String commandName;
     private Map<String, String> headers;
     private String[] parameters;
+    private boolean requestCachingEnabled;
     private String requestObject;
     private String responseObject;
     private String[] description;
@@ -71,6 +72,14 @@ public class EndPoint {
 
     public void setParameters(String[] parameters) {
         this.parameters = parameters;
+    }
+
+    public boolean isRequestCachingEnabled() {
+        return requestCachingEnabled;
+    }
+
+    public void setRequestCachingEnabled(boolean requestCachingEnabled) {
+        this.requestCachingEnabled = requestCachingEnabled;
     }
 
     public String getRequestObject() {
