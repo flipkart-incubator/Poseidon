@@ -17,13 +17,14 @@
 package com.flipkart.poseidon.handlers.http.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.flipkart.phantom.task.impl.HystrixTaskHandler;
+import com.flipkart.phantom.task.impl.RequestCacheableHystrixTaskHandler;
 import com.flipkart.phantom.task.spi.TaskRequestWrapper;
 import com.flipkart.phantom.task.spi.TaskResult;
 import com.flipkart.phantom.task.spi.Decoder;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.poseidon.handlers.http.HttpResponseDecoder;
 import com.flipkart.poseidon.handlers.http.HttpResponseData;
+import com.google.common.base.Charsets;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -37,7 +38,9 @@ import org.trpr.platform.core.spi.logging.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SinglePoolHttpTaskHandler extends HystrixTaskHandler {
+import static com.google.common.hash.Hashing.murmur3_32;
+
+public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandler {
 
     /** Log instance of this class */
     private static final Logger logger = LogFactory.getLogger(SinglePoolHttpTaskHandler.class);
@@ -71,6 +74,7 @@ public class SinglePoolHttpTaskHandler extends HystrixTaskHandler {
     public String contentType = "application/json";
     public boolean requestCompressionEnabled = false;
     public boolean responseCompressionEnabled = false;
+    private boolean requestCachingEnabled = false;
 
     private final static String colon = ":";
 
@@ -164,6 +168,23 @@ public class SinglePoolHttpTaskHandler extends HystrixTaskHandler {
             result =  handleException(e, params.get("uri"), params.get("method"));
         }
         return result;
+    }
+
+    @Override
+    public <S> String getCacheKey(Map<String, String> requestParams, S data) {
+        if (!requestCachingEnabled || requestParams == null) {
+            return null;
+        }
+
+        boolean hasURI = requestParams.containsKey("uri");
+        boolean isGet = "GET".equalsIgnoreCase(requestParams.get("method"));
+        boolean askedTobeCached = "true".equalsIgnoreCase(requestParams.get("X-Cache-Request"));
+        if (!hasURI || (!isGet && !askedTobeCached)) {
+            return null;
+        }
+
+        String cacheKey = requestParams.get("uri") + (data != null ? new String((byte[]) data) : "");
+        return murmur3_32().hashString(cacheKey, Charsets.UTF_16LE).toString();
     }
 
     /** interface method implementation */
@@ -437,5 +458,13 @@ public class SinglePoolHttpTaskHandler extends HystrixTaskHandler {
 
     public void setResponseCompressionEnabled(boolean responseCompressionEnabled) {
         this.responseCompressionEnabled = responseCompressionEnabled;
+    }
+
+    public boolean isRequestCachingEnabled() {
+        return requestCachingEnabled;
+    }
+
+    public void setRequestCachingEnabled(boolean requestCachingEnabled) {
+        this.requestCachingEnabled = requestCachingEnabled;
     }
 }
