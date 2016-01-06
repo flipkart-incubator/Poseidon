@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.HttpResponseDecoder;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
@@ -71,6 +72,10 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 return new ServiceResponse<T>((T) null, headers);
             } else {
                 try {
+                    // Don't deserialize a plain string response using jackson
+                    if (String.class.isAssignableFrom(clazz)) {
+                        return new ServiceResponse<T>((T) IOUtils.toString(httpResponse.getEntity().getContent()), headers);
+                    }
                     return new ServiceResponse<T>(objectMapper.readValue(httpResponse.getEntity().getContent(), clazz), headers);
                 } catch (JsonMappingException e) {
                     if (e.getMessage().contains("No content to map due to end-of-input")) {
