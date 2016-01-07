@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.internal;
+package com.flipkart.poseidon.datasources;
 
 import flipkart.lego.api.entities.Request;
 

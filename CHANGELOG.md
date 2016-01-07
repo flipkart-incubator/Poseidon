@@ -1,3 +1,6 @@
+## 2.0.2-SNAPSHOT (Jan 7, 2016)
+- Datasources can now call other datasources in an asynchronous way
+ 
 ## 2.0.1 (Jan 6, 2016)
 - Upgrading snapshot to release version
 

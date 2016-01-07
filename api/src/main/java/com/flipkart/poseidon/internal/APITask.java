@@ -21,6 +21,7 @@ import com.flipkart.hydra.composer.exception.ComposerEvaluationException;
 import com.flipkart.hydra.composer.exception.ComposerInstantiationException;
 import com.flipkart.hydra.task.DefaultMultiTask;
 import com.flipkart.hydra.task.exception.BadCallableException;
+import com.flipkart.poseidon.datasources.DataSourceRequest;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
