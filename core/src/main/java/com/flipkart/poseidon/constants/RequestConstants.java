@@ -27,4 +27,7 @@ public class RequestConstants {
     public static final String IS_PERF_TEST = "isPerfTest";
     public static final String FILE_UPLOAD_TMP_DIR = "/tmp";
     public static final String PARAMS = "params";
+
+    public static final String REQUEST_ID_HEADER = "X-REQUEST-ID";
+    public static final String PERF_TEST_HEADER = "X-PERF-TEST";
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.core.RequestContext;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
@@ -34,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 
 /**
  * Created by mohan.pandian on 24/02/15.
@@ -73,9 +76,11 @@ public abstract class AbstractServiceClient implements ServiceClient {
         if (requestCachingEnabled) {
             params.put("X-Cache-Request", "true");
         }
-        if (headersMap != null && !headersMap.isEmpty()) {
+
+        Map<String, String> injectedHeadersMap = injectHeaders(headersMap);
+        if (!injectedHeadersMap.isEmpty()) {
             try {
-                params.put("headers", objectMapper.writeValueAsString(headersMap));
+                params.put("headers", objectMapper.writeValueAsString(injectedHeadersMap));
             } catch (Exception e) {
                 logger.error("Error serializing headers", e);
                 throw new IOException("Headers serialization error", e);
@@ -100,6 +105,31 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
+    }
+
+    /**
+     * Injects request id, perf test headers from RequestContext
+     *
+     * @param headersMap Original headers map sent from service client
+     * @return Injected headers map
+     */
+    protected Map<String, String> injectHeaders(Map<String, String> headersMap) {
+        Map<String, String> injectedHeadersMap = new HashMap<>();
+        if (headersMap != null && !headersMap.isEmpty()) {
+            injectedHeadersMap.putAll(headersMap);
+        }
+
+        // Add x-request-id
+        String requestId = (String) RequestContext.get(REQUEST_ID);
+        if (requestId != null && !requestId.isEmpty()) {
+            injectedHeadersMap.put(REQUEST_ID_HEADER, requestId);
+        }
+
+        // Add x-perf-test
+        if ((Boolean) RequestContext.get(IS_PERF_TEST)) {
+            injectedHeadersMap.put(PERF_TEST_HEADER, "true");
+        }
+        return injectedHeadersMap;
     }
 
     protected String encodeUrl(String url) {
