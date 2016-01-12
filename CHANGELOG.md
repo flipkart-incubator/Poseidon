@@ -1,6 +1,7 @@
 ## 2.0.2-SNAPSHOT (Jan 11, 2016)
 - Datasources can now call other datasources in an asynchronous way
 - Headers like X-PERF-TEST, X-REQUEST-ID etc are injected to all HTTP Services
+- Bug fix - RequestContext isn't accessible in Filters
  
 ## 2.0.1 (Jan 6, 2016)
 - Upgrading snapshot to release version

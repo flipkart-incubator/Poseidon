@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.*;
 
+import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -190,11 +191,11 @@ public class ParamValidationFilter implements Filter {
 
     @Override
     public String getName() throws UnsupportedOperationException {
-        return "ParamValidator";
+        return canonicalName(getClass().getSimpleName(), "Filter", "Filter");
     }
 
     @Override
     public List<Integer> getVersion() throws UnsupportedOperationException {
-        return Arrays.asList(1, 0);
+        return Arrays.asList(1, 0, 0);
     }
 }
