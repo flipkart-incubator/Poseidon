@@ -1,3 +1,7 @@
+## 2.0.2 (Jan 14, 2016)
+- Included snapshot version fixes
+- Bug fix - NPE in AbstractServiceClient when RequestContext is not available
+
 ## 2.0.2-SNAPSHOT (Jan 11, 2016)
 - Datasources can now call other datasources in an asynchronous way
 - Headers like X-PERF-TEST, X-REQUEST-ID etc are injected to all HTTP Services

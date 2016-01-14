@@ -126,7 +126,8 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         // Add x-perf-test
-        if ((Boolean) RequestContext.get(IS_PERF_TEST)) {
+        Boolean isPerfTest = (Boolean) RequestContext.get(IS_PERF_TEST);
+        if (isPerfTest != null && isPerfTest) {
             injectedHeadersMap.put(PERF_TEST_HEADER, "true");
         }
         return injectedHeadersMap;
