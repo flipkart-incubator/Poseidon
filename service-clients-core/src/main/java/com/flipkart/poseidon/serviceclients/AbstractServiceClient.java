@@ -16,7 +16,9 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
@@ -54,16 +56,16 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected abstract String getCommandName();
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, null);
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
+        return execute(javaType, uri, httpMethod, headersMap, requestObject, null);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod,
                                   Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, false);
+        return execute(javaType, uri, httpMethod, headersMap, requestObject, commandName, false);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
@@ -101,7 +103,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, clazz, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
@@ -169,6 +171,14 @@ public abstract class AbstractServiceClient implements ServiceClient {
             queryURI.append(param);
         }
         return queryURI.toString();
+    }
+
+    public JavaType getJavaType(TypeReference typeReference) {
+        return objectMapper.getTypeFactory().constructType(typeReference);
+    }
+
+    public <T> JavaType getJavaType(Class<T> clazz) {
+        return objectMapper.getTypeFactory().constructType(clazz);
     }
 
     @Override
