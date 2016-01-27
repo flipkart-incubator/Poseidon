@@ -17,6 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 2.0.2             | Jan 14 2016      |    Datasources can call other datasources, headers injection, nested IDL files, bug fixes 
 | Version 2.0.1             | Jan 06 2016      |    Request caching in task handler, bug fix in service response decoding
 | Version 2.0.0             | Jan 04 2016      |    First public release
 
