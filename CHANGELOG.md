@@ -1,5 +1,6 @@
-## 3.0.0-SNAPSHOT (Jan 21, 2016)
+## 3.0.0-SNAPSHOT (Jan 28, 2016)
 - Service IDL now accepts all java types (including collections with nested generic types)
+- dependencies module is removed
 
 ## 2.0.2 (Jan 14, 2016)
 - Included snapshot version fixes
