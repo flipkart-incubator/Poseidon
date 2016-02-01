@@ -57,20 +57,20 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected abstract String getCommandName();
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, null);
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
+        return execute(javaType, uri, httpMethod, headersMap, requestObject, null);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod,
                                   Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, false);
+        return execute(javaType, uri, httpMethod, headersMap, requestObject, commandName, false);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, requestCachingEnabled, null);
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+        return execute(javaType, uri, httpMethod, headersMap, requestObject, commandName, requestCachingEnabled, null);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz,
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType,
                                                                                 String uri, String httpMethod,
                                                                                 Map<String, String> headersMap,
                                                                                 Object requestObject, String commandName,
@@ -107,7 +107,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
                     List requestArray = splitter.split(requestObject);
                     for (Object request : requestArray) {
                         payload = objectMapper.writeValueAsBytes(request);
-                        wrapper.addFutureForTask(submitTask(commandName, payload, clazz, params, logger));
+                        wrapper.addFutureForTask(submitTask(commandName, payload, javaType, params, logger));
                     }
                     return wrapper;
                 } else {
@@ -122,18 +122,16 @@ public abstract class AbstractServiceClient implements ServiceClient {
                 throw new IOException("Request object serialization error", e);
             }
         }
-        return new FutureTaskResultToDomainObjectPromiseWrapper<>(submitTask(commandName, payload, clazz, params, logger));
+        return new FutureTaskResultToDomainObjectPromiseWrapper<>(submitTask(commandName, payload, javaType, params, logger));
     }
 
-    private <T> Future<TaskResult> submitTask(String commandName, byte[] payload, Class<T> clazz, Map<String, String> params, Logger logger) {
+    private <T> Future<TaskResult> submitTask(String commandName, byte[] payload, JavaType javaType, Map<String, String> params, Logger logger) {
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        JavaType type = objectMapper.constructType(clazz);
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, type, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return future;
-
     }
 
     /**
@@ -161,7 +159,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
         return injectedHeadersMap;
     }
-
 
     protected String encodeUrl(String url) {
         if (url == null || url.isEmpty()) {
