@@ -24,7 +24,6 @@ import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
 import com.flipkart.poseidon.core.RequestContext;
-import com.flipkart.poseidon.serviceclients.batch.RequestSplitter;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
@@ -67,15 +66,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
     }
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
-        return execute(javaType, uri, httpMethod, headersMap, requestObject, commandName, requestCachingEnabled, null);
-    }
-
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType,
-                                                                                String uri, String httpMethod,
-                                                                                Map<String, String> headersMap,
-                                                                                Object requestObject, String commandName,
-                                                                                boolean requestCachingEnabled,
-                                                                                RequestSplitter splitter) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
@@ -100,38 +90,23 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         byte[] payload = null;
-        FutureTaskResultToDomainObjectPromiseWrapper wrapper = new FutureTaskResultToDomainObjectPromiseWrapper();
         if (requestObject != null) {
             try {
-                if (splitter != null) {
-                    List requestArray = splitter.split(requestObject);
-                    for (Object request : requestArray) {
-                        payload = objectMapper.writeValueAsBytes(request);
-                        wrapper.addFutureForTask(submitTask(commandName, payload, javaType, params, logger));
-                    }
-                    return wrapper;
-                } else {
-                    if (requestObject instanceof String) {
-                        payload = ((String) requestObject).getBytes();
-                    } else {
-                        payload = objectMapper.writeValueAsBytes(requestObject);
-                    }
-                }
+                if (requestObject instanceof String)
+                    payload = ((String) requestObject).getBytes();
+                else
+                    payload = objectMapper.writeValueAsBytes(requestObject);
             } catch (Exception e) {
                 logger.error("Error serializing request object", e);
                 throw new IOException("Request object serialization error", e);
             }
         }
-        return new FutureTaskResultToDomainObjectPromiseWrapper<>(submitTask(commandName, payload, javaType, params, logger));
-    }
-
-    private <T> Future<TaskResult> submitTask(String commandName, byte[] payload, JavaType javaType, Map<String, String> params, Logger logger) {
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
         ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
-        return future;
+        return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
     }
 
     /**
