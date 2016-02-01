@@ -66,9 +66,19 @@ public class APIManager {
         List<String> validConfigs = new ArrayList<>();
 
         Path dir = Paths.get(configuration.getApiFilesPath());
+        scanAndAdd(dir, validConfigs);
+
+        return "[" + Joiner.on(",").join(validConfigs) + "]";
+    }
+
+    private void scanAndAdd(Path dir, List<String> validConfigs) {
         try (DirectoryStream<Path> files = Files.newDirectoryStream(dir)) {
             for (Path entry : files) {
                 File file = entry.toFile();
+                if (file.isDirectory()) {
+                    scanAndAdd(entry, validConfigs);
+                    return;
+                }
                 if ("json".equals(FilenameUtils.getExtension(file.getName()))) {
                     try {
                         String config = FileUtils.readFileToString(file);
@@ -84,7 +94,6 @@ public class APIManager {
             logger.error("Local override directory not found.");
         }
 
-        return "[" + Joiner.on(",").join(validConfigs) + "]";
     }
 
     private boolean validateConfig(String config) {

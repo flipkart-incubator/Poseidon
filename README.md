@@ -3,10 +3,22 @@ Poseidon
 
 Poseidon is a platform to build API applications that have to aggregate data from distributed services in an efficient way.
 
+## Features
+
+1. Resilient and fault tolerant API layer in SOA achieved using [Phantom](https://github.com/flipkart/phantom) 
+2. Scatter-Gather capability built using [Lego](https://github.com/flipkart-incubator/Lego)
+3. Dynamic dispatching and composing at API layer built using [Hydra](https://github.com/flipkart-incubator/hydra)
+4. Embedded web server (Jetty), out of box metrics exposed through JMX
+5. Configuration driven Distributed Tracing support
+6. Data governance support to collect and log events
+7. In-built, [phantom dashboard](https://github.com/Flipkart/Phantom#phantom-consoles)
+
 ## Releases
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 2.0.2             | Jan 14 2016      |    Datasources can call other datasources, headers injection, nested IDL files, bug fixes 
+| Version 2.0.1             | Jan 06 2016      |    Request caching in task handler, bug fix in service response decoding
 | Version 2.0.0             | Jan 04 2016      |    First public release
 
 ## Changelog

@@ -20,17 +20,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flipkart.hydra.composer.exception.ComposerInstantiationException;
 import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.internal.APITask;
-import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
-import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
 import flipkart.lego.api.entities.Buildable;
-import flipkart.lego.api.entities.Filter;
-import flipkart.lego.api.exceptions.ElementNotFoundException;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -56,12 +55,12 @@ public class APILoader {
         Map<String, Buildable> buildables = new HashMap<>();
         for (EndpointPOJO pojo : pojos) {
             try {
-                // check if already a api-builable map exists for a given api/uri
-                if ( buildables.containsKey( pojo.getUrl()) ){
+                // check if already a buildable  exists for a given api/uri
+                if (buildables.containsKey(pojo.getUrl())) {
                     logger.error("******* More than one Buildable defined for api: \"" + pojo.getUrl()+"\", all except first occurrences will be ignored. *******");
                 } else {
-                    APIBuildable apiBuildable = new APIBuildable(legoSet, pojo.getUrl(), pojo.getTimeout(), getFilters(pojo), getMappers(pojo), getCalls(pojo.getTasks()), pojo.getResponse());
-                    buildables.putAll(apiBuildable.getRoutes());
+                    APIBuildable apiBuildable = new APIBuildable(legoSet, pojo, configuration, getCalls(pojo.getTasks()));
+                    buildables.put(pojo.getUrl(), apiBuildable);
                 }
             } catch (Throwable error) {
                 logger.error("Buildable loading failed for atleast one api: " + pojo.getUrl(), error);
@@ -69,36 +68,6 @@ public class APILoader {
         }
 
         return buildables;
-    }
-
-    private LinkedHashSet<Filter> getFilters(EndpointPOJO pojo) throws ElementNotFoundException {
-        LinkedHashSet<Filter> filters = new LinkedHashSet<>();
-        filters.add(new ParamValidationFilter(pojo.getParams()));
-
-        // Add global filters
-        if (configuration.getFilterIds() != null) {
-            for (String filterId : configuration.getFilterIds()) {
-                filters.add(legoSet.getFilter(filterId));
-            }
-        }
-
-        // Add endpoint specific filters
-        if (pojo.getFilters() != null) {
-            for (String filterId : pojo.getFilters()) {
-                filters.add(legoSet.getFilter(filterId));
-            }
-        }
-        return filters;
-    }
-
-    private Set<Mapper> getMappers(EndpointPOJO pojo) throws ElementNotFoundException {
-        Set<Mapper> mappers = new LinkedHashSet<>();
-        if (pojo.getMappers() != null) {
-            for (String mapperId : pojo.getMappers()) {
-                mappers.add(legoSet.getMapper(mapperId));
-            }
-        }
-        return mappers;
     }
 
     private void loadBuildables(String config) throws Exception {

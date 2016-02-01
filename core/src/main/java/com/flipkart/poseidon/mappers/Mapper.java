@@ -24,10 +24,9 @@ import java.util.Map;
 /**
  * Mapper maps the model which is available in {@link flipkart.lego.api.entities.Buildable} <code>build()</code>
  * to any bean/entity/pojo (ex: an event for data governance).
- * <p/>
+ * <p>
  * Mapped beans are accessible through {@link com.flipkart.poseidon.core.PoseidonResponse}
  * <code>getMappedBeans()</code> in {@link flipkart.lego.api.entities.Filter} <code>filterResponse()</code>
- * <p/>
  */
 public interface Mapper extends Identifiable, Describable {
     Object map(Map<String, Object> map);

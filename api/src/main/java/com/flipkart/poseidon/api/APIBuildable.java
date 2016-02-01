@@ -20,10 +20,13 @@ import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.flipkart.poseidon.internal.OrchestratorDataSource;
+import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.mappers.Mapper;
+import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.*;
+import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.LegoException;
 
@@ -37,44 +40,29 @@ public class APIBuildable implements Buildable {
 
     private static final String RESPONSE_KEY = "response_key";
     private final PoseidonLegoSet legoSet;
-    private final String url;
-    private final long timeout;
-    private final LinkedHashSet<Filter> filters;
-    private final Set<Mapper> mappers;
+    private final EndpointPOJO pojo;
+    private final Configuration configuration;
     private final Map<String, Task> tasks;
-    private final Object response;
     private List<Object> mappedBeans;
 
-        public APIBuildable(PoseidonLegoSet legoSet, String url, long timeout, LinkedHashSet<Filter> filters, Set<Mapper> mappers, Map<String, Task> tasks, Object response) {
+    public APIBuildable(PoseidonLegoSet legoSet, EndpointPOJO pojo, Configuration configuration, Map<String, Task> tasks) {
         this.legoSet = legoSet;
-        this.url = url;
-        this.timeout = timeout;
-        this.filters = filters;
-        this.mappers = mappers;
+        this.pojo = pojo;
+        this.configuration = configuration;
         this.tasks = tasks;
-        this.response = response;
-    }
-
-    public String getUrl() {
-        return this.url;
-    }
-
-    public Map<String, Buildable> getRoutes() {
-        Map<String, Buildable> routes = new HashMap<>();
-        routes.put(this.url, this);
-        return routes;
     }
 
     @Override
     public long getTimeout() throws LegoException {
-        return timeout;
+        return pojo.getTimeout();
     }
 
     @Override
     public Map<String, DataSource> getRequiredDataSources(Request request) throws InternalErrorException {
         Map<String, Object> initialParams = (Map<String, Object>) request.getAttribute(RequestConstants.PARAMS);
         mappedBeans = new ArrayList<>();
-        OrchestratorDataSource dataSource = new OrchestratorDataSource(legoSet, initialParams, tasks, response, mappers, mappedBeans);
+        OrchestratorDataSource dataSource = new OrchestratorDataSource(legoSet, initialParams,
+                tasks, pojo.getResponse(), getMappers(), mappedBeans);
         Map<String, DataSource> dataSourceMap = new HashMap<>();
         dataSourceMap.put(RESPONSE_KEY, legoSet.wrapDataSource(dataSource));
         return dataSourceMap;
@@ -102,7 +90,41 @@ public class APIBuildable implements Buildable {
 
     @Override
     public LinkedHashSet<Filter> getFilters(Request request) throws InternalErrorException {
+        LinkedHashSet<Filter> filters = new LinkedHashSet<>();
+        filters.add(new ParamValidationFilter(pojo.getParams()));
+
+        try {
+            // Add global filters
+            if (configuration.getFilterIds() != null) {
+                for (String filterId : configuration.getFilterIds()) {
+                    filters.add(legoSet.getFilter(filterId));
+                }
+            }
+
+            // Add endpoint specific filters
+            if (pojo.getFilters() != null) {
+                for (String filterId : pojo.getFilters()) {
+                    filters.add(legoSet.getFilter(filterId));
+                }
+            }
+        } catch (ElementNotFoundException e) {
+            throw new InternalErrorException(e);
+        }
         return filters;
+    }
+
+    private LinkedHashSet<Mapper> getMappers() throws InternalErrorException {
+        LinkedHashSet<Mapper> mappers = new LinkedHashSet<>();
+        try {
+            if (pojo.getMappers() != null) {
+                for (String mapperId : pojo.getMappers()) {
+                    mappers.add(legoSet.getMapper(mapperId));
+                }
+            }
+        } catch (ElementNotFoundException e) {
+            throw new InternalErrorException(e);
+        }
+        return mappers;
     }
 
     @Override

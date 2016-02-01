@@ -38,7 +38,8 @@ import java.util.Arrays;
  */
 public class Generator {
     private final static String IDL_BASE_PATH = ".src.main.resources.idl.";
-    private final static String[] IDL_FOLDER_NAMES = new String[] { "pojos" , "service" };
+    private final static String POJO_FOLDER_NAME = "pojos";
+    private final static String SERVICE_FOLDER_NAME = "service";
     private final static String DESTINATION_JAVA_FOLDER = ".target.generated-sources.";
     private final static String PACKAGE_NAME = "com.flipkart.poseidon.serviceclients."; // module name and major version will be appended to this
     private final static JCodeModel jCodeModel = new JCodeModel();
@@ -144,7 +145,7 @@ public class Generator {
 
     private static void updateVersion() {
         String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
-        File folder = new File(modulePath + idlBasePath + IDL_FOLDER_NAMES[1]);
+        File folder = new File(modulePath + idlBasePath + SERVICE_FOLDER_NAME);
         if (folder.exists()) {
             File[] files = folder.listFiles();
             if (files != null && files.length > 0) {
@@ -168,35 +169,59 @@ public class Generator {
 
     private static void generate() throws Exception {
         String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
-        for (String folderName : IDL_FOLDER_NAMES) {
-            File folder = new File(modulePath + idlBasePath + folderName);
-            if (!folder.exists()) {
-                return;
-            }
+        File pojoFolder = new File(modulePath + idlBasePath + POJO_FOLDER_NAME);
+        generatePojo(pojoFolder);
 
-            boolean isPojo = "pojos".equals(folderName);
-            File[] files;
-            if (isPojo && (pojoOrdering != null && pojoOrdering.length > 0)) {
-                files = new File[pojoOrdering.length];
-                int i = 0;
-                for (String fileName : pojoOrdering)
-                    files[i++] = new File(modulePath + idlBasePath + folderName + File.separator + fileName);
-            } else {
-                files = folder.listFiles();
+        File serviceFolder = new File(modulePath + idlBasePath + SERVICE_FOLDER_NAME);
+        generateService(serviceFolder);
+    }
+
+    private static void generatePojo(File pojoFolder) throws Exception {
+        if (!pojoFolder.exists()) {
+            return;
+        }
+
+        File[] files;
+        if (pojoOrdering != null && pojoOrdering.length > 0) {
+            files = new File[pojoOrdering.length];
+            int i = 0;
+            for (String fileName : pojoOrdering) {
+                File file = new File(pojoFolder.getPath() + File.separator + fileName);
+                if (file.isDirectory()) {
+                    throw new IllegalArgumentException("Pojo ordering can't contain a directory");
+                }
+                files[i++] = file;
             }
-            if (files == null) {
+        } else {
+            files = pojoFolder.listFiles();
+        }
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (file.isDirectory()) {
+                generatePojo(file);
                 continue;
             }
-            for (File file : files) {
-                logger.info("Generating from " + file.getName());
-                String className = file.getName().replaceFirst("[.][^.]+$", ""); // Remove extension
+            logger.info("Generating from " + file.getName());
+            String className = file.getName().replaceFirst("[.][^.]+$", ""); // Remove extension
+            generatePojo(className, file.getPath());
+        }
+    }
 
-                if (isPojo) {
-                    generatePojo(className, file.getPath());
-                } else {
-                    generateService(className, file.getPath());
-                }
-            }
+    private static void generateService(File serviceFolder) throws Exception {
+        if (!serviceFolder.exists()) {
+            return;
+        }
+
+        File[] files = serviceFolder.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            logger.info("Generating from " + file.getName());
+            String className = file.getName().replaceFirst("[.][^.]+$", ""); // Remove extension
+            generateService(className, file.getPath());
         }
     }
 

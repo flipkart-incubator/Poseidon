@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.serviceclients.generator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
 import com.flipkart.poseidon.serviceclients.idl.pojo.EndPoint;
@@ -74,8 +75,8 @@ public class ServiceGenerator {
             name = "void";
         }
         try {
-            return JType.parse(jCodeModel, name);
-        } catch(IllegalArgumentException e) {
+            return jCodeModel.parseType(name);
+        } catch(ClassNotFoundException e) {
             return jCodeModel.directClass(name);
         }
     }
@@ -342,8 +343,21 @@ public class ServiceGenerator {
         }
 
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
-            JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getResponseObject()), "class");
-            JInvocation invocation = JExpr.invoke("execute").arg(ref).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
+            // If responseObject contains generic types, use TypeReference. Else use Class of the responseObject.
+            // http://wiki.fasterxml.com/JacksonDataBinding
+            // For uniformity, TypeReference or Class is then converted to a JavaType to deserialize service response.
+            // For generic types, creating an anonymous inner class for every service call would have overhead which is
+            // compensated by the type safety it ensures at compilation time as well as easy code generation
+            JInvocation invocation = JExpr.invoke("execute");
+            JInvocation nestedInvocation = JExpr.invoke("getJavaType");
+            if (!endPoint.getResponseObject().contains("<")) {
+                JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getResponseObject()), "class");
+                nestedInvocation.arg(ref);
+            } else {
+                JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getResponseObject()));
+                nestedInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
+            }
+            invocation.arg(nestedInvocation).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
 
             if (headersMap.size() > 0) {
                 invocation.arg(JExpr.ref("headersMap"));

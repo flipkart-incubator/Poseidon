@@ -16,12 +16,14 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.batch.RequestSplitter;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
@@ -36,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 
 /**
  * Created by mohan.pandian on 24/02/15.
@@ -53,8 +57,12 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected abstract String getCommandName();
 
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
+        return execute(clazz, uri, httpMethod, headersMap, requestObject, null);
+    }
+
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
-                                                                                Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
+                                  Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
         return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, false);
     }
 
@@ -62,10 +70,16 @@ public abstract class AbstractServiceClient implements ServiceClient {
         return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, requestCachingEnabled, null);
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
-                                                                                Map<String, String> headersMap, Object requestObject,
-                                                                                String commandName, boolean requestCachingEnabled, RequestSplitter splitter) throws IOException {
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz,
+                                                                                String uri, String httpMethod,
+                                                                                Map<String, String> headersMap,
+                                                                                Object requestObject, String commandName,
+                                                                                boolean requestCachingEnabled,
+                                                                                RequestSplitter splitter) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
+        if(commandName == null || commandName.isEmpty()) {
+            commandName = getCommandName();
+        }
         logger.info("Executing {} with {} {}", commandName, httpMethod, uri);
 
         Map<String, String> params = new HashMap<>();
@@ -75,9 +89,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
             params.put("X-Cache-Request", "true");
         }
 
-        if (headersMap != null && !headersMap.isEmpty()) {
+        Map<String, String> injectedHeadersMap = injectHeaders(headersMap);
+        if (!injectedHeadersMap.isEmpty()) {
             try {
-                params.put("headers", objectMapper.writeValueAsString(headersMap));
+                params.put("headers", objectMapper.writeValueAsString(injectedHeadersMap));
             } catch (Exception e) {
                 logger.error("Error serializing headers", e);
                 throw new IOException("Headers serialization error", e);
@@ -114,11 +129,37 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
         JavaType type = objectMapper.constructType(clazz);
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, clazz, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, type, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return future;
 
+    }
+
+    /**
+     * Injects request id, perf test headers from RequestContext
+     *
+     * @param headersMap Original headers map sent from service client
+     * @return Injected headers map
+     */
+    protected Map<String, String> injectHeaders(Map<String, String> headersMap) {
+        Map<String, String> injectedHeadersMap = new HashMap<>();
+        if (headersMap != null && !headersMap.isEmpty()) {
+            injectedHeadersMap.putAll(headersMap);
+        }
+
+        // Add x-request-id
+        String requestId = (String) RequestContext.get(REQUEST_ID);
+        if (requestId != null && !requestId.isEmpty()) {
+            injectedHeadersMap.put(REQUEST_ID_HEADER, requestId);
+        }
+
+        // Add x-perf-test
+        Boolean isPerfTest = (Boolean) RequestContext.get(IS_PERF_TEST);
+        if (isPerfTest != null && isPerfTest) {
+            injectedHeadersMap.put(PERF_TEST_HEADER, "true");
+        }
+        return injectedHeadersMap;
     }
 
 
@@ -147,9 +188,9 @@ public abstract class AbstractServiceClient implements ServiceClient {
     protected String getQueryURI(List<String> params) {
         StringBuilder queryURI = new StringBuilder();
         Boolean first = true;
-        for (String param : params) {
-            if (param == null || param.isEmpty()) continue;
-            if (first) {
+        for(String param: params) {
+            if(param == null || param.isEmpty()) continue;
+            if(first) {
                 queryURI.append("?");
                 first = false;
             } else {
@@ -158,6 +199,14 @@ public abstract class AbstractServiceClient implements ServiceClient {
             queryURI.append(param);
         }
         return queryURI.toString();
+    }
+
+    public JavaType getJavaType(TypeReference typeReference) {
+        return objectMapper.getTypeFactory().constructType(typeReference);
+    }
+
+    public <T> JavaType getJavaType(Class<T> clazz) {
+        return objectMapper.getTypeFactory().constructType(clazz);
     }
 
     @Override
@@ -172,6 +221,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     @Override
     public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
+       return getName() + "_" + Joiner.on(".").join(getVersion());
     }
 }

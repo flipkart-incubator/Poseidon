@@ -16,10 +16,6 @@
 
 package com.flipkart.poseidon.datasources;
 
-/**
- * Created by akshay.kesarwan on 13/07/15.
- */
-
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -29,6 +25,8 @@ import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
 
@@ -40,6 +38,21 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     public AbstractDataSource(LegoSet legoset, Request request) {
         this.legoset = (PoseidonLegoSet) legoset;
         this.request = request;
+    }
+
+    protected Future<DataType> execute(String dsId, Map<String, Object> requestMap) throws Exception {
+        DataSourceRequest dataSourceRequest = new DataSourceRequest();
+        dataSourceRequest.setAttributes(requestMap);
+        return execute(dsId, dataSourceRequest);
+    }
+
+    protected Future<DataType> execute(String dsId, Request request) throws Exception {
+        if (getId().equals(dsId)) {
+            throw new IllegalArgumentException("Recursive calling of datasource is not allowed");
+        }
+
+        DataSource dataSource = this.legoset.getDataSource(dsId, request);
+        return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
     @Override

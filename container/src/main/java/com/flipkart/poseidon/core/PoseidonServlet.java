@@ -17,7 +17,6 @@
 package com.flipkart.poseidon.core;
 
 import com.flipkart.poseidon.api.Application;
-import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.google.common.net.MediaType;
@@ -49,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 
 public class PoseidonServlet extends HttpServlet {
 
@@ -104,7 +104,7 @@ public class PoseidonServlet extends HttpServlet {
         setRequestContext(httpRequest);
 
         PoseidonRequest request = new PoseidonRequest(httpRequest);
-        request.setAttribute(RequestConstants.METHOD, method);
+        request.setAttribute(METHOD, method);
 
         if (ServletFileUpload.isMultipartContent(httpRequest)) {
             handleFileUpload(request, httpRequest);
@@ -118,7 +118,7 @@ public class PoseidonServlet extends HttpServlet {
             } catch (Exception e) {
                 logger.warn("301: Couldn't read body" + e.getMessage());
             }
-            request.setAttribute(RequestConstants.BODY, requestBuffer.toString());
+            request.setAttribute(BODY, requestBuffer.toString());
         }
 
         PoseidonResponse response = new PoseidonResponse();
@@ -142,26 +142,26 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void setRequestContext(HttpServletRequest httpServletRequest) {
-        RequestContext.set(RequestConstants.METHOD, httpServletRequest.getMethod());
-        RequestContext.set(RequestConstants.REQUEST_ID, getRequestId(httpServletRequest));
-        RequestContext.set(RequestConstants.IS_PERF_TEST, isPerfTest(httpServletRequest));
+        RequestContext.set(METHOD, httpServletRequest.getMethod());
+        RequestContext.set(REQUEST_ID, getRequestId(httpServletRequest));
+        RequestContext.set(IS_PERF_TEST, isPerfTest(httpServletRequest));
     }
 
     private String getRequestId(HttpServletRequest httpServletRequest) {
-        if (httpServletRequest.getHeader("X-REQUEST-ID") != null) {
-            return httpServletRequest.getHeader("X-REQUEST-ID");
+        if (httpServletRequest.getHeader(REQUEST_ID_HEADER) != null) {
+            return httpServletRequest.getHeader(REQUEST_ID_HEADER);
         }
         return UUID.randomUUID().toString();
     }
 
     private boolean isPerfTest(HttpServletRequest httpServletRequest) {
-        return Boolean.parseBoolean(httpServletRequest.getHeader("X-PERF-TEST"));
+        return Boolean.parseBoolean(httpServletRequest.getHeader(PERF_TEST_HEADER));
     }
 
     private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {
         // If uploaded file size is more than 10KB, will be stored in disk
         DiskFileItemFactory factory = new DiskFileItemFactory();
-        File repository = new File(RequestConstants.FILE_UPLOAD_TMP_DIR);
+        File repository = new File(FILE_UPLOAD_TMP_DIR);
         if (repository.exists()) {
             factory.setRepository(repository);
         }
@@ -201,7 +201,7 @@ public class PoseidonServlet extends HttpServlet {
         setCookies(response, httpResponse);
 
         httpResponse.setStatus(SC_MOVED_PERMANENTLY);
-        httpResponse.setHeader("Location", response.getAttribute(RequestConstants.REDIRECT_URL));
+        httpResponse.setHeader("Location", response.getAttribute(REDIRECT_URL));
     }
 
     private void setHeaders(PoseidonResponse response, HttpServletResponse httpResponse) {

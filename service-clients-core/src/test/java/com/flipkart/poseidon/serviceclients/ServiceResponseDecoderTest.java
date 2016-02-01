@@ -59,7 +59,7 @@ public class ServiceResponseDecoderTest {
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, responseClass, mockLogger , exceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockMapper.constructType(responseClass), mockLogger , exceptions));
     }
 
     /**
@@ -122,7 +122,7 @@ public class ServiceResponseDecoderTest {
         InputStream stream = mock(InputStream.class);
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, responseClass, mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockMapper.constructType(responseClass), mockLogger, mockExceptions));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);

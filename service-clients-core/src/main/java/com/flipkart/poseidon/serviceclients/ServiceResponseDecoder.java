@@ -16,10 +16,12 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.HttpResponseDecoder;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
@@ -37,13 +39,13 @@ import java.util.Map;
  */
 public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceResponse<T>> {
     private final ObjectMapper objectMapper;
-    private final Class<T> clazz;
+    private final JavaType javaType;
     private final Logger logger;
     private final Map<String, Class<? extends ServiceClientException>> exceptions;
 
-    public ServiceResponseDecoder(ObjectMapper objectMapper, Class<T> clazz, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
+    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
         this.objectMapper = objectMapper;
-        this.clazz = clazz;
+        this.javaType = javaType;
         this.logger = logger;
         this.exceptions = exceptions;
     }
@@ -71,7 +73,11 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 return new ServiceResponse<T>((T) null, headers);
             } else {
                 try {
-                    return new ServiceResponse<T>(objectMapper.readValue(httpResponse.getEntity().getContent(), clazz), headers);
+                    // Don't deserialize a plain string response using jackson
+                    if (String.class.isAssignableFrom(javaType.getRawClass())) {
+                        return new ServiceResponse<T>((T) IOUtils.toString(httpResponse.getEntity().getContent()), headers);
+                    }
+                    return new ServiceResponse<T>(objectMapper.<T>readValue(httpResponse.getEntity().getContent(), javaType), headers);
                 } catch (JsonMappingException e) {
                     if (e.getMessage().contains("No content to map due to end-of-input")) {
                         return new ServiceResponse<T>((T) null, headers);
@@ -106,7 +112,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     @Override
     public ServiceResponse<T> decode(String stringResponse) throws Exception {
         try {
-            return new ServiceResponse<T>(objectMapper.readValue(stringResponse, clazz), null);
+            return new ServiceResponse<T>(objectMapper.<T>readValue(stringResponse, javaType), null);
         } catch (IOException e) {
             logger.error("Error de-serializing response object", e);
             throw new Exception("Response object de-serialization error", e);
@@ -116,7 +122,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     @Override
     public ServiceResponse<T> decode(byte[] byteResponse) throws Exception {
         try {
-            return new ServiceResponse<T>(objectMapper.readValue(byteResponse, clazz), null);
+            return new ServiceResponse<T>(objectMapper.<T>readValue(byteResponse, javaType), null);
         } catch (IOException e) {
             logger.error("Error de-serializing response object", e);
             throw new IOException("Response object de-serialization error", e);
