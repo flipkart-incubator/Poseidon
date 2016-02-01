@@ -17,10 +17,12 @@
 package com.flipkart.poseidon.serviceclients;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.serviceclients.batch.RequestSplitter;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
@@ -51,20 +53,19 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected abstract String getCommandName();
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
-        return execute(clazz, uri, httpMethod, headersMap, requestObject, null);
-    }
-
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
-                                  Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
+                                                                                Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
         return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, false);
     }
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+        return execute(clazz, uri, httpMethod, headersMap, requestObject, commandName, requestCachingEnabled, null);
+    }
+
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(Class<T> clazz, String uri, String httpMethod,
+                                                                                Map<String, String> headersMap, Object requestObject,
+                                                                                String commandName, boolean requestCachingEnabled, RequestSplitter splitter) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
-        if(commandName == null || commandName.isEmpty()) {
-            commandName = getCommandName();
-        }
         logger.info("Executing {} with {} {}", commandName, httpMethod, uri);
 
         Map<String, String> params = new HashMap<>();
@@ -73,6 +74,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         if (requestCachingEnabled) {
             params.put("X-Cache-Request", "true");
         }
+
         if (headersMap != null && !headersMap.isEmpty()) {
             try {
                 params.put("headers", objectMapper.writeValueAsString(headersMap));
@@ -83,24 +85,42 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         byte[] payload = null;
+        FutureTaskResultToDomainObjectPromiseWrapper wrapper = new FutureTaskResultToDomainObjectPromiseWrapper();
         if (requestObject != null) {
             try {
-                if (requestObject instanceof String)
-                    payload = ((String) requestObject).getBytes();
-                else
-                    payload = objectMapper.writeValueAsBytes(requestObject);
+                if (splitter != null) {
+                    List requestArray = splitter.split(requestObject);
+                    for (Object request : requestArray) {
+                        payload = objectMapper.writeValueAsBytes(request);
+                        wrapper.addFutureForTask(submitTask(commandName, payload, clazz, params, logger));
+                    }
+                    return wrapper;
+                } else {
+                    if (requestObject instanceof String) {
+                        payload = ((String) requestObject).getBytes();
+                    } else {
+                        payload = objectMapper.writeValueAsBytes(requestObject);
+                    }
+                }
             } catch (Exception e) {
                 logger.error("Error serializing request object", e);
                 throw new IOException("Request object serialization error", e);
             }
         }
+        return new FutureTaskResultToDomainObjectPromiseWrapper<>(submitTask(commandName, payload, clazz, params, logger));
+    }
+
+    private <T> Future<TaskResult> submitTask(String commandName, byte[] payload, Class<T> clazz, Map<String, String> params, Logger logger) {
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
+        JavaType type = objectMapper.constructType(clazz);
         ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, clazz, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
-        return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
+        return future;
+
     }
+
 
     protected String encodeUrl(String url) {
         if (url == null || url.isEmpty()) {
@@ -127,9 +147,9 @@ public abstract class AbstractServiceClient implements ServiceClient {
     protected String getQueryURI(List<String> params) {
         StringBuilder queryURI = new StringBuilder();
         Boolean first = true;
-        for(String param: params) {
-            if(param == null || param.isEmpty()) continue;
-            if(first) {
+        for (String param : params) {
+            if (param == null || param.isEmpty()) continue;
+            if (first) {
                 queryURI.append("?");
                 first = false;
             } else {
@@ -152,6 +172,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     @Override
     public String getId() throws UnsupportedOperationException {
-       return getName() + "_" + Joiner.on(".").join(getVersion());
+        return getName() + "_" + Joiner.on(".").join(getVersion());
     }
 }

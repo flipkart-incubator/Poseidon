@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.serviceclients;
 
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
 import flipkart.lego.concurrency.api.Promise;
 import flipkart.lego.concurrency.api.PromiseListener;
 import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
@@ -35,11 +36,22 @@ import java.util.concurrent.*;
 public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implements Promise<DomainObject> {
 
     private final Future<TaskResult> future;
+    private final List<Future<TaskResult>> futureList = new ArrayList<>();
     private final List<PromiseListener> promiseListeners = new ArrayList<>();
     private PromiseBrokenException promiseBrokenException;
+    private ResponseMerger<DomainObject> responseMerger;
 
     public FutureTaskResultToDomainObjectPromiseWrapper(Future<TaskResult> future) {
         this.future = future;
+    }
+
+    public FutureTaskResultToDomainObjectPromiseWrapper(ResponseMerger<DomainObject> responseMerger){
+        this.future = null;
+        this.responseMerger = responseMerger;
+    }
+
+    public FutureTaskResultToDomainObjectPromiseWrapper() {
+        future = null;
     }
 
     @Override
@@ -87,6 +99,9 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
 
     @Override
     public DomainObject get() throws PromiseBrokenException, InterruptedException {
+        if (responseMerger != null) {
+            return get(responseMerger);
+        }
         try {
             TaskResult taskResult = future.get();
             if (taskResult == null) {
@@ -108,9 +123,36 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         }
     }
 
+    private DomainObject get(ResponseMerger<DomainObject> merger) throws PromiseBrokenException, InterruptedException {
+        try {
+            ServiceResponse<DomainObject> response = new ServiceResponse<>();
+            for (Future<TaskResult> futureResult : futureList) {
+                TaskResult result = futureResult.get();
+                if (result == null) {
+                    throw new PromiseBrokenException("Task result is null");
+                }
+                triggerListeners();
+                response.addData(((ServiceResponse<DomainObject>) result.getData()).getData());
+            }
+            return merger.mergeResponse(response.returnDataList());
+        } catch (ExecutionException exception) {
+            promiseBrokenException = new PromiseBrokenException(exception);
+            throw new InterruptedException(exception.getMessage());
+        } catch (CancellationException exception) {
+            promiseBrokenException = new PromiseBrokenException(exception);
+            throw new PromiseBrokenException(promiseBrokenException);
+        }
+    }
+
     public Map<String, String> getHeaders() throws PromiseBrokenException, InterruptedException {
         try {
-            TaskResult taskResult = future.get();
+            TaskResult taskResult;
+            if (futureList.isEmpty()) {
+                taskResult = future.get();
+            } else {
+                taskResult = futureList.get(0).get();
+            }
+
             if (taskResult == null) {
                 throw new PromiseBrokenException("Task result is null");
             }
@@ -174,5 +216,13 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         } else {
             promiseListener.whenBroken(promiseBrokenException);
         }
+    }
+
+    public void addFutureForTask(Future<TaskResult> future) {
+        futureList.add(future);
+    }
+
+    public Future<TaskResult> getFuture() {
+        return future;
     }
 }
