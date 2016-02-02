@@ -85,7 +85,19 @@
                             "$ref": "#/definitions/headers"
                         },
                         "parameters": {
-                            "$ref": "#/definitions/stringArray"
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "key": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name"]
+                          }
                         },
                         "requestObject": {
                             "type": "string"

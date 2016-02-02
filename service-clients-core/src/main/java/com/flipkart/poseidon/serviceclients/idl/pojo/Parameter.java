@@ -24,6 +24,7 @@ import java.util.Objects;
  */
 public class Parameter {
     private String type;
+    private String param;
     private Boolean optional = false;
     private String[] description;
 
@@ -33,6 +34,14 @@ public class Parameter {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getParam() {
+        return param;
+    }
+
+    public void setParam(String param) {
+        this.param = param;
     }
 
     public Boolean getOptional() {

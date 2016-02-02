@@ -21,6 +21,7 @@ import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
 import com.flipkart.poseidon.serviceclients.idl.pojo.EndPoint;
 import com.flipkart.poseidon.serviceclients.idl.pojo.Parameter;
+import com.flipkart.poseidon.serviceclients.idl.pojo.ParameterDefinition;
 import com.flipkart.poseidon.serviceclients.idl.pojo.ServiceIDL;
 import com.google.common.base.Joiner;
 import com.sun.codemodel.*;
@@ -168,11 +169,11 @@ public class ServiceGenerator {
             JDocComment methodComment = method.javadoc();
             methodComment.addAll(Arrays.asList(endPoint.getDescription()));
 
-            String[] parameters = endPoint.getParameters();
+            List<ParameterDefinition> parameters = endPoint.getParameters();
             if (parameters == null)
-                parameters = new String[]{};
-            for (String paramName : parameters) {
-                generateMethodParam(serviceIdl, jCodeModel, method, methodComment, paramName);
+                parameters = new ArrayList<>();
+            for (ParameterDefinition definition : parameters) {
+                generateMethodParam(serviceIdl, jCodeModel, method, methodComment, definition.getName());
             }
             Map<String, String> headersMap = getAllHeaders(serviceIdl, endPoint);
             for (Map.Entry<String, String> headerMapEntry: headersMap.entrySet()) {
@@ -204,7 +205,7 @@ public class ServiceGenerator {
         String endPointUri = endPoint.getUri();
         String uri = (baseUri + endPointUri).replaceAll("//", "/");
         Set<String> argsList = new LinkedHashSet<>();
-        Set<String> argsListQueryParams = new LinkedHashSet<>();
+        Set<ParameterDefinition> argsListQueryParams = new LinkedHashSet<>();
 
         Matcher matcher = PARAMETERS_PATTERN.matcher(uri);
         while (matcher.find()) {
@@ -230,7 +231,8 @@ public class ServiceGenerator {
             block.decl(jCodeModel.ref("String"), "uri", invocation);
         }
         if (endPoint.getParameters() != null) {
-            for (String paramName : endPoint.getParameters()) {
+            for (ParameterDefinition definition : endPoint.getParameters()) {
+                String paramName = definition.getName();
                 Parameter parameter = serviceIdl.getParameters().get(paramName);
                 if (!parameter.getOptional()) {
                     if (parameter.getType().equalsIgnoreCase("string") || parameter.getType().endsWith("[]")) {
@@ -243,25 +245,27 @@ public class ServiceGenerator {
                 if (argsList.contains(paramName))
                     continue;
 
-                argsListQueryParams.add(paramName);
+                argsListQueryParams.add(definition);
             }
         }
 
         if (!argsListQueryParams.isEmpty()) {
             JInvocation invocation = jCodeModel.ref(Arrays.class).staticInvoke("asList");
-            for (String arg : argsListQueryParams) {
+            for (ParameterDefinition definition : argsListQueryParams) {
+                String arg = definition.getName();
                 Parameter parameter = serviceIdl.getParameters().get(arg);
+                String param = Optional.ofNullable(definition.getKey()).orElse(Optional.ofNullable(parameter.getParam()).orElse(arg));
                 if (!parameter.getOptional()) {
                     if (parameter.getType().equals("String")) {
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg))));
+                        invocation.arg(JExpr.lit(param + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg))));
                     } else if (parameter.getType().endsWith("[]")) {
                         JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
+                        invocation.arg(JExpr.lit(param + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
                     } else {
-                        invocation.arg(JExpr.lit(arg + "=" ).plus(JExpr.ref(arg)));
+                        invocation.arg(JExpr.lit(param + "=" ).plus(JExpr.ref(arg)));
                     }
                 } else {
-                    invocation.arg(JExpr.invoke("getOptURI").arg(arg).arg(JExpr.ref(arg)));
+                    invocation.arg(JExpr.invoke("getOptURI").arg(param).arg(JExpr.ref(arg)));
                 }
             }
             block.assign(JExpr.ref("uri"), JExpr.ref("uri").plus(JExpr.invoke("getQueryURI").arg(invocation)));

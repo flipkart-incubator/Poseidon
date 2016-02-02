@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.serviceclients.idl.pojo;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,7 +29,7 @@ public class EndPoint {
     private String uri;
     private String commandName;
     private Map<String, String> headers;
-    private String[] parameters;
+    private List<ParameterDefinition> parameters;
     private boolean requestCachingEnabled;
     private String requestObject;
     private String responseObject;
@@ -66,11 +67,11 @@ public class EndPoint {
         this.headers = headers;
     }
 
-    public String[] getParameters() {
+    public List<ParameterDefinition> getParameters() {
         return parameters;
     }
 
-    public void setParameters(String[] parameters) {
+    public void setParameters(List<ParameterDefinition> parameters) {
         this.parameters = parameters;
     }
 
@@ -128,7 +129,7 @@ public class EndPoint {
         if (!Objects.equals(headers, endPoint.getHeaders())) {
             return false;
         }
-        if (!Arrays.equals(parameters, endPoint.getParameters())) {
+        if (!parameters.equals(endPoint.getParameters())) {
             return false;
         }
         if (!Objects.equals(requestObject, endPoint.getRequestObject())) {
