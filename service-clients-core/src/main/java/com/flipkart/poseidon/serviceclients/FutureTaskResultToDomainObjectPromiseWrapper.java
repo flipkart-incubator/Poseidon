@@ -71,10 +71,10 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     public boolean isBroken() throws IllegalStateException {
         for (Future<TaskResult> future : futureList) {
             if (future.isCancelled()) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) result.getData();
                 if (!response.getIsSuccess())
                     throw response.getException();
-                serviceResponse.addData(response.getData());
+                serviceResponse.addData(response.getDataList());
             }
             if (responseMerger != null) {
                 return responseMerger.mergeResponse(serviceResponse.getDataList());
@@ -147,7 +147,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) result.getData();
                 if (!response.getIsSuccess())
                     throw response.getException();
-                serviceResponse.addData(response.getData());
+                serviceResponse.addData(response.getDataList());
             }
             if (responseMerger != null) {
                 return responseMerger.mergeResponse(serviceResponse.getDataList());
@@ -184,7 +184,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
 
     @Override
     public synchronized void addListener(PromiseListener promiseListener) {
-        throw new UnsupportedOperationException("Adding listerns is not supported");
+        throw new UnsupportedOperationException("Adding listeners is not supported");
     }
 
 
