@@ -26,6 +26,7 @@ import com.google.common.base.Joiner;
 import com.sun.codemodel.*;
 import flipkart.lego.api.entities.ServiceClient;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotNull;
 import java.beans.Introspector;
@@ -200,6 +201,47 @@ public class ServiceGenerator {
     }
 
     private void addMethodBody(ServiceIDL serviceIdl, JCodeModel jCodeModel, EndPoint endPoint, JBlock block) {
+
+        if (endPoint.getRequestSplitterClass() != null) {
+            JClass requestSplitter = jCodeModel.ref(endPoint.getRequestSplitterClass());
+            block.decl(requestSplitter, "requestSplitter", JExpr._new(requestSplitter));
+
+            JClass responseMerger = jCodeModel.ref(endPoint.getResponseMergerClass());
+            block.decl(responseMerger, "responseMerger", JExpr._new(responseMerger));
+
+            JClass wrapper = jCodeModel.ref(FutureTaskResultToDomainObjectPromiseWrapper.class);
+            block.decl(wrapper, "wrapper", JExpr._new(wrapper).arg(JExpr.ref("responseMerger")));
+            if (endPoint.getRequestParamWithLimit() != null) {
+                Matcher matcher = PARAMETERS_PATTERN.matcher(endPoint.getRequestParamWithLimit());
+                if (matcher.matches()) {
+                    Parameter parameter = serviceIdl.getParameters().get(matcher.group(1));
+                    JClass listClass = jCodeModel.ref(parameter.getType());
+                    String listClassVar = matcher.group(1) + "List";
+                    String listElement = listClassVar + "Element";
+                    block.decl(jCodeModel.ref(List.class).narrow(listClass), listClassVar, JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(matcher.group(1))));
+                    JForEach forEach = new JForEach(listClass, listElement, JExpr.ref(listClassVar));
+                    JInvocation invocation = createRequest(serviceIdl, jCodeModel, endPoint, forEach.body(),matcher.group(1), listElement);
+                    forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFutureList")));
+                    block.add(forEach);
+                    block._return(JExpr.ref("wrapper"));
+                    return;
+                }
+            } else if (endPoint.getRequestSplitterClass() != null) {
+                JInvocation invocation = createRequest(serviceIdl, jCodeModel, endPoint, block, null, null);
+                JType returnType = jCodeModel.ref(List.class).narrow(getJType(jCodeModel, endPoint.getRequestObject()));
+                block.decl(returnType, "requestObjects", JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(getVariableName(endPoint.getRequestObject()))));
+                JForEach forEach = new JForEach(jCodeModel.ref(endPoint.getRequestObject()), "requestObject", JExpr.ref("requestObjects"));
+                forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFutureList")));
+                block.add(forEach);
+                block._return(JExpr.ref("wrapper"));
+                return;
+            }
+        }
+        JInvocation invocation = createRequest(serviceIdl, jCodeModel, endPoint, block, null, null);
+        block._return(invocation);
+    }
+
+    private JInvocation createRequest(ServiceIDL serviceIdl, JCodeModel jCodeModel, EndPoint endPoint, JBlock block,String requestParamWithLimit, String listElementVarName) {
         String baseUri = serviceIdl.getService().getBaseUri();
         String endPointUri = endPoint.getUri();
         String uri = (baseUri + endPointUri).replaceAll("//", "/");
@@ -218,11 +260,16 @@ public class ServiceGenerator {
             JInvocation invocation = JExpr.ref("String").invoke("format").arg(uri);
             for (String arg : argsList) {
                 Parameter parameter = serviceIdl.getParameters().get(arg);
+                if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
+                    arg = listElementVarName;
+                }
                 if (parameter.getType().equals("String")) {
                     invocation.arg(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg)));
                 } else if (parameter.getType().endsWith("[]")) {
                     JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
                     invocation.arg(JExpr.invoke("encodeUrl").arg(joinerExpression));
+                } else if (parameter.getType().startsWith("java.util.List")) {
+                    invocation.arg(jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(arg)).arg(","));
                 } else {
                     invocation.arg(JExpr.ref(arg));
                 }
@@ -251,17 +298,24 @@ public class ServiceGenerator {
             JInvocation invocation = jCodeModel.ref(Arrays.class).staticInvoke("asList");
             for (String arg : argsListQueryParams) {
                 Parameter parameter = serviceIdl.getParameters().get(arg);
+                String argRef = arg;
+                if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
+                    argRef = listElementVarName;
+                }
                 if (!parameter.getOptional()) {
                     if (parameter.getType().equals("String")) {
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg))));
+                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(argRef))));
                     } else if (parameter.getType().endsWith("[]")) {
-                        JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
+                        JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(argRef));
+                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
+                    } else if (parameter.getType().startsWith("java.util.List")) {
+                        JExpression joinerExpression = jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(argRef)).arg(",");
                         invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
                     } else {
-                        invocation.arg(JExpr.lit(arg + "=" ).plus(JExpr.ref(arg)));
+                        invocation.arg(JExpr.lit(arg + "=" ).plus(JExpr.ref(argRef)));
                     }
                 } else {
-                    invocation.arg(JExpr.invoke("getOptURI").arg(arg).arg(JExpr.ref(arg)));
+                    invocation.arg(JExpr.invoke("getOptURI").arg(arg).arg(JExpr.ref(argRef)));
                 }
             }
             block.assign(JExpr.ref("uri"), JExpr.ref("uri").plus(JExpr.invoke("getQueryURI").arg(invocation)));
@@ -312,7 +366,12 @@ public class ServiceGenerator {
             }
 
             if (endPoint.getRequestObject() != null && !endPoint.getRequestObject().isEmpty()) {
-                String requestObjectName = getVariableName(endPoint.getRequestObject());
+                String requestObjectName;
+                if (endPoint.getRequestSplitterClass() != null && endPoint.getRequestParamWithLimit() == null) {
+                    requestObjectName = "requestObject";
+                } else {
+                    requestObjectName = getVariableName(endPoint.getRequestObject());
+                }
                 invocation.arg(JExpr.ref(requestObjectName));
             } else {
                 invocation.arg(JExpr._null());
@@ -327,8 +386,9 @@ public class ServiceGenerator {
             if (endPoint.isRequestCachingEnabled()) {
                 invocation = invocation.arg(JExpr.lit(true));
             }
-            block._return(invocation);
+            return invocation;
         }
+        return null;
     }
 
     private void addSimpleMethod(JCodeModel jCodeModel, JDefinedClass jDefinedClass,

@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.serviceclients;
 
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
 import flipkart.lego.concurrency.api.Promise;
 import flipkart.lego.concurrency.api.PromiseListener;
 import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
@@ -28,40 +29,60 @@ import java.util.concurrent.*;
 
 /**
  * Created by mohan.pandian on 18/03/15.
- *
+ * <p/>
  * A Promise that wraps a Future <TaskResult>, typically returned by TaskContext.executeAsyncCommand()
  * and eventually delivers the data from TaskResult (DomainObject)
  */
 public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implements Promise<DomainObject> {
 
-    private final Future<TaskResult> future;
-    private final List<PromiseListener> promiseListeners = new ArrayList<>();
+    private final List<Future<TaskResult>> futureList = new ArrayList<>();
     private PromiseBrokenException promiseBrokenException;
+    private ResponseMerger<DomainObject> responseMerger;
 
     public FutureTaskResultToDomainObjectPromiseWrapper(Future<TaskResult> future) {
-        this.future = future;
+        futureList.add(future);
+    }
+
+    public FutureTaskResultToDomainObjectPromiseWrapper(ResponseMerger<DomainObject> responseMerger) {
+        this.responseMerger = responseMerger;
     }
 
     @Override
     public boolean isRealized() {
-        return future.isDone();
+        for (Future<TaskResult> future : futureList) {
+            if (!future.isDone()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean isFullfilled() throws IllegalStateException {
-        return !future.isCancelled();
+        for (Future<TaskResult> future : futureList) {
+            if (future.isCancelled()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean isBroken() throws IllegalStateException {
-        return future.isCancelled();
+        for (Future<TaskResult> future : futureList) {
+            if (future.isCancelled()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void await() throws InterruptedException {
         try {
-            future.get();
-            triggerListeners();
+            for (Future<TaskResult> future : futureList) {
+                future.get();
+            }
         } catch (ExecutionException exception) {
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
@@ -74,8 +95,9 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     @Override
     public void await(long timeout, TimeUnit timeUnit) throws InterruptedException {
         try {
-            future.get(timeout, timeUnit);
-            triggerListeners();
+            for (Future<TaskResult> future : futureList) {
+                future.get(timeout, timeUnit);
+            }
         } catch (ExecutionException exception) {
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
@@ -88,17 +110,50 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     @Override
     public DomainObject get() throws PromiseBrokenException, InterruptedException {
         try {
-            TaskResult taskResult = future.get();
-            if (taskResult == null) {
-                throw new PromiseBrokenException("Task result is null");
+            ServiceResponse<DomainObject> serviceResponse = new ServiceResponse<>();
+            for (Future<TaskResult> futureResult : futureList) {
+                TaskResult result = futureResult.get();
+                if (result == null) {
+                    throw new PromiseBrokenException("Task result is null");
+                }
+                ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) result.getData();
+                if (!response.getIsSuccess())
+                    throw response.getException();
+                serviceResponse.addData(response.getDataList());
             }
-            triggerListeners();
+            if (responseMerger != null) {
+                return responseMerger.mergeResponse(serviceResponse.getDataList());
+            } else {
+                return serviceResponse.getDataList().get(0);
+            }
+        } catch (ExecutionException exception) {
+            promiseBrokenException = new PromiseBrokenException(exception);
+            throw new InterruptedException(exception.getMessage());
+        } catch (CancellationException exception) {
+            promiseBrokenException = new PromiseBrokenException(exception);
+            throw new PromiseBrokenException(promiseBrokenException);
+        }
+    }
 
-            ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) taskResult.getData();
-            if (!response.getIsSuccess())
-                throw response.getException();
-
-            return response.getData();
+    @Override
+    public DomainObject get(long timeout, TimeUnit timeUnit) throws PromiseBrokenException, TimeoutException, InterruptedException {
+        try {
+            ServiceResponse<DomainObject> serviceResponse = new ServiceResponse<>();
+            for (Future<TaskResult> futureResult : futureList) {
+                TaskResult result = futureResult.get(timeout, timeUnit);
+                if (result == null) {
+                    throw new PromiseBrokenException("Task result is null");
+                }
+                ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) result.getData();
+                if (!response.getIsSuccess())
+                    throw response.getException();
+                serviceResponse.addData(response.getDataList());
+            }
+            if (responseMerger != null) {
+                return responseMerger.mergeResponse(serviceResponse.getDataList());
+            } else {
+                return serviceResponse.getDataList().get(0);
+            }
         } catch (ExecutionException exception) {
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
@@ -110,7 +165,8 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
 
     public Map<String, String> getHeaders() throws PromiseBrokenException, InterruptedException {
         try {
-            TaskResult taskResult = future.get();
+            TaskResult taskResult;
+            taskResult = futureList.get(0).get();
             if (taskResult == null) {
                 throw new PromiseBrokenException("Task result is null");
             }
@@ -127,52 +183,20 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     }
 
     @Override
-    public DomainObject get(long timeout, TimeUnit timeUnit) throws PromiseBrokenException, TimeoutException, InterruptedException {
-        try {
-            TaskResult taskResult = future.get(timeout, timeUnit);
-            if (taskResult == null) {
-                throw new PromiseBrokenException("Task result is null");
-            }
-            triggerListeners();
-
-            ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) taskResult.getData();
-            if (!response.getIsSuccess())
-                throw response.getException();
-
-            return response.getData();
-        } catch (ExecutionException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-            throw new InterruptedException(exception.getMessage());
-        } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-            throw new PromiseBrokenException(promiseBrokenException);
-        }
-    }
-
-    @Override
     public synchronized void addListener(PromiseListener promiseListener) {
-        if (isRealized()) {
-            triggerListener(promiseListener);
-        } else {
-            promiseListeners.add(promiseListener);
-        }
+        throw new UnsupportedOperationException("Adding listeners is not supported");
     }
 
-    //synchronized code block to avoid race conditions when adding listener
-    private synchronized void triggerListeners() {
-        for (PromiseListener promiseListener : promiseListeners) {
-            triggerListener(promiseListener);
-        }
+
+    public void addFutureForTask(Future<TaskResult> future) {
+        futureList.add(future);
     }
 
-    private void triggerListener(PromiseListener promiseListener) {
-        if (isFullfilled()) {
-            try {
-                promiseListener.whenFullfilled(future.get());
-            } catch (Exception ignored) {
-            }
-        } else {
-            promiseListener.whenBroken(promiseBrokenException);
-        }
+    public void addFutureForTask(List<Future<TaskResult>> future) {
+        futureList.addAll(future);
+    }
+
+    public List<Future<TaskResult>> getFutureList() {
+        return futureList;
     }
 }

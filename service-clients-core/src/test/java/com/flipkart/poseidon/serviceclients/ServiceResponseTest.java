@@ -31,7 +31,7 @@ public class ServiceResponseTest {
         ServiceResponse<String> response = new ServiceResponse<>("string", new HashMap<String, String>() {{
             put("header1", "value1");
         }});
-        assertEquals(response.getData(), "string");
+        assertEquals(response.getDataList().get(0), "string");
         assertEquals(response.getHeaders().get("header1"), "value1");
         assertTrue(response.getIsSuccess());
         assertNull(response.getException());
@@ -46,7 +46,7 @@ public class ServiceResponseTest {
         assertThat(response.getException(), instanceOf(PromiseBrokenException.class));
         assertEquals(response.getHeaders().get("header1"), "value1");
         assertFalse(response.getIsSuccess());
-        assertNull(response.getData());
+        assertTrue(response.getDataList().isEmpty());
     }
 
 }

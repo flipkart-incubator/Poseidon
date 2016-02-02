@@ -87,7 +87,7 @@ public class ServiceResponseDecoderTest {
         when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
-        Assert.assertEquals("success", response.getData());
+        Assert.assertEquals("success", response.getDataList().get(0));
         Mockito.verify(mockLogger, Mockito.never());
 
     }

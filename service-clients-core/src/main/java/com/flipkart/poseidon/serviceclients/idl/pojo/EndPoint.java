@@ -31,7 +31,10 @@ public class EndPoint {
     private String[] parameters;
     private boolean requestCachingEnabled;
     private String requestObject;
+    private String requestSplitterClass;
+    private String requestParamWithLimit;
     private String responseObject;
+    private String responseMergerClass;
     private String[] description;
 
     public String getHttpMethod() {
@@ -104,6 +107,26 @@ public class EndPoint {
 
     public void setDescription(String[] description) {
         this.description = description;
+    }
+
+    public String getRequestSplitterClass() { return requestSplitterClass; }
+
+    public void setRequestSplitterClass(String requestSplitterClass) { this.requestSplitterClass = requestSplitterClass; }
+
+    public String getRequestParamWithLimit() {
+        return requestParamWithLimit;
+    }
+
+    public void setRequestParamWithLimit(String requestParamWithLimit) {
+        this.requestParamWithLimit = requestParamWithLimit;
+    }
+
+    public String getResponseMergerClass() {
+        return responseMergerClass;
+    }
+
+    public void setResponseMergerClass(String responseMergerClass) {
+        this.responseMergerClass = responseMergerClass;
     }
 
     @Override
