@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * Created by venkata.lakshmi on 16/04/15.
+ *
+ * Converts a List of responses from service to an object that client expects.
  */
 public interface ResponseMerger<T> {
 

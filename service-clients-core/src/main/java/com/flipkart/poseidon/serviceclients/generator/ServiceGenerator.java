@@ -221,7 +221,7 @@ public class ServiceGenerator {
                     block.decl(jCodeModel.ref(List.class).narrow(listClass), listClassVar, JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(matcher.group(1))));
                     JForEach forEach = new JForEach(listClass, listElement, JExpr.ref(listClassVar));
                     JInvocation invocation = createRequest(serviceIdl, jCodeModel, endPoint, forEach.body(),matcher.group(1), listElement);
-                    forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFuture")));
+                    forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFutureList")));
                     block.add(forEach);
                     block._return(JExpr.ref("wrapper"));
                     return;
@@ -231,7 +231,7 @@ public class ServiceGenerator {
                 JType returnType = jCodeModel.ref(List.class).narrow(getJType(jCodeModel, endPoint.getRequestObject()));
                 block.decl(returnType, "requestObjects", JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(getVariableName(endPoint.getRequestObject()))));
                 JForEach forEach = new JForEach(jCodeModel.ref(endPoint.getRequestObject()), "requestObject", JExpr.ref("requestObjects"));
-                forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFuture")));
+                forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFutureList")));
                 block.add(forEach);
                 block._return(JExpr.ref("wrapper"));
                 return;

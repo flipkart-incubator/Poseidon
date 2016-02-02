@@ -53,7 +53,7 @@ public class ServiceResponse<T> {
             dataList.add(data);
     }
 
-    public List<T> returnDataList() {
+    public List<T> getDataList() {
         return dataList;
     }
 

@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * Created by venkata.lakshmi on 23/04/15.
+ *
+ * Clients need to provide logic to split a requestObject into List of objects
  */
 public interface RequestSplitter<T> {
 
