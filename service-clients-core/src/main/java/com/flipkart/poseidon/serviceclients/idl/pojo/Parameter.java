@@ -24,6 +24,10 @@ import java.util.Objects;
  */
 public class Parameter {
     private String type;
+    /**
+     * This is used where the query parameter needs to have a different name than the method parameter.
+     */
+    private String name;
     private Boolean optional = false;
     private String[] description;
 
@@ -33,6 +37,14 @@ public class Parameter {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Boolean getOptional() {
