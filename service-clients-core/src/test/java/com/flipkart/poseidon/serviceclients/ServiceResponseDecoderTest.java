@@ -16,8 +16,10 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -27,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -44,11 +47,13 @@ import static org.junit.Assert.assertThat;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ServiceResponseDecoder.class, StringUtils.class})
+@PrepareForTest({ ServiceResponseDecoder.class, StringUtils.class, IOUtils.class, JavaType.class})
 public class ServiceResponseDecoderTest {
 
     ServiceResponseDecoder decoder;
     ObjectMapper mockMapper = mock(ObjectMapper.class);
+    JavaType mockJavaType = mock(JavaType.class);
+
     Class responseClass = String.class;
     Logger mockLogger;
     Map<String, Class<? extends ServiceClientException>> exceptions = new HashMap<>();
@@ -59,7 +64,7 @@ public class ServiceResponseDecoderTest {
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockMapper.constructType(responseClass), mockLogger , exceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockLogger , exceptions));
     }
 
     /**
@@ -72,15 +77,17 @@ public class ServiceResponseDecoderTest {
         StatusLine mockStatusLine = mock(StatusLine.class);
         HttpEntity mockEntity = mock(HttpEntity.class);
         InputStream stream = mock(InputStream.class);
+        mockStatic(IOUtils.class);
 
         when(mockStatusLine.getStatusCode()).thenReturn(200);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getContent()).thenReturn(stream);
-        when(mockMapper.readValue(stream, responseClass)).thenReturn("success");
+        BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
+        when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
-        Assert.assertEquals("success", response.getData());
+        Assert.assertEquals("success", response.getDataList().get(0));
         Mockito.verify(mockLogger, Mockito.never());
 
     }
@@ -122,7 +129,7 @@ public class ServiceResponseDecoderTest {
         InputStream stream = mock(InputStream.class);
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockMapper.constructType(responseClass), mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockLogger, mockExceptions));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);

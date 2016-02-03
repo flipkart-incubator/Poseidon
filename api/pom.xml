@@ -10,11 +10,11 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0</version>
     </parent>
 
     <artifactId>api</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
 
     <packaging>jar</packaging>
 
@@ -22,16 +22,20 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>core</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>container</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.flipkart.hydra</groupId>
             <artifactId>hydra-dispatcher</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 

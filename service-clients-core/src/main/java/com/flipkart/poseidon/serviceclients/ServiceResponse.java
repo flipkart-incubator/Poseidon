@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,13 +26,15 @@ import java.util.Map;
 public class ServiceResponse<T> {
 
     private boolean isSuccess;
-    private T data;
+    private List<T> dataList = new ArrayList<>();
     private Map<String, String> headers;
     private ServiceClientException exception;
 
+    public ServiceResponse() {}
+
     public ServiceResponse(T data, Map<String, String> headers) {
         this.isSuccess = true;
-        this.data = data;
+        this.dataList.add(data);
         this.headers = headers;
     }
 
@@ -39,8 +43,14 @@ public class ServiceResponse<T> {
         this.headers = headers;
     }
 
-    public T getData() {
-        return data;
+    public void addData(List<T> data) {
+        if (data != null && !data.isEmpty()) {
+            this.dataList.addAll(data);
+        }
+    }
+
+    public List<T> getDataList() {
+        return dataList;
     }
 
     public Map<String, String> getHeaders() {
