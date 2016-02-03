@@ -300,7 +300,7 @@ public class ServiceGenerator {
                 Parameter parameter = serviceIdl.getParameters().get(arg);
                 String argRef = arg;
                 if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
-                     argRef = listElementVarName;
+                    argRef = listElementVarName;
                 }
                 String paramName = Optional.ofNullable(parameter.getName()).orElse(argRef);
                 if (!parameter.getOptional()) {
