@@ -18,6 +18,7 @@ package com.flipkart.poseidon.serviceclients;
 
 import com.flipkart.phantom.task.spi.TaskResult;
 import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
+import flipkart.lego.concurrency.api.PromiseListener;
 import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -248,5 +249,81 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
         when(future1.get(timeout, timeUnit)).thenThrow(ExecutionException.class);
         exception.expect(InterruptedException.class);
         wrapper.get(timeout, timeUnit);
+    }
+
+    @Test
+    public void testGetSuccessCaseWithTimeout() throws Exception {
+        ServiceResponse<String> response1 = new ServiceResponse<>("test", new HashMap<String, String>() {{
+            put("header1", "value1");
+        }});
+
+        ServiceResponse<String> response2 = new ServiceResponse<>("test12", new HashMap<String, String>() {{
+            put("header1", "value1");
+        }});
+
+        TaskResult<ServiceResponse> result1 = new TaskResult<>(true, "response", response1);
+        TaskResult<ServiceResponse> result2 = new TaskResult<>(true, "response", response2);
+
+        when(future1.get(timeout, timeUnit)).thenReturn(result1);
+        when(future1.get()).thenReturn(result1);
+        when(future2.get(timeout, timeUnit)).thenReturn(result2);
+
+        String answer = (String) wrapper.get(timeout, timeUnit);
+        assertEquals("test", answer);
+        assertEquals(wrapper.getHeaders().get("header1"), "value1");
+    }
+
+    @Test
+    public void testGetSuccessCaseWithMergerWithTimeout() throws Exception {
+        ResponseMerger merger = mock(ResponseMerger.class);
+        FutureTaskResultToDomainObjectPromiseWrapper wrapper = spy(new FutureTaskResultToDomainObjectPromiseWrapper(merger));
+        wrapper.addFutureForTask(future1);
+        wrapper.addFutureForTask(future2);
+        ServiceResponse<String> response1 = new ServiceResponse<>("test", new HashMap<String, String>() {{
+            put("header1", "value1");
+        }});
+
+        ServiceResponse<String> response2 = new ServiceResponse<>("test12", new HashMap<String, String>() {{
+            put("header1", "value1");
+        }});
+
+        TaskResult<ServiceResponse> result1 = new TaskResult<>(true, "response", response1);
+        TaskResult<ServiceResponse> result2 = new TaskResult<>(true, "response", response2);
+
+        List<String> responses = new ArrayList<>();
+        responses.add("test");
+        responses.add("test12");
+        when(merger.mergeResponse(responses)).thenReturn("test");
+
+        when(future1.get(timeout, timeUnit)).thenReturn(result1);
+        when(future1.get()).thenReturn(result1);
+        when(future2.get(timeout, timeUnit)).thenReturn(result2);
+        String answer = (String) wrapper.get(timeout, timeUnit);
+        assertEquals("test", answer);
+        assertEquals(wrapper.getHeaders().get("header1"), "value1");
+        Mockito.verify(merger).mergeResponse(responses);
+    }
+
+    @Test
+    public void testGetExceptionCaseWithTimeout() throws Exception {
+        ServiceResponse response = new ServiceResponse(new ServiceClientException("test"), new HashMap<String, String>() {{
+            put("header1", "value1");
+        }});
+        TaskResult<ServiceResponse> result = new TaskResult<>(true, "response", response);
+        when(future1.get(timeout, timeUnit)).thenReturn(result);
+        when(future1.get()).thenReturn(result);
+        exception.expect(ServiceClientException.class);
+        exception.expect(PromiseBrokenException.class);
+        exception.expectMessage(equalTo("test"));
+        assertEquals(wrapper.getHeaders().get("header1"), "value1");
+        wrapper.get(timeout, timeUnit);
+    }
+
+    @Test
+    public void testAddListeners() throws Exception {
+        PromiseListener listener = mock(PromiseListener.class);
+        exception.expect(UnsupportedOperationException.class);
+        exception.expectMessage(equalTo("Adding listeners is not supported"));
+        wrapper.addListener(listener);
     }
 }
