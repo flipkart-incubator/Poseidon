@@ -302,7 +302,7 @@ public class ServiceGenerator {
                 if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
                     argRef = listElementVarName;
                 }
-                String paramName = Optional.ofNullable(parameter.getName()).orElse(argRef);
+                String paramName = Optional.ofNullable(parameter.getName()).orElse(arg);
                 if (!parameter.getOptional()) {
                     if (parameter.getType().equals("String")) {
                         invocation.arg(JExpr.lit(paramName + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(argRef))));
