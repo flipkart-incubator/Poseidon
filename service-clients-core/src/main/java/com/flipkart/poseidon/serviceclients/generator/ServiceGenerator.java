@@ -302,20 +302,21 @@ public class ServiceGenerator {
                 if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
                     argRef = listElementVarName;
                 }
+                String paramName = Optional.ofNullable(parameter.getName()).orElse(arg);
                 if (!parameter.getOptional()) {
                     if (parameter.getType().equals("String")) {
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(argRef))));
+                        invocation.arg(JExpr.lit(paramName + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(argRef))));
                     } else if (parameter.getType().endsWith("[]")) {
                         JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(argRef));
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
+                        invocation.arg(JExpr.lit(paramName + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
                     } else if (parameter.getType().startsWith("java.util.List")) {
                         JExpression joinerExpression = jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(argRef)).arg(",");
-                        invocation.arg(JExpr.lit(arg + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
+                        invocation.arg(JExpr.lit(paramName + "=").plus(JExpr.invoke("encodeUrl").arg(joinerExpression)));
                     } else {
-                        invocation.arg(JExpr.lit(arg + "=" ).plus(JExpr.ref(argRef)));
+                        invocation.arg(JExpr.lit(paramName + "=" ).plus(JExpr.ref(argRef)));
                     }
                 } else {
-                    invocation.arg(JExpr.invoke("getOptURI").arg(arg).arg(JExpr.ref(argRef)));
+                    invocation.arg(JExpr.invoke("getOptURI").arg(paramName).arg(JExpr.ref(argRef)));
                 }
             }
             block.assign(JExpr.ref("uri"), JExpr.ref("uri").plus(JExpr.invoke("getQueryURI").arg(invocation)));

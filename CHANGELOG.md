@@ -1,3 +1,6 @@
+## 3.1.0-SNAPSHOT (Feb 3, 2016)
+- Service IDL - Query parameter name can be different from generated java variable name  
+
 ## 3.0.0 (Feb 2, 2016)
 - Included snapshot version fixes
 - Batching support in service clients
