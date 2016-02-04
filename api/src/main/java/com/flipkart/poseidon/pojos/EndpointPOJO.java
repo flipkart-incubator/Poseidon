@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.pojos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import java.util.Map;
 public class EndpointPOJO {
 
     private String url;
+    private HttpMethod httpMethod;
     private long timeout;
     private boolean deprecated;
     private ParamsPOJO params;
@@ -34,6 +36,10 @@ public class EndpointPOJO {
 
     public String getUrl() {
         return url;
+    }
+
+    public HttpMethod getHttpMethod() {
+        return httpMethod;
     }
 
     public long getTimeout() {
