@@ -61,7 +61,15 @@ public class APILoader {
                     logger.error("******* More than one Buildable defined for api: \"" + pojo.getUrl()+"\", all except first occurrences will be ignored. *******");
                 } else {
                     APIBuildable apiBuildable = new APIBuildable(legoSet, pojo, configuration, getCalls(pojo.getTasks()));
-                    buildables.put(ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString()), apiBuildable);
+
+                    String completeUrl;
+                    if (pojo.getHttpMethod() != null) {
+                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
+                    } else {
+                        // to remove extra slashes in url
+                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), null);
+                    }
+                    buildables.put(completeUrl, apiBuildable);
                 }
             } catch (Throwable error) {
                 logger.error("Buildable loading failed for atleast one api: " + pojo.getUrl(), error);
