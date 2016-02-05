@@ -326,4 +326,25 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
         exception.expectMessage(equalTo("Adding listeners is not supported"));
         wrapper.addListener(listener);
     }
+
+    @Test
+    public void testGetSuccessCaseWithEmptyResponse() throws Exception {
+        wrapper.addFutureForTask(future1);
+        wrapper.addFutureForTask(future2);
+
+        HashMap<String, String> headers = new HashMap<String, String>() {{
+            put("header1", "value1");
+        }};
+        ServiceResponse<String> response1 = new ServiceResponse<>((String) null, headers);
+
+        ServiceResponse<String> response2 = new ServiceResponse<>((String) null, headers);
+
+        TaskResult<ServiceResponse> result1 = new TaskResult<>(true, "response", response1);
+        TaskResult<ServiceResponse> result2 = new TaskResult<>(true, "response", response2);
+
+        when(future1.get()).thenReturn(result1);
+        when(future2.get()).thenReturn(result2);
+        String answer = (String) wrapper.get();
+        assertNull(answer);
+    }
 }

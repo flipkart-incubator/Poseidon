@@ -16,9 +16,11 @@
 
 package com.flipkart.poseidon.api;
 
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.ds.trie.Trie;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
+import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -39,7 +41,7 @@ public abstract class APILegoSet extends PoseidonLegoSet {
 
     @Override
     public void updateBuildables(Map<String, Buildable> buildableMap) {
-        for (Map.Entry<String, Buildable> entry: buildableMap.entrySet()) {
+        for (Map.Entry<String, Buildable> entry : buildableMap.entrySet()) {
             String url = entry.getKey();
             String[] keys = getKeysForTrie(url);
             for (int i = 0; i < keys.length; i++) {
@@ -57,11 +59,16 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     @Override
     public Buildable getBuildable(Request request) throws LegoSetException, ElementNotFoundException {
         PoseidonRequest poseidonRequest = (PoseidonRequest) request;
-        Buildable buildable = trie.get(getKeysForTrie(poseidonRequest.getUrl()));
-        if (buildable == null) {
-            throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
-        }
+        String httpMethod = poseidonRequest.getAttribute(RequestConstants.METHOD).toString();
+        String completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), httpMethod);
+        Buildable buildable = trie.get(getKeysForTrie(completeUrl));
 
+        if (buildable == null) {
+            buildable = trie.get(getKeysForTrie(poseidonRequest.getUrl()));
+            if (buildable == null) {
+                throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
+            }
+        }
         return buildable;
     }
 

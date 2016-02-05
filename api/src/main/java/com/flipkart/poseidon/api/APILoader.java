@@ -23,6 +23,7 @@ import com.flipkart.poseidon.internal.APITask;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
+import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import org.slf4j.Logger;
 
@@ -60,7 +61,7 @@ public class APILoader {
                     logger.error("******* More than one Buildable defined for api: \"" + pojo.getUrl()+"\", all except first occurrences will be ignored. *******");
                 } else {
                     APIBuildable apiBuildable = new APIBuildable(legoSet, pojo, configuration, getCalls(pojo.getTasks()));
-                    buildables.put(pojo.getUrl(), apiBuildable);
+                    buildables.put(ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString()), apiBuildable);
                 }
             } catch (Throwable error) {
                 logger.error("Buildable loading failed for atleast one api: " + pojo.getUrl(), error);
