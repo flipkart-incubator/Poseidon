@@ -59,8 +59,12 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     @Override
     public Buildable getBuildable(Request request) throws LegoSetException, ElementNotFoundException {
         PoseidonRequest poseidonRequest = (PoseidonRequest) request;
-        String httpMethod = poseidonRequest.getAttribute(RequestConstants.METHOD).toString();
-        String completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), httpMethod);
+
+        String completeUrl = poseidonRequest.getUrl();
+        if (poseidonRequest.getAttribute(RequestConstants.METHOD) != null) {
+            String httpMethod = poseidonRequest.getAttribute(RequestConstants.METHOD).toString();
+            completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), httpMethod);
+        }
         Buildable buildable = trie.get(getKeysForTrie(completeUrl));
 
         if (buildable == null) {
