@@ -1,5 +1,6 @@
-## 3.1.0-SNAPSHOT (Feb 3, 2016)
-- Service IDL - Query parameter name can be different from generated java variable name  
+## 3.1.0-SNAPSHOT (Feb 5, 2016)
+- Service IDL - Query parameter name can be different from generated java variable name
+- API IDL - httpMethod can be defined optionally
 
 ## 3.0.0 (Feb 2, 2016)
 - Included snapshot version fixes
