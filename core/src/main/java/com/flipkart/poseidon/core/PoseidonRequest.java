@@ -18,7 +18,6 @@ package com.flipkart.poseidon.core;
 
 import com.google.common.collect.ImmutableMap;
 import flipkart.lego.api.entities.Request;
-import org.springframework.http.HttpMethod;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -31,14 +30,12 @@ public class PoseidonRequest implements Request {
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private final String url;
-    private final HttpMethod httpMethod;
     private final ImmutableMap<String, Cookie> cookies;
     private final ImmutableMap<String, Object> headers;
 
 
-    public PoseidonRequest(HttpServletRequest httpRequest, HttpMethod method) {
+    public PoseidonRequest(HttpServletRequest httpRequest) {
         this.url = httpRequest.getPathInfo();
-        this.httpMethod = method;
         headers = extractHeaders(httpRequest);
         cookies = extractCookies(httpRequest);
 
@@ -49,10 +46,6 @@ public class PoseidonRequest implements Request {
 
     public String getUrl() {
         return url;
-    }
-
-    public HttpMethod getHttpMethod() {
-        return httpMethod;
     }
 
     @Override

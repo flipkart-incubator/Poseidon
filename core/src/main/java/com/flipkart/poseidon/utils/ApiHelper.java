@@ -16,8 +16,6 @@
 
 package com.flipkart.poseidon.utils;
 
-import org.springframework.http.HttpMethod;
-
 /**
  * Created by venkata.lakshmi on 04/02/16.
  *
@@ -25,10 +23,11 @@ import org.springframework.http.HttpMethod;
  */
 public class ApiHelper {
 
-    public static String getUrlWithHttpMethod(String url, HttpMethod httpMethod) {
+    public static String getUrlWithHttpMethod(String url, String httpMethod) {
         if (httpMethod == null) {
             return url;
         }
-        return String.format("%s/_%s_", url, httpMethod);
+        // remove the extra slashes passed in the url
+        return String.format("%s/_%s_", url, httpMethod).replaceAll("[/]{2,}", "/");
     }
 }

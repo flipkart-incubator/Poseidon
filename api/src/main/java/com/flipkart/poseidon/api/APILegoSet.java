@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.api;
 
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.ds.trie.Trie;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
@@ -58,13 +59,16 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     @Override
     public Buildable getBuildable(Request request) throws LegoSetException, ElementNotFoundException {
         PoseidonRequest poseidonRequest = (PoseidonRequest) request;
-        String completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), poseidonRequest.getHttpMethod());
+        String httpMethod = poseidonRequest.getAttribute(RequestConstants.METHOD).toString();
+        String completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), httpMethod);
         Buildable buildable = trie.get(getKeysForTrie(completeUrl));
-        buildable = (buildable == null) ? trie.get(getKeysForTrie(poseidonRequest.getUrl())) : buildable;
-        if (buildable == null) {
-            throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
-        }
 
+        if (buildable == null) {
+            buildable = trie.get(getKeysForTrie(poseidonRequest.getUrl()));
+            if (buildable == null) {
+                throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
+            }
+        }
         return buildable;
     }
 

@@ -103,7 +103,7 @@ public class PoseidonServlet extends HttpServlet {
     protected void doRequest(HttpMethod method, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {
         setRequestContext(httpRequest);
 
-        PoseidonRequest request = new PoseidonRequest(httpRequest, method);
+        PoseidonRequest request = new PoseidonRequest(httpRequest);
         request.setAttribute(METHOD, method);
 
         if (ServletFileUpload.isMultipartContent(httpRequest)) {
