@@ -176,7 +176,7 @@ public class ParamValidationFilter implements Filter {
 
     @Override
     public String getShortDescription() {
-        return "Internal parameter filter for NPS to validate and extract the mentioned parameters from the request.";
+        return "Internal parameter filter to validate and extract the mentioned parameters from the request.";
     }
 
     @Override

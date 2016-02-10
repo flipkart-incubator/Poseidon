@@ -21,7 +21,7 @@ import com.flipkart.poseidon.tracing.DynamicSampleRateTraceFilter;
 import java.util.Map;
 
 /**
- * Configuration to be provided by the application (like NPS, FQuick)
+ * Configuration to be provided by the application
  * to control distributed tracing feature provided by the Poseidon container.
  * Refer {@link DynamicSampleRateTraceFilter} to find how this config is interpreted
  *
