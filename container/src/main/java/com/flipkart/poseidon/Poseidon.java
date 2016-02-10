@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.phantom.runtime.impl.jetty.filter.ServletTraceFilter;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
+import com.flipkart.poseidon.api.JettyConfiguration;
 import com.flipkart.poseidon.core.PoseidonServlet;
 import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
@@ -48,6 +49,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -88,7 +92,22 @@ public class Poseidon {
 
     public void run() {
         try {
-            Server server = new Server(configuration.getPort());
+            JettyConfiguration jettyConfiguration = configuration.getJettyConfiguration();
+            Server server;
+            if (jettyConfiguration != null) {
+                // Use a bounded queue over jetty's default unbounded queue
+                // https://wiki.eclipse.org/Jetty/Howto/High_Load#Thread_Pool
+                BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(jettyConfiguration.getTaskQueueSize());
+                QueuedThreadPool threadPool = new QueuedThreadPool(jettyConfiguration.getMaxThreads(),
+                        jettyConfiguration.getMinThreads(), jettyConfiguration.getThreadIdleTimeout(), queue);
+                server = new Server(threadPool);
+                ServerConnector connector = new ServerConnector(server, jettyConfiguration.getAcceptors(), jettyConfiguration.getSelectors());
+                connector.setPort(configuration.getPort());
+                connector.setAcceptQueueSize(jettyConfiguration.getAcceptQueueSize());
+                server.setConnectors(new Connector[] { connector });
+            } else {
+                server = new Server(configuration.getPort());
+            }
             if (!configuration.sendServerVersion()) {
                 disableSendingServerVersion(server);
             }

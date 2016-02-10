@@ -1,3 +1,7 @@
+## 3.1.0 (Feb 10, 2016)
+- Included snapshot version fixes
+- Jetty configuration can be tuned by applications
+
 ## 3.1.0-SNAPSHOT (Feb 5, 2016)
 - Service IDL - Query parameter name can be different from generated java variable name
 - API IDL - httpMethod can be defined optionally

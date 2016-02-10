@@ -35,4 +35,9 @@ public interface Configuration {
     public String getAppName();
 
     public TracingConfiguration getTracingConfiguration();
+
+    /*
+     * Return null to use default values at framework
+     */
+    public JettyConfiguration getJettyConfiguration();
 }
