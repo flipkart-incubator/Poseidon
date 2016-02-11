@@ -1,3 +1,6 @@
+## 3.1.1-SNAPSHOT (Feb 11, 2016)
+- Made response object available at response filters
+
 ## 3.1.0 (Feb 10, 2016)
 - Included snapshot version fixes
 - Jetty configuration can be tuned by applications
