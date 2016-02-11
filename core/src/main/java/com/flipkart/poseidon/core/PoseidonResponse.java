@@ -33,6 +33,7 @@ public class PoseidonResponse implements Response {
     private final List<Object> mappedBeans = new ArrayList<>();
     private Object response;
     private MediaType contentType;
+    private int statusCode;
 
     @Override
     public Object getResponse() {
@@ -50,6 +51,14 @@ public class PoseidonResponse implements Response {
 
     public void setContentType(MediaType contentType) {
         this.contentType = contentType;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     public void addAttribute(String key, String value) {

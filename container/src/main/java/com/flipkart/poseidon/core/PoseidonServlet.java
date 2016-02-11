@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
@@ -185,15 +186,28 @@ public class PoseidonServlet extends HttpServlet {
         }
     }
 
-    private void buildResponse(PoseidonRequest request, PoseidonResponse response, HttpServletResponse httpResponse) throws BadRequestException, ElementNotFoundException, InternalErrorException, ProcessingException, IOException {
-        application.handleRequest(request, response);
+    private void buildResponse(PoseidonRequest request, PoseidonResponse poseidonResponse, HttpServletResponse httpResponse) throws BadRequestException, ElementNotFoundException, InternalErrorException, ProcessingException, IOException {
+        application.handleRequest(request, poseidonResponse);
 
-        setHeaders(response, httpResponse);
-        setCookies(response, httpResponse);
+        setHeaders(poseidonResponse, httpResponse);
+        setCookies(poseidonResponse, httpResponse);
 
-        httpResponse.setContentType(response.getContentType().toString());
-        httpResponse.setStatus(SC_OK);
-        httpResponse.getWriter().println((String) response.getResponse());
+        httpResponse.setContentType(poseidonResponse.getContentType().toString());
+        int statusCode = poseidonResponse.getStatusCode();
+        if (statusCode < 100) {
+            statusCode = SC_OK;
+        }
+        httpResponse.setStatus(statusCode);
+        Object responseObj = poseidonResponse.getResponse();
+        String responseStr = "";
+        if (responseObj != null) {
+            if (responseObj instanceof String) {
+                responseStr = (String) responseObj;
+            } else {
+                responseStr = getMapper().writeValueAsString(responseObj);
+            }
+        }
+        httpResponse.getWriter().println(responseStr);
     }
 
     private void redirect(PoseidonResponse response, HttpServletResponse httpResponse) {

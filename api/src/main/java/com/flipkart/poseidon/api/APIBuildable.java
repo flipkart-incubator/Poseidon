@@ -79,13 +79,8 @@ public class APIBuildable implements Buildable {
         poseidonResponse.setContentType(JSON_UTF_8);
         poseidonResponse.addMappedBeans(mappedBeans);
 
-        try {
-            Object dsResponse = model.get(RESPONSE_KEY);
-            String responseStr = dsResponse == null ? "" : getMapper().writeValueAsString(dsResponse);
-            poseidonResponse.setResponse(responseStr);
-        } catch (IOException e) {
-            throw new InternalErrorException(e);
-        }
+        Object dsResponse = model.get(RESPONSE_KEY);
+        poseidonResponse.setResponse(dsResponse);
     }
 
     @Override
