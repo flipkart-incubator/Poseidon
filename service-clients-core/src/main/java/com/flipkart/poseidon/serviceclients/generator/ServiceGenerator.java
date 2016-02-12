@@ -47,6 +47,8 @@ import static com.flipkart.poseidon.serviceclients.CallableNameHelper.canonicalN
 public class ServiceGenerator {
     private static final ServiceGenerator SERVICE_GENERATOR = new ServiceGenerator();
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("\\{parameters\\.(.*?)\\}");
+    private static final String REQUEST_OBJECT_VAR_NAME = "requestObject";
+    private static final String REQUEST_OBJECT_LOOP_VAR_NAME = "requestObject1";
 
     private ServiceGenerator() {}
 
@@ -79,10 +81,6 @@ public class ServiceGenerator {
         } catch(ClassNotFoundException e) {
             return jCodeModel.directClass(name);
         }
-    }
-
-    private String getVariableName(String className) {
-        return Introspector.decapitalize(className.replace("[", "").replace("]", ""));
     }
 
     private Map<String, String> getAllHeaders(ServiceIDL serviceIdl, EndPoint endPoint) {
@@ -185,9 +183,8 @@ public class ServiceGenerator {
                 }
             }
             if (endPoint.getRequestObject() != null) {
-                String paramName = getVariableName(endPoint.getRequestObject());
-                method.param(getJType(jCodeModel, endPoint.getRequestObject()), paramName);
-                methodComment.addParam(paramName);
+                method.param(getJType(jCodeModel, endPoint.getRequestObject()), REQUEST_OBJECT_VAR_NAME);
+                methodComment.addParam(REQUEST_OBJECT_VAR_NAME);
             }
             if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
                 JCommentPart returnComment = methodComment.addReturn();
@@ -229,8 +226,8 @@ public class ServiceGenerator {
             } else if (endPoint.getRequestSplitterClass() != null) {
                 JInvocation invocation = createRequest(serviceIdl, jCodeModel, endPoint, block, null, null);
                 JType returnType = jCodeModel.ref(List.class).narrow(getJType(jCodeModel, endPoint.getRequestObject()));
-                block.decl(returnType, "requestObjects", JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(getVariableName(endPoint.getRequestObject()))));
-                JForEach forEach = new JForEach(jCodeModel.ref(endPoint.getRequestObject()), "requestObject", JExpr.ref("requestObjects"));
+                block.decl(returnType, "requestObjects", JExpr.ref("requestSplitter").invoke("split").arg(JExpr.ref(REQUEST_OBJECT_VAR_NAME)));
+                JForEach forEach = new JForEach(getJType(jCodeModel, endPoint.getRequestObject()), REQUEST_OBJECT_LOOP_VAR_NAME, JExpr.ref("requestObjects"));
                 forEach.body().add(JExpr.ref("wrapper").invoke("addFutureForTask").arg(invocation.invoke("getFutureList")));
                 block.add(forEach);
                 block._return(JExpr.ref("wrapper"));
@@ -369,9 +366,9 @@ public class ServiceGenerator {
             if (endPoint.getRequestObject() != null && !endPoint.getRequestObject().isEmpty()) {
                 String requestObjectName;
                 if (endPoint.getRequestSplitterClass() != null && endPoint.getRequestParamWithLimit() == null) {
-                    requestObjectName = "requestObject";
+                    requestObjectName = REQUEST_OBJECT_LOOP_VAR_NAME;
                 } else {
-                    requestObjectName = getVariableName(endPoint.getRequestObject());
+                    requestObjectName = REQUEST_OBJECT_VAR_NAME;
                 }
                 invocation.arg(JExpr.ref(requestObjectName));
             } else {
