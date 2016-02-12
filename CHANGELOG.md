@@ -1,5 +1,6 @@
-## 3.1.1-SNAPSHOT (Feb 11, 2016)
+## 3.1.1-SNAPSHOT (Feb 12, 2016)
 - Made response object available at response filters
+- Service IDL - when requestObject is a java generic type, generated code wasn't compiling
 
 ## 3.1.0 (Feb 10, 2016)
 - Included snapshot version fixes
