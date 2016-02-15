@@ -31,7 +31,7 @@ public class PoseidonRequest implements Request {
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private final String url;
     private final ImmutableMap<String, Cookie> cookies;
-    private final ImmutableMap<String, Object> headers;
+    private final ImmutableMap<String, String> headers;
 
 
     public PoseidonRequest(HttpServletRequest httpRequest) {
@@ -76,8 +76,8 @@ public class PoseidonRequest implements Request {
         return attributes.containsKey(key);
     }
 
-    private ImmutableMap<String, Object> extractHeaders(HttpServletRequest httpServletRequest) {
-        Map<String, Object> headers = new HashMap<>();
+    private ImmutableMap<String, String> extractHeaders(HttpServletRequest httpServletRequest) {
+        Map<String, String> headers = new HashMap<>();
         Enumeration headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String key = (String) headerNames.nextElement();
@@ -105,7 +105,7 @@ public class PoseidonRequest implements Request {
         return cloneCookie(cookies.get(key));
     }
 
-    public Object getHeader(String key) {
+    public String getHeader(String key) {
         return headers.get(key);
     }
 

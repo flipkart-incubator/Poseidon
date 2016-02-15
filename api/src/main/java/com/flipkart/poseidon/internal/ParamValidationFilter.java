@@ -78,7 +78,7 @@ public class ParamValidationFilter implements Filter {
                 boolean isPathParam = param.isPathparam();
                 Object value = null;
                 if(isHeader) {
-                    Object attribute = poseidonRequest.getHeader(name);
+                    String attribute = poseidonRequest.getHeader(name);
                     if (failOnMissingValue && attribute == null) {
                         throw new BadRequestException("Missing header : " + name);
                     }
