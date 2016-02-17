@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.api;
 
+import com.flipkart.poseidon.mappers.ExceptionMapper;
+
 public interface Configuration {
 
     public int getPort();
@@ -40,4 +42,6 @@ public interface Configuration {
      * Return null to use default values at framework
      */
     public JettyConfiguration getJettyConfiguration();
+
+    public ExceptionMapper getExceptionMapper();
 }

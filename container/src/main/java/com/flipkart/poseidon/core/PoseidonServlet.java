@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.core;
 
 import com.flipkart.poseidon.api.Application;
+import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.google.common.net.MediaType;
@@ -42,14 +43,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
-import static com.flipkart.poseidon.constants.RequestConstants.*;
 
 public class PoseidonServlet extends HttpServlet {
 
@@ -57,9 +59,11 @@ public class PoseidonServlet extends HttpServlet {
     private final Application application;
     private final ExecutorService datasourceTPE;
     private final ExecutorService filterTPE;
+    private final Configuration configuration;
 
-    public PoseidonServlet(Application application, ExecutorService datasourceTPE, ExecutorService filterTPE) {
+    public PoseidonServlet(Application application, Configuration configuration, ExecutorService datasourceTPE, ExecutorService filterTPE) {
         this.application = application;
+        this.configuration = configuration;
         this.datasourceTPE = datasourceTPE;
         this.filterTPE = filterTPE;
 
@@ -245,24 +249,25 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void processErrorResponse(int statusCode, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
-        MediaType contentType = application.getDefaultMediaType();
-        String errorMsg = "";
-        Throwable generatedException = ExceptionUtils.getRootCause(throwable);
+        if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable), httpResponse)) {
+            MediaType contentType = application.getDefaultMediaType();
+            String errorMsg = "";
+            Throwable generatedException = ExceptionUtils.getRootCause(throwable);
 
-        if (generatedException != null && generatedException instanceof DataSourceException) {
-            DataSourceException dsException = (DataSourceException) generatedException;
-            if (dsException.getResponse() != null) {
-                errorMsg = ObjectMapperHelper.getMapper().writeValueAsString(dsException.getResponse());
+            if (generatedException != null && generatedException instanceof DataSourceException) {
+                DataSourceException dsException = (DataSourceException) generatedException;
+                if (dsException.getResponse() != null) {
+                    errorMsg = ObjectMapperHelper.getMapper().writeValueAsString(dsException.getResponse());
+                }
+                if (dsException.getStatusCode() > 0) {
+                    statusCode = dsException.getStatusCode();
+                }
+            } else {
+                errorMsg = throwable.getMessage();
             }
-            if (dsException.getStatusCode() > 0) {
-                statusCode = dsException.getStatusCode();
-            }
-        } else {
-            errorMsg = throwable.getMessage();
+            httpResponse.setContentType(contentType.toString());
+            httpResponse.setStatus(statusCode);
+            httpResponse.getWriter().println(errorMsg);
         }
-
-        httpResponse.setContentType(contentType.toString());
-        httpResponse.setStatus(statusCode);
-        httpResponse.getWriter().println(errorMsg);
     }
 }
