@@ -249,10 +249,10 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void processErrorResponse(int statusCode, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
-        if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable), httpResponse)) {
+        Throwable generatedException = Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable);
+        if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(generatedException, httpResponse)) {
             MediaType contentType = application.getDefaultMediaType();
             String errorMsg = "";
-            Throwable generatedException = ExceptionUtils.getRootCause(throwable);
 
             if (generatedException != null && generatedException instanceof DataSourceException) {
                 DataSourceException dsException = (DataSourceException) generatedException;
