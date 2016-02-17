@@ -1,4 +1,4 @@
-package com.flipkart.poseidon.mappers;
+package com.flipkart.poseidon.api;
 
 import javax.servlet.http.HttpServletResponse;
 

@@ -16,8 +16,6 @@
 
 package com.flipkart.poseidon.api;
 
-import com.flipkart.poseidon.mappers.ExceptionMapper;
-
 public interface Configuration {
 
     public int getPort();
