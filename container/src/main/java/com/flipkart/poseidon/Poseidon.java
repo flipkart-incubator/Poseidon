@@ -213,7 +213,7 @@ public class Poseidon {
     }
 
     private PoseidonServlet getPoseidonServlet() {
-        return new PoseidonServlet(application, getDataSourceExecutor(), getFilterExecutor());
+        return new PoseidonServlet(application, configuration, getDataSourceExecutor(), getFilterExecutor());
     }
 
     private ExecutorService getDataSourceExecutor() {

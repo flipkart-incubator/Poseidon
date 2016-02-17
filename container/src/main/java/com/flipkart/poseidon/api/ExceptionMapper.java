@@ -16,30 +16,19 @@
 
 package com.flipkart.poseidon.api;
 
-public interface Configuration {
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-    public int getPort();
-
-    public boolean sendServerVersion();
-
-    public String getRewriteFilePath();
-
-    public String getLogbackAccessPath();
-
-    public String getRotationStatusFilePath();
-
-    public String getApiFilesPath();
-
-    public String[] getFilterIds();
-
-    public String getAppName();
-
-    public TracingConfiguration getTracingConfiguration();
-
+/**
+ * This can be used to provide custom response handling for exceptions
+ *
+ * Created by shrey.garg on 16/02/16.
+ */
+public interface ExceptionMapper {
     /*
-     * Return null to use default values at framework
+     * This method provides the root cause of the Throwable thrown by the application,
+     * which can be used to modify the response (Status code, response body etc).
+     * If the response has been modified, then the method should return true, false otherwise.
      */
-    public JettyConfiguration getJettyConfiguration();
-
-    public ExceptionMapper getExceptionMapper();
+    boolean map(Throwable e, HttpServletResponse response) throws IOException;
 }
