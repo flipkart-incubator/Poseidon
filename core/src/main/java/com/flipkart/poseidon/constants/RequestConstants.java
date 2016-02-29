@@ -25,6 +25,7 @@ public class RequestConstants {
     public static final String REDIRECT_URL = "redirectURL";
     public static final String REQUEST_ID = "requestId";
     public static final String IS_PERF_TEST = "isPerfTest";
+    public static final String SOURCE_ADDRESS = "sourceAddress";
     public static final String FILE_UPLOAD_TMP_DIR = "/tmp";
     public static final String PARAMS = "params";
 

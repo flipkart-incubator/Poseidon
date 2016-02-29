@@ -150,6 +150,7 @@ public class PoseidonServlet extends HttpServlet {
         RequestContext.set(METHOD, httpServletRequest.getMethod());
         RequestContext.set(REQUEST_ID, getRequestId(httpServletRequest));
         RequestContext.set(IS_PERF_TEST, isPerfTest(httpServletRequest));
+        RequestContext.set(SOURCE_ADDRESS, httpServletRequest.getRemoteAddr());
     }
 
     private String getRequestId(HttpServletRequest httpServletRequest) {
