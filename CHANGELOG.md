@@ -5,6 +5,7 @@
 - Exception mapper to map exceptions to http response
 - Made remote address accessible through RequestContext
 - Upgraded phantom to 1.4.4
+- Bug fix - Service clients: null for optional header was sent as "null" 
 
 ## 3.1.0 (Feb 10, 2016)
 - Included snapshot version fixes
