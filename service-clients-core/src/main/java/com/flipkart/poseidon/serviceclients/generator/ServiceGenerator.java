@@ -327,16 +327,21 @@ public class ServiceGenerator {
             for (Map.Entry<String, String> headerMapEntry : headersMap.entrySet()) {
                 String key = headerMapEntry.getKey();
                 String value = headerMapEntry.getValue();
-                JInvocation invocation = block.invoke(JExpr.ref("headersMap"), "put").arg(key);
+                JInvocation invocation = JExpr.invoke(JExpr.ref("headersMap"), "put").arg(key);
                 matcher = PARAMETERS_PATTERN.matcher(value);
-                boolean matchFound = false;
                 if (matcher.find()) {
                     String paramName = matcher.group(1);
                     invocation.arg(jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(paramName)));
-                    matchFound = true;
-                }
-                if (!matchFound)
+                    Parameter parameter = serviceIdl.getParameters().get(paramName);
+                    if (parameter.getOptional()) {
+                        block._if(JExpr.ref(paramName).ne(JExpr._null()))._then().add(invocation);
+                    } else {
+                        block.add(invocation);
+                    }
+                } else {
                     invocation.arg(value);
+                    block.add(invocation);
+                }
             }
         }
 
