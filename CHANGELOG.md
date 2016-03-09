@@ -1,9 +1,10 @@
-## 3.1.1-SNAPSHOT (Feb 29, 2016)
+## 3.1.1-SNAPSHOT (Mar 9, 2016)
 - Made response object available at response filters
 - Service IDL - when requestObject is a java generic type, generated code wasn't compiling
 - PoseidonRequest - headers is a map of String to String instead of String to Object
 - Exception mapper to map exceptions to http response
 - Made remote address accessible through RequestContext
+- Upgraded phantom to 1.4.4
 
 ## 3.1.0 (Feb 10, 2016)
 - Included snapshot version fixes
