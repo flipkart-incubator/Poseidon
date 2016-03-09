@@ -153,7 +153,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
      * @return
      */
     @Override
-    public <S> TaskResult execute(TaskContext taskContext, String command, Map<String, String> params, S data) {
+    public <T, S> TaskResult<T> execute(TaskContext taskContext, String command, Map<String, String> params, S data) {
 
         Map<String,String> requestHeaders = getRequestHeaders(params);
 
@@ -189,7 +189,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
 
     /** interface method implementation */
     @Override
-    public <S> TaskResult getFallBack(TaskContext taskContext, String command, Map<String, String> params, S data) {
+    public <T, S> TaskResult<T> getFallBack(TaskContext taskContext, String command, Map<String, String> params, S data) {
         return null;
     }
 
