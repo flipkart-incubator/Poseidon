@@ -96,13 +96,17 @@ public abstract class PoseidonLegoSet implements LegoSet {
     }
 
     public DataSource getDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
+        DataSource dataSource = getContextLessDataSource(id, request);
+        return wrapDataSource(dataSource);
+    }
+
+    protected DataSource getContextLessDataSource(String id, Request request) throws ElementNotFoundException, LegoSetException {
         if (!dataSources.containsKey(id)) {
             throw new ElementNotFoundException("Unable to find DataSource for provided id = " + id);
         }
 
         try {
-            DataSource dataSource = dataSources.get(id).newInstance(this, request);
-            return wrapDataSource(dataSource);
+            return dataSources.get(id).newInstance(this, request);
         } catch (Exception e) {
             throw new LegoSetException("Unable to instantiate DataSource for provided id = " + id, e);
         }
