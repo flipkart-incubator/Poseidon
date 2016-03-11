@@ -77,7 +77,7 @@ public class APIManager {
                 File file = entry.toFile();
                 if (file.isDirectory()) {
                     scanAndAdd(entry, validConfigs);
-                    return;
+                    continue;
                 }
                 if ("json".equals(FilenameUtils.getExtension(file.getName()))) {
                     try {
