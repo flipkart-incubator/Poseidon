@@ -35,6 +35,7 @@ public class EndPoint {
     private String requestParamWithLimit;
     private String responseObject;
     private String responseMergerClass;
+    private String errorResponseObject;
     private String[] description;
 
     public String getHttpMethod() {
@@ -99,6 +100,14 @@ public class EndPoint {
 
     public void setResponseObject(String responseObject) {
         this.responseObject = responseObject;
+    }
+
+    public String getErrorResponseObject() {
+        return errorResponseObject;
+    }
+
+    public void setErrorResponseObject(String errorResponseObject) {
+        this.errorResponseObject = errorResponseObject;
     }
 
     public String[] getDescription() {

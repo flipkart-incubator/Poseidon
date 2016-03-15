@@ -40,12 +40,14 @@ import java.util.Map;
 public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceResponse<T>> {
     private final ObjectMapper objectMapper;
     private final JavaType javaType;
+    private final JavaType errorType;
     private final Logger logger;
     private final Map<String, Class<? extends ServiceClientException>> exceptions;
 
-    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
+    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
         this.objectMapper = objectMapper;
         this.javaType = javaType;
+        this.errorType = errorType;
         this.logger = logger;
         this.exceptions = exceptions;
     }
@@ -93,6 +95,14 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
         } else {
             try {
                 String serviceResponse = StringUtils.convertStreamToString(httpResponse.getEntity().getContent());
+                Object errorResponse = null;
+                try {
+                    if (errorType != null) {
+                        errorResponse = objectMapper.readValue(serviceResponse, errorType);
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error while de-serializing non 200 response to given errorType", e);
+                }
                 logger.warn("Non 200 response {}", serviceResponse);
                 Class<? extends ServiceClientException> exceptionClass;
                 if (exceptions.containsKey(statusCodeString))
@@ -100,7 +110,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 else
                     exceptionClass = exceptions.get("default");
 
-                return new ServiceResponse<T>(exceptionClass.getConstructor(String.class).newInstance(serviceResponse), headers);
+                return new ServiceResponse<T>(exceptionClass.getConstructor(String.class, Object.class).newInstance(serviceResponse, errorResponse), headers);
 
             } catch (Exception e) {
                 logger.error("Error de-serializing non 200 response", e);

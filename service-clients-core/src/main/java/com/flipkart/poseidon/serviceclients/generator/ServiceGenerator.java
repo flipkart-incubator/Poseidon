@@ -360,7 +360,19 @@ public class ServiceGenerator {
                 JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getResponseObject()));
                 nestedInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
             }
-            invocation.arg(nestedInvocation).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
+            if (endPoint.getErrorResponseObject() == null || endPoint.getErrorResponseObject().isEmpty()) {
+                invocation.arg(nestedInvocation).arg(JExpr._null()).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
+            } else {
+                JInvocation nestedErrorInvocation = JExpr.invoke("getErrorType");
+                if (!endPoint.getErrorResponseObject().contains("<")) {
+                    JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getErrorResponseObject()), "class");
+                    nestedErrorInvocation.arg(ref);
+                } else {
+                    JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getErrorResponseObject()));
+                    nestedErrorInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
+                }
+                invocation.arg(nestedInvocation).arg(nestedErrorInvocation).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
+            }
 
             if (headersMap.size() > 0) {
                 invocation.arg(JExpr.ref("headersMap"));
