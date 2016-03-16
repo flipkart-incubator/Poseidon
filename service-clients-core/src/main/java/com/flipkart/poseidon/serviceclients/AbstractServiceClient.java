@@ -65,6 +65,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
         return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(false).build());
     }
 
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(requestCachingEnabled).build());
+    }
+
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(ServiceExecuteProperties properties) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
 
