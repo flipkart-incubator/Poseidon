@@ -56,17 +56,27 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected abstract String getCommandName();
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, JavaType errorType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
-        return execute(javaType, errorType, uri, httpMethod, headersMap, requestObject, null);
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setRequestCachingEnabled(false).build());
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, JavaType errorType, String uri, String httpMethod,
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod,
                                   Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
-        return execute(javaType, errorType, uri, httpMethod, headersMap, requestObject, commandName, false);
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(false).build());
     }
 
-    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, JavaType errorType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(ServiceExecuteProperties properties) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
+
+        String commandName = properties.getCommandName();
+        String uri = properties.getUri();
+        String httpMethod = properties.getHttpMethod();
+        boolean requestCachingEnabled = properties.isRequestCachingEnabled();
+        Map<String, String> headersMap = properties.getHeadersMap();
+        Object requestObject = properties.getRequestObject();
+        JavaType javaType = properties.getJavaType();
+        JavaType errorType = properties.getErrorType();
+
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
         }
