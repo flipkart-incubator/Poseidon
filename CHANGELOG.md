@@ -1,4 +1,4 @@
-## 3.1.1-SNAPSHOT (Mar 11, 2016)
+## 3.1.1-SNAPSHOT (Mar 16, 2016)
 - Made response object available at response filters
 - Service IDL - when requestObject is a java generic type, generated code wasn't compiling
 - PoseidonRequest - headers is a map of String to String instead of String to Object
@@ -7,6 +7,7 @@
 - Upgraded phantom to 1.4.4
 - Bug fix - Service clients: null for optional header was sent as "null"
 - Bug fix - API nested files are not discovered properly
+- API - Post body can be read as String by omitting javatype and datatype
 
 ## 3.1.0 (Feb 10, 2016)
 - Included snapshot version fixes

@@ -88,7 +88,12 @@ public class ParamValidationFilter implements Filter {
                     String bodyString = (String) poseidonRequest.getAttribute(RequestConstants.BODY);
                     if(!StringUtils.isEmpty(bodyString)) {
                         try {
-                            value = getMapper().readValue(bodyString, Class.forName(param.getJavatype()));
+                            if ((param.getJavatype() == null || param.getJavatype().isEmpty()) &&
+                                    (param.getDatatype() == null)) {
+                                value = bodyString;
+                            } else {
+                                value = getMapper().readValue(bodyString, Class.forName(param.getJavatype()));
+                            }
                         } catch (IOException e) {
                             logger.error("Error in reading body : {}", e.getMessage());
                         } catch (ClassNotFoundException e) {
