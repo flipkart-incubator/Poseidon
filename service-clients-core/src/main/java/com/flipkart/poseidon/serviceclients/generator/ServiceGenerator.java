@@ -356,8 +356,13 @@ public class ServiceGenerator {
             JType definedClass = jCodeModel._ref(ServiceExecutePropertiesBuilder.class);
             JInvocation nestedInvocation = JExpr.invoke("getJavaType");
             if (!endPoint.getResponseObject().contains("<")) {
-                JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getResponseObject()), "class");
-                nestedInvocation.arg(ref);
+                if (endPoint.getResponseObject().contains(".")) {
+                    JInvocation classDecl = jCodeModel.ref(Class.class).staticInvoke("forName").arg(endPoint.getResponseObject());
+                    nestedInvocation.arg(classDecl);
+                } else {
+                    JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getResponseObject()), "class");
+                    nestedInvocation.arg(ref);
+                }
             } else {
                 JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getResponseObject()));
                 nestedInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
@@ -366,8 +371,13 @@ public class ServiceGenerator {
             if (endPoint.getErrorResponseObject() != null && !endPoint.getErrorResponseObject().isEmpty()) {
                 JInvocation nestedErrorInvocation = JExpr.invoke("getErrorType");
                 if (!endPoint.getErrorResponseObject().contains("<")) {
-                    JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getErrorResponseObject()), "class");
-                    nestedErrorInvocation.arg(ref);
+                    if (endPoint.getErrorResponseObject().contains(".")) {
+                        JInvocation classDecl = jCodeModel.ref(Class.class).staticInvoke("forName").arg(endPoint.getErrorResponseObject());
+                        nestedErrorInvocation.arg(classDecl);
+                    } else {
+                        JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getErrorResponseObject()), "class");
+                        nestedErrorInvocation.arg(ref);
+                    }
                 } else {
                     JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getErrorResponseObject()));
                     nestedErrorInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
