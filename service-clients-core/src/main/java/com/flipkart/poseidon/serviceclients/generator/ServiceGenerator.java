@@ -19,6 +19,7 @@ package com.flipkart.poseidon.serviceclients.generator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
+import com.flipkart.poseidon.serviceclients.ServiceExecutePropertiesBuilder;
 import com.flipkart.poseidon.serviceclients.idl.pojo.EndPoint;
 import com.flipkart.poseidon.serviceclients.idl.pojo.Parameter;
 import com.flipkart.poseidon.serviceclients.idl.pojo.ServiceIDL;
@@ -352,6 +353,7 @@ public class ServiceGenerator {
             // For generic types, creating an anonymous inner class for every service call would have overhead which is
             // compensated by the type safety it ensures at compilation time as well as easy code generation
             JInvocation invocation = JExpr.invoke("execute");
+            JType definedClass = jCodeModel._ref(ServiceExecutePropertiesBuilder.class);
             JInvocation nestedInvocation = JExpr.invoke("getJavaType");
             if (!endPoint.getResponseObject().contains("<")) {
                 JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getResponseObject()), "class");
@@ -360,12 +362,23 @@ public class ServiceGenerator {
                 JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getResponseObject()));
                 nestedInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
             }
-            invocation.arg(nestedInvocation).arg(JExpr.ref("uri")).arg(endPoint.getHttpMethod());
+            JInvocation builderInvocation = JExpr.invoke(JExpr._new(definedClass), "setJavaType").arg(nestedInvocation);
+            if (endPoint.getErrorResponseObject() != null && !endPoint.getErrorResponseObject().isEmpty()) {
+                JInvocation nestedErrorInvocation = JExpr.invoke("getErrorType");
+                if (!endPoint.getErrorResponseObject().contains("<")) {
+                    JFieldRef ref = JExpr.ref(JExpr.ref(endPoint.getErrorResponseObject()), "class");
+                    nestedErrorInvocation.arg(ref);
+                } else {
+                    JClass typeReferenceClass = jCodeModel.ref(TypeReference.class).narrow(getJType(jCodeModel, endPoint.getErrorResponseObject()));
+                    nestedErrorInvocation.arg(JExpr._new(jCodeModel.anonymousClass(typeReferenceClass)));
+                }
+                builderInvocation = builderInvocation.invoke("setErrorType").arg(nestedErrorInvocation);
+            }
+            builderInvocation = builderInvocation.invoke("setUri").arg(JExpr.ref("uri"));
+            builderInvocation = builderInvocation.invoke("setHttpMethod").arg(endPoint.getHttpMethod());
 
             if (headersMap.size() > 0) {
-                invocation.arg(JExpr.ref("headersMap"));
-            } else {
-                invocation.arg(JExpr._null());
+                builderInvocation = builderInvocation.invoke("setHeadersMap").arg(JExpr.ref("headersMap"));
             }
 
             if (endPoint.getRequestObject() != null && !endPoint.getRequestObject().isEmpty()) {
@@ -375,21 +388,18 @@ public class ServiceGenerator {
                 } else {
                     requestObjectName = REQUEST_OBJECT_VAR_NAME;
                 }
-                invocation.arg(JExpr.ref(requestObjectName));
-            } else {
-                invocation.arg(JExpr._null());
+                builderInvocation = builderInvocation.invoke("setRequestObject").arg(JExpr.ref(requestObjectName));
             }
 
             if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                invocation = invocation.arg(endPoint.getCommandName());
-            } else {
-                invocation.arg(JExpr._null());
+                builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
             }
 
             if (endPoint.isRequestCachingEnabled()) {
-                invocation = invocation.arg(JExpr.lit(true));
+                builderInvocation = builderInvocation.invoke("setRequestCachingEnabled").arg(JExpr.lit(true));
             }
-            return invocation;
+            builderInvocation = builderInvocation.invoke("build");
+            return invocation.arg(builderInvocation);
         }
         return null;
     }

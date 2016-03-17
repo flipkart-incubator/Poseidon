@@ -217,7 +217,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
 
     @Test
     public void testGetExceptionCase() throws Exception {
-        ServiceResponse response = new ServiceResponse(new ServiceClientException("test"), new HashMap<String, String>() {{
+        ServiceResponse response = new ServiceResponse(new ServiceClientException("test", null), new HashMap<String, String>() {{
             put("header1", "value1");
         }});
         TaskResult<ServiceResponse> result = new TaskResult<>(true, "response", response);
@@ -306,7 +306,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
 
     @Test
     public void testGetExceptionCaseWithTimeout() throws Exception {
-        ServiceResponse response = new ServiceResponse(new ServiceClientException("test"), new HashMap<String, String>() {{
+        ServiceResponse response = new ServiceResponse(new ServiceClientException("test", null), new HashMap<String, String>() {{
             put("header1", "value1");
         }});
         TaskResult<ServiceResponse> result = new TaskResult<>(true, "response", response);

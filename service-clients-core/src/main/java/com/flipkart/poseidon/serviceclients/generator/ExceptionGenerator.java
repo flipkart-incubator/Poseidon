@@ -51,6 +51,20 @@ public class ExceptionGenerator {
         JBlock block = constructor.body();
         JInvocation superCall = block.invoke("super");
         superCall.arg(JExpr.ref(messageVar));
+        superCall.arg(JExpr._null());
+    }
+
+    private void addConstructorErrorObject(JDefinedClass jDefinedClass) {
+        JMethod constructor = jDefinedClass.constructor(JMod.PUBLIC);
+        String messageVar = "message";
+        constructor.param(String.class, messageVar);
+        String objectVar = "errorResponse";
+        constructor.param(Object.class, objectVar);
+
+        JBlock block = constructor.body();
+        JInvocation superCall = block.invoke("super");
+        superCall.arg(JExpr.ref(messageVar));
+        superCall.arg(JExpr.ref(objectVar));
     }
 
     private void addConstructorThrowable(JDefinedClass jDefinedClass) {
@@ -73,6 +87,7 @@ public class ExceptionGenerator {
 
         addAnnotations(model, definedClass);
         addConstructor(definedClass);
+        addConstructorErrorObject(definedClass);
         addConstructorThrowable(definedClass);
 
         model.build(new File(destinationFolder), (PrintStream) null);

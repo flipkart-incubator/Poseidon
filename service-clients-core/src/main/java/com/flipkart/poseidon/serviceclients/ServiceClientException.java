@@ -22,12 +22,26 @@ import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
  * Created by venkata.lakshmi on 30/03/15.
  */
 public class ServiceClientException extends PromiseBrokenException {
+    private Object errorResponse;
 
     public ServiceClientException(String message) {
         super(message);
     }
 
+    public ServiceClientException(String message, Object errorResponse) {
+        super(message);
+        this.errorResponse = errorResponse;
+    }
+
     public ServiceClientException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public Object getErrorResponse() {
+        return errorResponse;
+    }
+
+    public void setErrorResponse(Object errorResponse) {
+        this.errorResponse = errorResponse;
     }
 }

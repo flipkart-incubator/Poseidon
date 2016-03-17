@@ -39,7 +39,7 @@ public class ServiceResponseTest {
 
     @Test
     public void testGetException() throws Exception {
-        ServiceResponse response = new ServiceResponse(new ServiceClientException("exception"), new HashMap<String, String>() {{
+        ServiceResponse response = new ServiceResponse(new ServiceClientException("exception", null), new HashMap<String, String>() {{
             put("header1", "value1");
         }});
         assertThat(response.getException(), instanceOf(ServiceClientException.class));

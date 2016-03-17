@@ -57,16 +57,30 @@ public abstract class AbstractServiceClient implements ServiceClient {
     protected abstract String getCommandName();
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject) throws IOException {
-        return execute(javaType, uri, httpMethod, headersMap, requestObject, null);
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setRequestCachingEnabled(false).build());
     }
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod,
                                   Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
-        return execute(javaType, uri, httpMethod, headersMap, requestObject, commandName, false);
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(false).build());
     }
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod, Map<String, String> headersMap, Object requestObject, String commandName, boolean requestCachingEnabled) throws IOException {
+        return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(requestCachingEnabled).build());
+    }
+
+    protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(ServiceExecuteProperties properties) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
+
+        String commandName = properties.getCommandName();
+        String uri = properties.getUri();
+        String httpMethod = properties.getHttpMethod();
+        boolean requestCachingEnabled = properties.isRequestCachingEnabled();
+        Map<String, String> headersMap = properties.getHeadersMap();
+        Object requestObject = properties.getRequestObject();
+        JavaType javaType = properties.getJavaType();
+        JavaType errorType = properties.getErrorType();
+
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
         }
@@ -103,7 +117,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, errorType, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
@@ -177,7 +191,15 @@ public abstract class AbstractServiceClient implements ServiceClient {
         return objectMapper.getTypeFactory().constructType(typeReference);
     }
 
+    public JavaType getErrorType(TypeReference typeReference) {
+        return objectMapper.getTypeFactory().constructType(typeReference);
+    }
+
     public <T> JavaType getJavaType(Class<T> clazz) {
+        return objectMapper.getTypeFactory().constructType(clazz);
+    }
+
+    public <T> JavaType getErrorType(Class<T> clazz) {
         return objectMapper.getTypeFactory().constructType(clazz);
     }
 

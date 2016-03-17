@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -42,8 +44,11 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -51,10 +56,13 @@ import static org.powermock.api.mockito.PowerMockito.*;
 public class ServiceResponseDecoderTest {
 
     ServiceResponseDecoder decoder;
-    ObjectMapper mockMapper = mock(ObjectMapper.class);
+    ObjectMapper mockMapper = spy(new ObjectMapper());
     JavaType mockJavaType = mock(JavaType.class);
+    JavaType mockErrorType = mockMapper.getTypeFactory().constructType(new TypeReference<TestErrorResponse>() {
+    });
 
     Class responseClass = String.class;
+    Class errorClass = TestErrorResponse.class;
     Logger mockLogger;
     Map<String, Class<? extends ServiceClientException>> exceptions = new HashMap<>();
 
@@ -64,7 +72,7 @@ public class ServiceResponseDecoderTest {
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockLogger , exceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions));
     }
 
     /**
@@ -127,22 +135,85 @@ public class ServiceResponseDecoderTest {
         StatusLine mockStatusLine = mock(StatusLine.class);
         HttpEntity mockEntity = mock(HttpEntity.class);
         InputStream stream = mock(InputStream.class);
+        String errorString = "{\"error\":\"testing error\"}";
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getContent()).thenReturn(stream);
         mockStatic(StringUtils.class);
-        when(StringUtils.convertStreamToString(stream)).thenReturn("error");
+        when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
         when(mockExceptions.containsKey("404")).thenReturn(true);
         when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
-        Mockito.verify(mockLogger).warn("Non 200 response {}", "error");
+        assertThat(response.getException().getErrorResponse(), instanceOf(mockErrorType.getRawClass()));
+        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
+    }
+
+    /**
+     *  Service returned non 200, but returned known exception, with no errorType
+     * @throws Exception
+     */
+    @Test
+    public void testDecodeHttpResponseReturnExceptionNoErrorType() throws Exception {
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        HttpEntity mockEntity = mock(HttpEntity.class);
+        InputStream stream = mock(InputStream.class);
+        String errorString = "{\"error\":\"testing error\"}";
+
+        Map mockExceptions = mock(Map.class);
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, null, mockLogger, mockExceptions));
+
+        when(mockStatusLine.getStatusCode()).thenReturn(404);
+        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockEntity.getContent()).thenReturn(stream);
+        mockStatic(StringUtils.class);
+        when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
+        when(mockExceptions.containsKey("404")).thenReturn(true);
+        when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
+
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertThat(response.getException(), instanceOf(ServiceClientException.class));
+        assertEquals(response.getException().getErrorResponse(), null);
+        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
+    }
+
+    /**
+     *  Service returned non 200, but returned known exception, with invalid errorType
+     * @throws Exception
+     */
+    @Test
+    public void testDecodeHttpResponseReturnExceptionInvalidErrorType() throws Exception {
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        HttpEntity mockEntity = mock(HttpEntity.class);
+        InputStream stream = mock(InputStream.class);
+        String errorString = "{\"nonsense\":\"testing error\"}";
+
+        Map mockExceptions = mock(Map.class);
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions));
+
+        when(mockStatusLine.getStatusCode()).thenReturn(404);
+        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockEntity.getContent()).thenReturn(stream);
+        mockStatic(StringUtils.class);
+        when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
+        when(mockExceptions.containsKey("404")).thenReturn(true);
+        when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
+
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertThat(response.getException(), instanceOf(ServiceClientException.class));
+        assertEquals(response.getException().getErrorResponse(), null);
+        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
+        Mockito.verify(mockLogger, Mockito.times(1)).warn(anyString(), any(Object.class));
     }
 
     /**
@@ -193,6 +264,18 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         Mockito.verify(mockLogger).error("Error de-serializing non 200 response");
 
+    }
+
+    private static class TestErrorResponse {
+        private String error;
+
+        public String getError() {
+            return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
+        }
     }
 
 }
