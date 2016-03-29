@@ -96,8 +96,16 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     @Override
-    protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doRequest(OPTIONS, request, response);
+    protected void doOptions(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws ServletException, IOException {
+        PoseidonRequest request = new PoseidonRequest(httpRequest);
+        PoseidonResponse response = new PoseidonResponse();
+        if (application.handleOptionsRequest(request, response)) {
+            setHeaders(response, httpResponse);
+            setCookies(response, httpResponse);
+            httpResponse.setStatus(SC_OK);
+        } else {
+            doRequest(OPTIONS, httpRequest, httpResponse);
+        }
     }
 
     @Override

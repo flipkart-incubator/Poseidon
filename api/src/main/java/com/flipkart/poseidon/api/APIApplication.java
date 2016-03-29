@@ -55,6 +55,11 @@ public class APIApplication implements Application {
     }
 
     @Override
+    public boolean handleOptionsRequest(PoseidonRequest req, PoseidonResponse resp) {
+        return false;
+    }
+
+    @Override
     public MediaType getDefaultMediaType() {
         return JSON_UTF_8;
     }

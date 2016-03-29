@@ -30,6 +30,11 @@ public interface Application {
 
     void init(ExecutorService datasourceTPE, ExecutorService filterTPE);
 
+    /**
+     * return true if providing a custom implementation for OPTION calls
+     */
+    boolean handleOptionsRequest(PoseidonRequest req, PoseidonResponse resp);
+
     void handleRequest(PoseidonRequest req, PoseidonResponse resp) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException;
 
     MediaType getDefaultMediaType();

@@ -82,7 +82,7 @@ public class PoseidonRequest implements Request {
         while (headerNames.hasMoreElements()) {
             String key = (String) headerNames.nextElement();
             if (httpServletRequest.getHeader(key) != null) {
-                headers.put(key, httpServletRequest.getHeader(key));
+                headers.put(key.toLowerCase(), httpServletRequest.getHeader(key));
             }
         }
 
@@ -94,7 +94,7 @@ public class PoseidonRequest implements Request {
         Cookie[] receivedCookies = httpServletRequest.getCookies();
         if(receivedCookies != null) {
             for (Cookie cookie : receivedCookies) {
-                cookies.put(cookie.getName(), cookie);
+                cookies.put(cookie.getName().toLowerCase(), cookie);
             }
         }
 
@@ -102,11 +102,11 @@ public class PoseidonRequest implements Request {
     }
 
     public Cookie getCookie(String key) {
-        return cloneCookie(cookies.get(key));
+        return cloneCookie(cookies.get(key.toLowerCase()));
     }
 
     public String getHeader(String key) {
-        return headers.get(key);
+        return headers.get(key.toLowerCase());
     }
 
     private Cookie cloneCookie(Cookie cookie) {
