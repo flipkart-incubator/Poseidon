@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.api;
 
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.google.common.net.MediaType;
@@ -24,6 +25,7 @@ import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
 import flipkart.lego.engine.Lego;
+import org.springframework.http.HttpMethod;
 
 import java.util.concurrent.ExecutorService;
 
@@ -34,7 +36,7 @@ import static com.google.common.net.MediaType.JSON_UTF_8;
  */
 public class APIApplication implements Application {
     private final APIManager apiManager;
-    private final APILegoSet legoSet;
+    protected final APILegoSet legoSet;
     private Lego lego;
 
     public APIApplication(APIManager apiManager, APILegoSet legoSet) {
@@ -51,10 +53,20 @@ public class APIApplication implements Application {
 
     @Override
     public void handleRequest(PoseidonRequest request, PoseidonResponse response) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException {
-        lego.buildResponse(request, response);
+        HttpMethod method = (HttpMethod) request.getAttribute(RequestConstants.METHOD);
+        boolean handled = false;
+        if (method != null && method.equals(HttpMethod.OPTIONS)) {
+            handled = handleOptionsRequest(request, response);
+        }
+
+        if (!handled) {
+            lego.buildResponse(request, response);
+        }
     }
 
-    @Override
+    /**
+     * return true if providing a custom implementation for OPTION calls
+     */
     public boolean handleOptionsRequest(PoseidonRequest req, PoseidonResponse resp) {
         return false;
     }

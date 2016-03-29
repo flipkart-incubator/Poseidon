@@ -97,15 +97,7 @@ public class PoseidonServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws ServletException, IOException {
-        PoseidonRequest request = new PoseidonRequest(httpRequest);
-        PoseidonResponse response = new PoseidonResponse();
-        if (application.handleOptionsRequest(request, response)) {
-            setHeaders(response, httpResponse);
-            setCookies(response, httpResponse);
-            httpResponse.setStatus(SC_OK);
-        } else {
-            doRequest(OPTIONS, httpRequest, httpResponse);
-        }
+        doRequest(OPTIONS, httpRequest, httpResponse);
     }
 
     @Override
@@ -212,15 +204,15 @@ public class PoseidonServlet extends HttpServlet {
         }
         httpResponse.setStatus(statusCode);
         Object responseObj = poseidonResponse.getResponse();
-        String responseStr = "";
         if (responseObj != null) {
+            String responseStr = "";
             if (responseObj instanceof String) {
                 responseStr = (String) responseObj;
             } else {
                 responseStr = getMapper().writeValueAsString(responseObj);
             }
+            httpResponse.getWriter().println(responseStr);
         }
-        httpResponse.getWriter().println(responseStr);
     }
 
     private void redirect(PoseidonResponse response, HttpServletResponse httpResponse) {
