@@ -204,15 +204,15 @@ public class PoseidonServlet extends HttpServlet {
         }
         httpResponse.setStatus(statusCode);
         Object responseObj = poseidonResponse.getResponse();
-        String responseStr = "";
         if (responseObj != null) {
+            String responseStr = "";
             if (responseObj instanceof String) {
                 responseStr = (String) responseObj;
             } else {
                 responseStr = getMapper().writeValueAsString(responseObj);
             }
+            httpResponse.getWriter().println(responseStr);
         }
-        httpResponse.getWriter().println(responseStr);
     }
 
     private void redirect(PoseidonResponse response, HttpServletResponse httpResponse) {
