@@ -67,7 +67,7 @@ public class APIApplication implements Application {
     /**
      * return true if providing a custom implementation for OPTION calls
      */
-    public boolean handleOptionsRequest(PoseidonRequest req, PoseidonResponse resp) {
+    public boolean handleOptionsRequest(PoseidonRequest req, PoseidonResponse resp) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException {
         return false;
     }
 
