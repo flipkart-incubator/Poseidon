@@ -1,3 +1,7 @@
+## 3.1.1 (Apr 6, 2016)
+- Included snapshot version fixes
+- API - endPoint JMX metrics (latency and request rate)
+
 ## 3.1.1-SNAPSHOT (Mar 20, 2016)
 - Made response object available at response filters
 - Service IDL - when requestObject is a java generic type, generated code wasn't compiling
