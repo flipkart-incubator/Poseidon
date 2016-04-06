@@ -20,6 +20,7 @@ import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.ds.trie.Trie;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
+import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import flipkart.lego.api.entities.Request;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 
+import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -67,6 +69,10 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             if (buildable == null) {
                 throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
             }
+        }
+        String name = buildable.getName();
+        if (name != null && !name.isEmpty()) {
+            poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer("poseidon.api." + name + "." + httpMethod).time());
         }
         return buildable;
     }

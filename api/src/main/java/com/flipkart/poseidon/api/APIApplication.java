@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.api;
 
+import com.codahale.metrics.Timer;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpMethod;
 
 import java.util.concurrent.ExecutorService;
 
+import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 
 /**
@@ -60,7 +62,19 @@ public class APIApplication implements Application {
         }
 
         if (!handled) {
-            lego.buildResponse(request, response);
+            // Ideally, we have to get the buildable for this request, get
+            // API name from the buildable and use it to start a meter here.
+            // As getting a buildable could be time consuming (say we use trie
+            // instead of a map as in APIBuildable), we start a meter in
+            // APILegoSet.getBuildable() and stop it here
+            try {
+                lego.buildResponse(request, response);
+            } finally {
+                Object timerContext = request.getAttribute(TIMER_CONTEXT);
+                if (timerContext != null && timerContext instanceof Timer.Context) {
+                    ((Timer.Context) timerContext).stop();
+                }
+            }
         }
     }
 

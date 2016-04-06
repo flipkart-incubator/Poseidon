@@ -129,7 +129,7 @@ public class APIBuildable implements Buildable {
 
     @Override
     public String getName() throws UnsupportedOperationException {
-        return "APIBuildable";
+        return pojo.getName();
     }
 
     @Override

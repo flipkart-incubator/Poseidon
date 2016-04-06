@@ -27,6 +27,11 @@ public class EndpointPOJO {
     private String url;
     private HttpMethod httpMethod;
     private long timeout;
+    /*
+     * API Name used in Timer to expose endpoint metrics (latency, rate of requests).
+     * Metrics are named like "poseidon.api.<name>.<httpMethod>"
+     */
+    private String name;
     private boolean deprecated;
     private ParamsPOJO params;
     private Map<String, TaskPOJO> tasks;
@@ -44,6 +49,10 @@ public class EndpointPOJO {
 
     public long getTimeout() {
         return timeout;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean isDeprecated() {
