@@ -19,6 +19,7 @@
         <module>api</module>
         <module>http-handler</module>
         <module>service-clients-core</module>
+        <module>service-clients-gen</module>
         <module>service-clients-archetype</module>
     </modules>
 
