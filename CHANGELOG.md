@@ -1,3 +1,7 @@
+## 4.0.0-SNAPSHOT (Apr 12, 2016)
+- Pass through headers can be configured by Applications
+- Service Clients - runtime and generation dependencies are separated
+
 ## 3.1.1 (Apr 6, 2016)
 - Included snapshot version fixes
 - API - endPoint JMX metrics (latency and request rate)
