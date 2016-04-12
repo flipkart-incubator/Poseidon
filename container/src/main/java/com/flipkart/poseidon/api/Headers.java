@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package com.flipkart.poseidon.api;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Created by shrey.garg on 06/04/16.
  */
 public interface Headers {
-    List<HeaderConfiguration> getPassThroughHeaders();
+    Set<HeaderConfiguration> getPassThroughHeaders();
 }

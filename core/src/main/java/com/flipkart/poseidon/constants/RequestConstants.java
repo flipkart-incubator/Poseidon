@@ -23,13 +23,8 @@ public class RequestConstants {
     public static final String BODY = "body";
     public static final String METHOD = "method";
     public static final String REDIRECT_URL = "redirectURL";
-    public static final String REQUEST_ID = "requestId";
-    public static final String IS_PERF_TEST = "isPerfTest";
     public static final String SOURCE_ADDRESS = "sourceAddress";
     public static final String FILE_UPLOAD_TMP_DIR = "/tmp";
     public static final String PARAMS = "params";
     public static final String TIMER_CONTEXT = "timerContext";
-
-    public static final String REQUEST_ID_HEADER = "X-REQUEST-ID";
-    public static final String PERF_TEST_HEADER = "X-PERF-TEST";
 }

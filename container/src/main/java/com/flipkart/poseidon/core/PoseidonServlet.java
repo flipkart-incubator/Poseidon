@@ -21,7 +21,6 @@ import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
-import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
@@ -33,7 +32,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.Header;
 import org.slf4j.Logger;
 import org.springframework.http.HttpMethod;
 
@@ -45,7 +43,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
@@ -155,12 +156,12 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void setServiceContext(HttpServletRequest httpServletRequest) {
-        if (configuration.getConfiguredHeaders() == null || configuration.getConfiguredHeaders().getPassThroughHeaders() == null) {
+        if (configuration.getHeadersConfiguration() == null || configuration.getHeadersConfiguration().getPassThroughHeaders() == null) {
             return;
         }
 
         Map<String, String> headers = new HashMap<>();
-        for (HeaderConfiguration headerConfiguration : configuration.getConfiguredHeaders().getPassThroughHeaders()) {
+        for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getPassThroughHeaders()) {
             String value = httpServletRequest.getHeader(headerConfiguration.getName());
             if (value == null) {
                 value = headerConfiguration.getDefaultValue();
@@ -168,6 +169,10 @@ public class PoseidonServlet extends HttpServlet {
 
             if (value != null) {
                 headers.put(headerConfiguration.getName().toLowerCase(), value);
+
+                if (headerConfiguration.isRequiredInRequestContext()) {
+                    RequestContext.set(headerConfiguration.getName().toLowerCase(), value);
+                }
             }
         }
         ServiceContext.set(HEADERS, headers);

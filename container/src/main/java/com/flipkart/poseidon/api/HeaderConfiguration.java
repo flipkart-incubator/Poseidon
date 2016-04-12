@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package com.flipkart.poseidon.api;
 public class HeaderConfiguration {
     private String name;
     private String defaultValue;
+    private boolean requiredInRequestContext;
 
     public HeaderConfiguration() {
     }
@@ -29,6 +30,13 @@ public class HeaderConfiguration {
     public HeaderConfiguration(String name, String defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
+        this.requiredInRequestContext = false;
+    }
+
+    public HeaderConfiguration(String name, String defaultValue, boolean requiredInRequestContext) {
+        this.name = name;
+        this.defaultValue = defaultValue;
+        this.requiredInRequestContext = requiredInRequestContext;
     }
 
     public String getName() {
@@ -47,10 +55,18 @@ public class HeaderConfiguration {
         this.defaultValue = defaultValue;
     }
 
+    public boolean isRequiredInRequestContext() {
+        return requiredInRequestContext;
+    }
+
+    public void setRequiredInRequestContext(boolean requiredInRequestContext) {
+        this.requiredInRequestContext = requiredInRequestContext;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (!(o instanceof HeaderConfiguration)) return false;
+        if (this == o) return true;
 
         HeaderConfiguration that = (HeaderConfiguration) o;
 

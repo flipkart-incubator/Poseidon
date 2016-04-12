@@ -43,5 +43,5 @@ public interface Configuration {
 
     public ExceptionMapper getExceptionMapper();
 
-    public Headers getConfiguredHeaders();
+    public Headers getHeadersConfiguration();
 }
