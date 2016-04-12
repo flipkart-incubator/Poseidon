@@ -169,13 +169,11 @@ public class PoseidonServlet extends HttpServlet {
 
             if (value != null) {
                 headers.put(headerConfiguration.getName().toLowerCase(), value);
-
-                if (headerConfiguration.isRequiredInRequestContext()) {
-                    RequestContext.set(headerConfiguration.getName().toLowerCase(), value);
-                }
             }
         }
+
         ServiceContext.set(HEADERS, headers);
+        RequestContext.set(HEADERS, headers);
     }
 
     private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {

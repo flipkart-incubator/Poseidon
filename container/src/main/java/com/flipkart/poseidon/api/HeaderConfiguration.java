@@ -19,10 +19,10 @@ package com.flipkart.poseidon.api;
 /**
  * Created by shrey.garg on 06/04/16.
  */
-public class HeaderConfiguration {
+public class
+HeaderConfiguration {
     private String name;
     private String defaultValue;
-    private boolean requiredInRequestContext;
 
     public HeaderConfiguration() {
     }
@@ -30,13 +30,6 @@ public class HeaderConfiguration {
     public HeaderConfiguration(String name, String defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
-        this.requiredInRequestContext = false;
-    }
-
-    public HeaderConfiguration(String name, String defaultValue, boolean requiredInRequestContext) {
-        this.name = name;
-        this.defaultValue = defaultValue;
-        this.requiredInRequestContext = requiredInRequestContext;
     }
 
     public String getName() {
@@ -53,14 +46,6 @@ public class HeaderConfiguration {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
-    }
-
-    public boolean isRequiredInRequestContext() {
-        return requiredInRequestContext;
-    }
-
-    public void setRequiredInRequestContext(boolean requiredInRequestContext) {
-        this.requiredInRequestContext = requiredInRequestContext;
     }
 
     @Override
