@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.constants;
+package com.flipkart.poseidon.serviceclients;
 
 /**
- * Created by akshay.kesarwan on 13/07/15.
+ * Created by shrey.garg on 06/04/16.
  */
-public class RequestConstants {
-    public static final String BODY = "body";
-    public static final String METHOD = "method";
-    public static final String REDIRECT_URL = "redirectURL";
-    public static final String SOURCE_ADDRESS = "sourceAddress";
-    public static final String FILE_UPLOAD_TMP_DIR = "/tmp";
-    public static final String PARAMS = "params";
-    public static final String TIMER_CONTEXT = "timerContext";
+public class ServiceClientConstants {
+    public static final String HEADERS = "headers";
 }

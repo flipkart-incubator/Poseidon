@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.filters;
 
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 
 import javax.servlet.*;
@@ -31,10 +32,12 @@ public class HystrixContextFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HystrixRequestContext hystrixRequestContext = HystrixRequestContext.initializeContext();
         RequestContext.initialize();
+        ServiceContext.initialize();
         try {
             chain.doFilter(request, response);
         } finally {
             RequestContext.shutDown();
+            ServiceContext.shutDown();
             hystrixRequestContext.shutdown();
         }
     }

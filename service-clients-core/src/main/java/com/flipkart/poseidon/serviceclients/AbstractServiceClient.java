@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
-import com.flipkart.poseidon.core.RequestContext;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
@@ -38,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.flipkart.poseidon.constants.RequestConstants.*;
+import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
 
 /**
  * Created by mohan.pandian on 24/02/15.
@@ -135,17 +134,12 @@ public abstract class AbstractServiceClient implements ServiceClient {
             injectedHeadersMap.putAll(headersMap);
         }
 
-        // Add x-request-id
-        String requestId = (String) RequestContext.get(REQUEST_ID);
-        if (requestId != null && !requestId.isEmpty()) {
-            injectedHeadersMap.put(REQUEST_ID_HEADER, requestId);
+        // Inject Configured Headers
+        if (ServiceContext.get(HEADERS) instanceof Map) {
+            Map<String, String> configuredHeaders = (Map<String, String>) ServiceContext.get(HEADERS);
+            injectedHeadersMap.putAll(configuredHeaders);
         }
 
-        // Add x-perf-test
-        Boolean isPerfTest = (Boolean) RequestContext.get(IS_PERF_TEST);
-        if (isPerfTest != null && isPerfTest) {
-            injectedHeadersMap.put(PERF_TEST_HEADER, "true");
-        }
         return injectedHeadersMap;
     }
 

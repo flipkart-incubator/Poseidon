@@ -18,8 +18,11 @@ package com.flipkart.poseidon.core;
 
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
+import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
+import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -41,14 +44,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
+import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
@@ -107,6 +111,7 @@ public class PoseidonServlet extends HttpServlet {
 
     protected void doRequest(HttpMethod method, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {
         setRequestContext(httpRequest);
+        setServiceContext(httpRequest);
 
         PoseidonRequest request = new PoseidonRequest(httpRequest);
         request.setAttribute(METHOD, method);
@@ -148,20 +153,29 @@ public class PoseidonServlet extends HttpServlet {
 
     private void setRequestContext(HttpServletRequest httpServletRequest) {
         RequestContext.set(METHOD, httpServletRequest.getMethod());
-        RequestContext.set(REQUEST_ID, getRequestId(httpServletRequest));
-        RequestContext.set(IS_PERF_TEST, isPerfTest(httpServletRequest));
         RequestContext.set(SOURCE_ADDRESS, httpServletRequest.getRemoteAddr());
     }
 
-    private String getRequestId(HttpServletRequest httpServletRequest) {
-        if (httpServletRequest.getHeader(REQUEST_ID_HEADER) != null) {
-            return httpServletRequest.getHeader(REQUEST_ID_HEADER);
+    private void setServiceContext(HttpServletRequest httpServletRequest) {
+        if (configuration.getHeadersConfiguration() == null || configuration.getHeadersConfiguration().getPassThroughHeaders() == null) {
+            return;
         }
-        return UUID.randomUUID().toString();
-    }
 
-    private boolean isPerfTest(HttpServletRequest httpServletRequest) {
-        return Boolean.parseBoolean(httpServletRequest.getHeader(PERF_TEST_HEADER));
+        Map<String, String> headers = new HashMap<>();
+        for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getPassThroughHeaders()) {
+            String value = httpServletRequest.getHeader(headerConfiguration.getName());
+            if (value == null) {
+                value = headerConfiguration.getDefaultValue();
+            }
+
+            if (value != null) {
+                headers.put(headerConfiguration.getName().toLowerCase(), value);
+            }
+        }
+
+        ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
+        ServiceContext.set(HEADERS, immutableHeaders);
+        RequestContext.set(HEADERS, immutableHeaders);
     }
 
     private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {
