@@ -14,8 +14,6 @@
 	</parent>
 
 	<artifactId>http-handler</artifactId>
-	<version>${parent.version}</version>
-
 	<packaging>jar</packaging>
 
 	<dependencies>

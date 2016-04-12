@@ -14,8 +14,6 @@
     </parent>
 
     <artifactId>core</artifactId>
-    <version>${parent.version}</version>
-
     <packaging>jar</packaging>
 
     <dependencies>
