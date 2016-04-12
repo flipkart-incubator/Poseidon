@@ -42,4 +42,6 @@ public interface Configuration {
     public JettyConfiguration getJettyConfiguration();
 
     public ExceptionMapper getExceptionMapper();
+
+    public Headers getHeadersConfiguration();
 }
