@@ -22,6 +22,7 @@ import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -172,8 +173,9 @@ public class PoseidonServlet extends HttpServlet {
             }
         }
 
-        ServiceContext.set(HEADERS, headers);
-        RequestContext.set(HEADERS, headers);
+        ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
+        ServiceContext.set(HEADERS, immutableHeaders);
+        RequestContext.set(HEADERS, immutableHeaders);
     }
 
     private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {
