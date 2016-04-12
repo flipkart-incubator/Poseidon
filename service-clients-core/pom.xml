@@ -10,20 +10,15 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>3.1.1-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>service-clients-core</artifactId>
-    <version>3.1.1-SNAPSHOT</version>
+    <version>${parent.version}</version>
 
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>com.flipkart.poseidon</groupId>
-            <artifactId>core</artifactId>
-            <version>3.1.1-SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -45,7 +40,7 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>http-handler</artifactId>
-            <version>3.1.1-SNAPSHOT</version>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.fge</groupId>

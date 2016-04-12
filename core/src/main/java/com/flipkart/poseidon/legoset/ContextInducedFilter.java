@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
@@ -38,12 +39,14 @@ public class ContextInducedFilter implements Filter {
 
     private final Filter filter;
     private final Map<String, Object> parentContext;
+    private final Map<String, Object> parentServiceContext;
     private final HystrixRequestContext parentThreadState;
     private final ServerSpan serverSpan;
 
     public ContextInducedFilter(Filter filter) {
         this.filter = filter;
         parentContext = RequestContext.getContextMap();
+        parentServiceContext = ServiceContext.getContextMap();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
         serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
     }
@@ -53,6 +56,7 @@ public class ContextInducedFilter implements Filter {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
         try {
             RequestContext.initialize(parentContext);
+            ServiceContext.initialize(parentServiceContext);
             HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
             // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
             if (serverSpan != null && serverSpan.getSpan() != null) {
@@ -61,6 +65,7 @@ public class ContextInducedFilter implements Filter {
             filter.filterRequest(request, response);
         } finally {
             RequestContext.shutDown();
+            ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
@@ -71,6 +76,7 @@ public class ContextInducedFilter implements Filter {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
         try {
             RequestContext.initialize(parentContext);
+            ServiceContext.initialize(parentServiceContext);
             HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
             // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
             if (serverSpan != null && serverSpan.getSpan() != null) {
@@ -79,6 +85,7 @@ public class ContextInducedFilter implements Filter {
             filter.filterResponse(request, response);
         } finally {
             RequestContext.shutDown();
+            ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }

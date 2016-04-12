@@ -16,32 +16,11 @@
 
 package com.flipkart.poseidon.api;
 
-public interface Configuration {
+import java.util.List;
 
-    public int getPort();
-
-    public boolean sendServerVersion();
-
-    public String getRewriteFilePath();
-
-    public String getLogbackAccessPath();
-
-    public String getRotationStatusFilePath();
-
-    public String getApiFilesPath();
-
-    public String[] getFilterIds();
-
-    public String getAppName();
-
-    public TracingConfiguration getTracingConfiguration();
-
-    /*
-     * Return null to use default values at framework
-     */
-    public JettyConfiguration getJettyConfiguration();
-
-    public ExceptionMapper getExceptionMapper();
-
-    public Headers getConfiguredHeaders();
+/**
+ * Created by shrey.garg on 06/04/16.
+ */
+public interface Headers {
+    List<HeaderConfiguration> getPassThroughHeaders();
 }
