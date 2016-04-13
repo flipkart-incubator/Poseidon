@@ -1,4 +1,4 @@
-## 4.0.0-SNAPSHOT (Apr 12, 2016)
+## 4.0.0-SNAPSHOT (Apr 13, 2016)
 - Pass through headers can be configured by Applications
 - Service Clients - runtime and generation dependencies are separated
 
