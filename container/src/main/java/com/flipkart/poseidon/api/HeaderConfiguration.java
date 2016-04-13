@@ -16,18 +16,23 @@
 
 package com.flipkart.poseidon.api;
 
+import java.util.function.Supplier;
+
 /**
  * Created by shrey.garg on 06/04/16.
  */
-public class
-HeaderConfiguration {
+public class HeaderConfiguration {
     private String name;
-    private String defaultValue;
+    private Supplier<String> defaultValue;
 
-    public HeaderConfiguration() {
+    public HeaderConfiguration(String name) {
+        this(name, null);
     }
 
-    public HeaderConfiguration(String name, String defaultValue) {
+    public HeaderConfiguration(String name, Supplier<String> defaultValue) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Header name can't be empty");
+        }
         this.name = name;
         this.defaultValue = defaultValue;
     }
@@ -36,27 +41,21 @@ HeaderConfiguration {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+        return defaultValue == null ? null : defaultValue.get();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof HeaderConfiguration)) return false;
-        if (this == o) return true;
+        if (!(o instanceof HeaderConfiguration)) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
 
         HeaderConfiguration that = (HeaderConfiguration) o;
-
         return name.equals(that.name);
-
     }
 
     @Override

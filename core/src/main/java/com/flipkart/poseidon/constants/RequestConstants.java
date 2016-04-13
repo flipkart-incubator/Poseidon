@@ -21,10 +21,13 @@ package com.flipkart.poseidon.constants;
  */
 public class RequestConstants {
     public static final String BODY = "body";
-    public static final String METHOD = "method";
-    public static final String REDIRECT_URL = "redirectURL";
     public static final String SOURCE_ADDRESS = "sourceAddress";
     public static final String FILE_UPLOAD_TMP_DIR = "/tmp";
     public static final String PARAMS = "params";
     public static final String TIMER_CONTEXT = "timerContext";
+
+    // Used in RequestContext as keys
+    public static final String METHOD = "poseidon.method";
+    public static final String REDIRECT_URL = "poseidon.redirectURL";
+    public static final String HEADERS = "poseidon.headers";
 }

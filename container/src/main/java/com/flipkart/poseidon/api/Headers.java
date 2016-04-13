@@ -22,5 +22,9 @@ import java.util.Set;
  * Created by shrey.garg on 06/04/16.
  */
 public interface Headers {
+    /*
+     * Configuration of headers to be passed through to services transparently (say x-request-id).
+     * Distributed tracing headers don't need to be defined here.
+     */
     Set<HeaderConfiguration> getPassThroughHeaders();
 }

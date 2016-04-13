@@ -19,6 +19,7 @@ package com.flipkart.poseidon.core;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
@@ -169,13 +170,13 @@ public class PoseidonServlet extends HttpServlet {
             }
 
             if (value != null) {
-                headers.put(headerConfiguration.getName().toLowerCase(), value);
+                headers.put(headerConfiguration.getName(), value);
             }
         }
 
         ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
         ServiceContext.set(HEADERS, immutableHeaders);
-        RequestContext.set(HEADERS, immutableHeaders);
+        RequestContext.set(RequestConstants.HEADERS, immutableHeaders);
     }
 
     private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {
