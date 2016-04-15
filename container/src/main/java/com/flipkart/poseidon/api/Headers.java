@@ -16,7 +16,6 @@
 
 package com.flipkart.poseidon.api;
 
-import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.RequestContext;
 
 import java.util.Map;
