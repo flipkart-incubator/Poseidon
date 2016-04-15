@@ -158,12 +158,12 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void setServiceContext(HttpServletRequest httpServletRequest) {
-        if (configuration.getHeadersConfiguration() == null || configuration.getHeadersConfiguration().getPassThroughHeaders() == null) {
+        if (configuration.getHeadersConfiguration() == null || configuration.getHeadersConfiguration().getGlobalHeaders() == null) {
             return;
         }
 
         Map<String, String> headers = new HashMap<>();
-        for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getPassThroughHeaders()) {
+        for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getGlobalHeaders()) {
             String value = httpServletRequest.getHeader(headerConfiguration.getName());
             if (value == null) {
                 value = headerConfiguration.getDefaultValue();
