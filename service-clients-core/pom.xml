@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>http-handler</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.flipkart.lego</groupId>
