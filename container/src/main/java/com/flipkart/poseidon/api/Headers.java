@@ -36,7 +36,7 @@ public interface Headers {
     Set<HeaderConfiguration> getGlobalHeaders();
 
     static Optional<String> getGlobalHeader(String headerName) {
-        Map<String, String> headers = (Map<String, String>) RequestContext.get(HEADERS);
+        Map<String, String> headers = RequestContext.get(HEADERS);
         return headers != null ? Optional.ofNullable(headers.get(headerName)) : Optional.empty();
     }
 }

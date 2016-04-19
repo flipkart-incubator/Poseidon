@@ -59,7 +59,7 @@ public class APIBuildable implements Buildable {
 
     @Override
     public Map<String, DataSource> getRequiredDataSources(Request request) throws InternalErrorException {
-        Map<String, Object> initialParams = (Map<String, Object>) request.getAttribute(RequestConstants.PARAMS);
+        Map<String, Object> initialParams = request.getAttribute(RequestConstants.PARAMS);
         mappedBeans = new ArrayList<>();
         OrchestratorDataSource dataSource = new OrchestratorDataSource(legoSet, initialParams,
                 tasks, pojo.getResponse(), getMappers(), mappedBeans);

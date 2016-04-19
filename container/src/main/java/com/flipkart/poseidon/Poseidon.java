@@ -149,14 +149,17 @@ public class Poseidon {
         rewriteHandler.setHandler(handler);
 
         try {
-            JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
-            List<RewriteRule> rules = getMapper().readValue(new FileInputStream(configuration.getRewriteFilePath()), listRuleType);
-            for (RewriteRule rule : rules) {
-                if (rule.isActive()) {
-                    RewriteRegexRule regexRule = new RewriteRegexRule();
-                    regexRule.setRegex(rule.getFrom());
-                    regexRule.setReplacement(rule.getTo());
-                    rewriteHandler.addRule(regexRule);
+            String rewriteFilePath = configuration.getRewriteFilePath();
+            if (rewriteFilePath != null && !(rewriteFilePath = rewriteFilePath.trim()).isEmpty()) {
+                JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
+                List<RewriteRule> rules = getMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
+                for (RewriteRule rule : rules) {
+                    if (rule.isActive()) {
+                        RewriteRegexRule regexRule = new RewriteRegexRule();
+                        regexRule.setRegex(rule.getFrom());
+                        regexRule.setReplacement(rule.getTo());
+                        rewriteHandler.addRule(regexRule);
+                    }
                 }
             }
         } catch (IOException e) {

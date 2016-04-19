@@ -55,7 +55,7 @@ public class APIApplication implements Application {
 
     @Override
     public void handleRequest(PoseidonRequest request, PoseidonResponse response) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException {
-        HttpMethod method = (HttpMethod) request.getAttribute(RequestConstants.METHOD);
+        HttpMethod method = request.getAttribute(RequestConstants.METHOD);
         boolean handled = false;
         if (method != null && method.equals(HttpMethod.OPTIONS)) {
             handled = handleOptionsRequest(request, response);

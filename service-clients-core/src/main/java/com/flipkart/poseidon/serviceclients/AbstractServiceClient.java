@@ -136,7 +136,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
         // Inject Configured Headers
         if (ServiceContext.get(HEADERS) instanceof Map) {
-            Map<String, String> configuredHeaders = (Map<String, String>) ServiceContext.get(HEADERS);
+            Map<String, String> configuredHeaders = ServiceContext.get(HEADERS);
             injectedHeadersMap.putAll(configuredHeaders);
         }
 

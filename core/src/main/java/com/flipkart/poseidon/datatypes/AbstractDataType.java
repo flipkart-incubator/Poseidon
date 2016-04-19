@@ -32,24 +32,6 @@ import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonica
 public abstract class AbstractDataType implements DataType {
     @Override
     @JsonIgnore
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    @JsonIgnore
-    public String getName() throws UnsupportedOperationException {
-        return canonicalName(getClass().getSimpleName(), "DataType", "DT");
-    }
-
-    @Override
-    @JsonIgnore
-    public List<Integer> getVersion() throws UnsupportedOperationException {
-        return Lists.newArrayList(1, 0, 0);
-    }
-
-    @Override
-    @JsonIgnore
     public String getShortDescription() {
         return this.getClass().getSimpleName();
     }

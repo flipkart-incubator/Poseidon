@@ -36,8 +36,8 @@ public class DataSourceRequest implements Request {
     }
 
     @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public <T> T getAttribute(String key) {
+        return (T) attributes.get(key);
     }
 
     @Override

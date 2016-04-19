@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
+public class MapDataType<K, V extends DataType> extends HashMap<K, V> implements DataType {
 
     public MapDataType(Map<? extends K, ? extends V> map) {
         super(map);
@@ -38,20 +38,5 @@ public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
     @Override
     public String getDescription() {
         return getShortDescription();
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return "mapDT";
-    }
-
-    @Override
-    public List<Integer> getVersion() {
-        return Arrays.asList(1, 0, 0);
     }
 }

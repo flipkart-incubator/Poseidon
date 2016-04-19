@@ -58,7 +58,7 @@ public class OrchestratorDataSource extends AbstractDataSource {
             return (DataType) response;
         }
         if (response instanceof Map) {
-            return new MapDataType<>((Map<String, Object>) response);
+            return new MapDataType<>((Map<String, DataType>) response);
         }
         if (response instanceof List) {
             return new ListDataType<>((List) response);
