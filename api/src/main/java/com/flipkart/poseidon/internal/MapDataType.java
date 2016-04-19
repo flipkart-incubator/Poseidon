@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapDataType<K, V extends DataType> extends HashMap<K, V> implements DataType {
+public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
 
     public MapDataType(Map<? extends K, ? extends V> map) {
         super(map);
