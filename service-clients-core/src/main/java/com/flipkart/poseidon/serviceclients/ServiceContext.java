@@ -90,8 +90,8 @@ public class ServiceContext {
      * @param key Key to get
      * @return {@link Object} - Value for given key
      */
-    public static Object get(String key) {
-        return context.get().get(key);
+    public static <T> T get(String key) {
+        return (T) context.get().get(key);
     }
 
     /**

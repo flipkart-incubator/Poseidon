@@ -85,7 +85,7 @@ public class ParamValidationFilter implements Filter {
                     value = attribute;
                 }
                 else if(isBodyRequest) {
-                    String bodyString = (String) poseidonRequest.getAttribute(RequestConstants.BODY);
+                    String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
                     if(!StringUtils.isEmpty(bodyString)) {
                         try {
                             if ((param.getJavatype() == null || param.getJavatype().isEmpty()) &&

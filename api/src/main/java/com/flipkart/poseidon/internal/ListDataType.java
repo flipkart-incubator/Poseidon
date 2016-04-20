@@ -39,19 +39,4 @@ public class ListDataType<T> extends ArrayList<T> implements DataType {
     public String getDescription() {
         return getShortDescription();
     }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return "listDT";
-    }
-
-    @Override
-    public List<Integer> getVersion() {
-        return Arrays.asList(1, 0, 0);
-    }
 }
