@@ -59,6 +59,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -124,7 +125,7 @@ public class Poseidon {
     private HandlerCollection getHandlers() {
         ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
         contextHandlerCollection.setHandlers(new Handler[]{
-                getRequestLogHandler(getRewriteHandler(getPoseidonHandler())),
+                getRequestLogHandler(getParentHandler()),
                 getMetricsHandler()
         });
         return contextHandlerCollection;
@@ -141,16 +142,21 @@ public class Poseidon {
         return requestLogHandler;
     }
 
-    private Handler getRewriteHandler(Handler handler) {
-        RewriteHandler rewriteHandler = new RewriteHandler();
-        rewriteHandler.setRewritePathInfo(false);
-        rewriteHandler.setRewriteRequestURI(true);
-        rewriteHandler.setOriginalPathAttribute("__path");
-        rewriteHandler.setHandler(handler);
+    private Handler getParentHandler() {
+        Handler poseidonHandler = getPoseidonHandler();
+        return getRewriteHandler(poseidonHandler).orElse(poseidonHandler);
+    }
 
+    private Optional<Handler> getRewriteHandler(Handler handler) {
         try {
             String rewriteFilePath = configuration.getRewriteFilePath();
             if (rewriteFilePath != null && !(rewriteFilePath = rewriteFilePath.trim()).isEmpty()) {
+                RewriteHandler rewriteHandler = new RewriteHandler();
+                rewriteHandler.setRewritePathInfo(false);
+                rewriteHandler.setRewriteRequestURI(true);
+                rewriteHandler.setOriginalPathAttribute("__path");
+                rewriteHandler.setHandler(handler);
+
                 JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
                 List<RewriteRule> rules = getMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
                 for (RewriteRule rule : rules) {
@@ -161,12 +167,12 @@ public class Poseidon {
                         rewriteHandler.addRule(regexRule);
                     }
                 }
+                return Optional.of(rewriteHandler);
             }
         } catch (IOException e) {
             logger.error("Unable to read Rewrite Rules", e);
         }
-
-        return rewriteHandler;
+        return Optional.empty();
     }
 
     private Handler getPoseidonHandler() {
