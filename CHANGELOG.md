@@ -1,6 +1,7 @@
-## 4.0.0-SNAPSHOT (Apr 13, 2016)
+## 4.0.0-SNAPSHOT (Apr 20, 2016)
 - Pass through headers can be configured by Applications
 - Service Clients - runtime and generation dependencies are separated
+- Moved to Lego 2.0.0
 
 ## 3.1.1 (Apr 6, 2016)
 - Included snapshot version fixes
