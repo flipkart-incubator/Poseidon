@@ -26,6 +26,7 @@ import com.flipkart.poseidon.pojos.TaskPOJO;
 import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import org.slf4j.Logger;
+import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class APILoader {
                         completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
                     } else {
                         // to remove extra slashes in url
-                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), null);
+                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), HttpMethod.GET.toString());
                     }
                     buildables.put(completeUrl, apiBuildable);
                 }

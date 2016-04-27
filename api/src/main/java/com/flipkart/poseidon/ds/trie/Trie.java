@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon.ds.trie;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by mohan.pandian on 20/11/15.
  */
@@ -42,24 +45,24 @@ public class Trie<K,V> {
 
         currNode = root.firstChild;
         prevNode = root;
-        Boolean insertAsrightSibling = false;
+        Boolean insertAsRightSibling = false;
 
         while (!EXIT_STATUS && currPosition <= noOfParts) {
             if (currNode == null) {          // this means insert all parts of url as firstChild
                 for (int pos = currPosition; pos <= noOfParts; pos++) {
-                    if (!insertAsrightSibling) {
+                    if (!insertAsRightSibling) {
                         currNode = prevNode.firstChild = new TrieNode<>();
                         currNode.parent = prevNode;
                     } else {
                         currNode = prevNode.rightSibling = new TrieNode<>();
-                        currNode.parent = prevNode;
-                        insertAsrightSibling = false;
+                        currNode.parent = prevNode.parent;
+                        insertAsRightSibling = false;
                     }
                     currNode.key = keys[pos];
 
                     // Mark this node as a placeholder if key is null
                     if (currNode.key == null) {
-                        currNode.matchAll = true;
+                        currNode.matchAny = true;
                     }
 
                     if (pos == noOfParts) {
@@ -67,7 +70,7 @@ public class Trie<K,V> {
                     }
 
                     // Check if new node is on right of placeHolder Node, if not move it to right
-                    if (currNode.parent.matchAll && currNode.parent.rightSibling == currNode) {
+                    if (currNode.parent.matchAny && currNode.parent.rightSibling == currNode) {
                         currNode.parent = prevNode.parent;
                         if (prevNode == prevNode.parent.rightSibling) {
                             prevNode.parent.rightSibling = currNode;
@@ -93,12 +96,12 @@ public class Trie<K,V> {
                     currPosition++;
                     prevNode = currNode;
                     currNode = currNode.firstChild;
-                    insertAsrightSibling = false;
+                    insertAsRightSibling = false;
                 }
             } else {
                 prevNode = currNode;
                 currNode = currNode.rightSibling;
-                insertAsrightSibling = true;
+                insertAsRightSibling = true;
             }
         }
     }
@@ -118,39 +121,55 @@ public class Trie<K,V> {
         V value = null;
         if (node != null) {
             // Normal matching scenario
-            if (node.matchAll || node.key.equals(keys[level])) {
+            if (node.matchAny || node.key.equals(keys[level])) {
                 if (level == (keys.length - 1)) {
                     value = node.value;
                 } else if (level < (keys.length - 1)) {
-                    value = get(node.firstChild, level + 1, keys);
-                }
-
-                // If value is null here then backtrack
-                if (value == null) {
-                    TrieNode<K, V> currentNode = node;
-                    TrieNode<K, V> nextNode = node.rightSibling;
-                    while (nextNode != null) {
-                        currentNode = nextNode;
-                        nextNode = nextNode.rightSibling;
-                    }
-
-                    if (currentNode.matchAll) {
-                        if (level == (keys.length - 1)) {
-                            value = node.value;
-                        } else {
-                            value = get(node.firstChild, level + 1, keys);
+                    List<TrieNode<K, V>> matchingChildren = getMatchingChildren(getAllChildren(node), keys[level + 1]);
+                    value = null;
+                    for (TrieNode<K, V> child : matchingChildren) {
+                        value = get(child, level + 1, keys);
+                        if (value != null) {
+                            break;
                         }
                     }
-                } else {
-                    return value;
                 }
-            } else {
+            } else if (node.parent != null && node.parent.parent == null) {
                 value = get(node.rightSibling, level, keys);
             }
         }
 
         // Case if node == null, a null value for buildable will be returned
         return value;
+    }
+
+    private List<TrieNode<K, V>> getAllChildren(TrieNode<K, V> node) {
+        List<TrieNode<K, V>> children = new ArrayList<>();
+        if (node != null && node.firstChild != null) {
+            children.add(node.firstChild);
+            TrieNode<K, V> currentNode = node.firstChild;
+            while ((currentNode = currentNode.rightSibling) != null) {
+                children.add(currentNode);
+            }
+        }
+
+        return children;
+    }
+
+    private List<TrieNode<K, V>> getMatchingChildren(List<TrieNode<K, V>> children, K key) {
+        List<TrieNode<K, V>> wildcardChildren = new ArrayList<>();
+        List<TrieNode<K, V>> matchingChildren = new ArrayList<>();
+
+        for (TrieNode<K, V> child : children) {
+            if (child.key == null) {
+                wildcardChildren.add(child);
+            } else if (key != null && key.equals(child.key)) {
+                matchingChildren.add(child);
+            }
+        }
+        matchingChildren.addAll(wildcardChildren);
+
+        return matchingChildren;
     }
 
     public void printAllPaths(String separator) {
@@ -163,17 +182,24 @@ public class Trie<K,V> {
         }
 
         StringBuilder strBuilder = new StringBuilder(pathStr);
-        if (!pathStr.endsWith(separator)) {
-            strBuilder.append(separator);
-        }
-        if (node.key != null) {
-            strBuilder.append(node.key);
-        }
-        if (node.matchAll) {
-            strBuilder.append("*");
-        }
-        if (node.value != null) {
-            System.out.println(strBuilder);
+        String key = (String) node.key;
+        if (node.parent != null) {
+            if (node.parent.parent == null && key != null && !key.isEmpty() && key.charAt(0) == '_' && key.charAt(key.length() - 1) == '_') {
+                strBuilder.append(key.substring(1, key.length() - 1)).append(" ");
+            } else {
+                if (!pathStr.endsWith(separator)) {
+                    strBuilder.append(separator);
+                }
+                if (node.key != null) {
+                    strBuilder.append(node.key);
+                }
+                if (node.matchAny) {
+                    strBuilder.append("*");
+                }
+                if (node.value != null) {
+                    System.out.println(strBuilder);
+                }
+            }
         }
 
         traverseAndPrint(node.firstChild, strBuilder.toString(), separator);

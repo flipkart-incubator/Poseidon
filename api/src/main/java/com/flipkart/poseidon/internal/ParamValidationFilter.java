@@ -106,7 +106,7 @@ public class ParamValidationFilter implements Filter {
                 } else if (isPathParam) {
                     int pos = param.getPosition();
                     String[] splitUrl = poseidonRequest.getUrl().split("/");
-                    value = splitUrl[pos];
+                    value = splitUrl.length > pos ? splitUrl[pos] : null;
                 } else if (param.isFile()) {
                     value = poseidonRequest.getAttribute(name);
                     if (failOnMissingValue && value == null) {
