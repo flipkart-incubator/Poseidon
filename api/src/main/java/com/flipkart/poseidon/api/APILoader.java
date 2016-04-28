@@ -67,7 +67,7 @@ public class APILoader {
                     if (pojo.getHttpMethod() != null) {
                         completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
                     } else {
-                        throw new UnsupportedOperationException();
+                        throw new UnsupportedOperationException("HttpMethod cannot be null");
                     }
                     buildables.put(completeUrl, apiBuildable);
                 }
