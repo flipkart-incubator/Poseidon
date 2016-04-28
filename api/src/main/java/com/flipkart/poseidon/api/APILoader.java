@@ -26,6 +26,7 @@ import com.flipkart.poseidon.pojos.TaskPOJO;
 import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import org.slf4j.Logger;
+import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,13 +67,12 @@ public class APILoader {
                     if (pojo.getHttpMethod() != null) {
                         completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
                     } else {
-                        // to remove extra slashes in url
-                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), null);
+                        throw new UnsupportedOperationException("HttpMethod cannot be null");
                     }
                     buildables.put(completeUrl, apiBuildable);
                 }
             } catch (Throwable error) {
-                logger.error("Buildable loading failed for atleast one api: " + pojo.getUrl(), error);
+                logger.error("Buildable loading failed for api: " + pojo.getUrl(), error);
             }
         }
 
