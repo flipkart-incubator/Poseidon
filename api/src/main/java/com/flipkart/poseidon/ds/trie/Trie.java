@@ -55,7 +55,7 @@ public class Trie<K,V> {
                         currNode.parent = prevNode;
                     } else {
                         currNode = prevNode.rightSibling = new TrieNode<>();
-                        currNode.parent = prevNode.parent;
+                        currNode.parent = prevNode;
                         insertAsRightSibling = false;
                     }
                     currNode.key = keys[pos];
@@ -125,51 +125,35 @@ public class Trie<K,V> {
                 if (level == (keys.length - 1)) {
                     value = node.value;
                 } else if (level < (keys.length - 1)) {
-                    List<TrieNode<K, V>> matchingChildren = getMatchingChildren(getAllChildren(node), keys[level + 1]);
-                    value = null;
-                    for (TrieNode<K, V> child : matchingChildren) {
-                        value = get(child, level + 1, keys);
-                        if (value != null) {
-                            break;
+                    value = get(node.firstChild, level + 1, keys);
+                }
+
+                // If value is null here then backtrack
+                if (value == null) {
+                    TrieNode<K, V> currentNode = node;
+                    TrieNode<K, V> nextNode = node.rightSibling;
+                    while (nextNode != null) {
+                        currentNode = nextNode;
+                        nextNode = nextNode.rightSibling;
+                    }
+
+                    if (currentNode.matchAny) {
+                        if (level == (keys.length - 1)) {
+                            value = node.value;
+                        } else {
+                            value = get(node.firstChild, level + 1, keys);
                         }
                     }
+                } else {
+                    return value;
                 }
-            } else if (node.parent != null && node.parent.parent == null) {
+            } else {
                 value = get(node.rightSibling, level, keys);
             }
         }
 
         // Case if node == null, a null value for buildable will be returned
         return value;
-    }
-
-    private List<TrieNode<K, V>> getAllChildren(TrieNode<K, V> node) {
-        List<TrieNode<K, V>> children = new ArrayList<>();
-        if (node != null && node.firstChild != null) {
-            children.add(node.firstChild);
-            TrieNode<K, V> currentNode = node.firstChild;
-            while ((currentNode = currentNode.rightSibling) != null) {
-                children.add(currentNode);
-            }
-        }
-
-        return children;
-    }
-
-    private List<TrieNode<K, V>> getMatchingChildren(List<TrieNode<K, V>> children, K key) {
-        List<TrieNode<K, V>> wildcardChildren = new ArrayList<>();
-        List<TrieNode<K, V>> matchingChildren = new ArrayList<>();
-
-        for (TrieNode<K, V> child : children) {
-            if (child.key == null) {
-                wildcardChildren.add(child);
-            } else if (key != null && key.equals(child.key)) {
-                matchingChildren.add(child);
-            }
-        }
-        matchingChildren.addAll(wildcardChildren);
-
-        return matchingChildren;
     }
 
     public void printAllPaths(String separator) {
@@ -182,24 +166,17 @@ public class Trie<K,V> {
         }
 
         StringBuilder strBuilder = new StringBuilder(pathStr);
-        String key = (String) node.key;
-        if (node.parent != null) {
-            if (node.parent.parent == null && key != null && !key.isEmpty() && key.charAt(0) == '_' && key.charAt(key.length() - 1) == '_') {
-                strBuilder.append(key.substring(1, key.length() - 1)).append(" ");
-            } else {
-                if (!pathStr.endsWith(separator)) {
-                    strBuilder.append(separator);
-                }
-                if (node.key != null) {
-                    strBuilder.append(node.key);
-                }
-                if (node.matchAny) {
-                    strBuilder.append("*");
-                }
-                if (node.value != null) {
-                    System.out.println(strBuilder);
-                }
-            }
+        if (!pathStr.endsWith(separator)) {
+            strBuilder.append(separator);
+        }
+        if (node.key != null) {
+            strBuilder.append(node.key);
+        }
+        if (node.matchAny) {
+            strBuilder.append("*");
+        }
+        if (node.value != null) {
+            System.out.println(strBuilder);
         }
 
         traverseAndPrint(node.firstChild, strBuilder.toString(), separator);
