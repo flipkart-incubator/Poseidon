@@ -11,6 +11,6 @@ public class ApiHelperTest {
         String url = "/india///state/";
         String method = "GET";
         String result = ApiHelper.getUrlWithHttpMethod(url, method);
-        assertEquals(result, "/india/state/_GET_");
+        assertEquals("_GET_/india/state/", result);
     }
 }

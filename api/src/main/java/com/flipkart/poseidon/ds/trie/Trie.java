@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon.ds.trie;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by mohan.pandian on 20/11/15.
  */
@@ -42,24 +45,24 @@ public class Trie<K,V> {
 
         currNode = root.firstChild;
         prevNode = root;
-        Boolean insertAsrightSibling = false;
+        Boolean insertAsRightSibling = false;
 
         while (!EXIT_STATUS && currPosition <= noOfParts) {
             if (currNode == null) {          // this means insert all parts of url as firstChild
                 for (int pos = currPosition; pos <= noOfParts; pos++) {
-                    if (!insertAsrightSibling) {
+                    if (!insertAsRightSibling) {
                         currNode = prevNode.firstChild = new TrieNode<>();
                         currNode.parent = prevNode;
                     } else {
                         currNode = prevNode.rightSibling = new TrieNode<>();
                         currNode.parent = prevNode;
-                        insertAsrightSibling = false;
+                        insertAsRightSibling = false;
                     }
                     currNode.key = keys[pos];
 
                     // Mark this node as a placeholder if key is null
                     if (currNode.key == null) {
-                        currNode.matchAll = true;
+                        currNode.matchAny = true;
                     }
 
                     if (pos == noOfParts) {
@@ -67,7 +70,7 @@ public class Trie<K,V> {
                     }
 
                     // Check if new node is on right of placeHolder Node, if not move it to right
-                    if (currNode.parent.matchAll && currNode.parent.rightSibling == currNode) {
+                    if (currNode.parent.matchAny && currNode.parent.rightSibling == currNode) {
                         currNode.parent = prevNode.parent;
                         if (prevNode == prevNode.parent.rightSibling) {
                             prevNode.parent.rightSibling = currNode;
@@ -93,12 +96,12 @@ public class Trie<K,V> {
                     currPosition++;
                     prevNode = currNode;
                     currNode = currNode.firstChild;
-                    insertAsrightSibling = false;
+                    insertAsRightSibling = false;
                 }
             } else {
                 prevNode = currNode;
                 currNode = currNode.rightSibling;
-                insertAsrightSibling = true;
+                insertAsRightSibling = true;
             }
         }
     }
@@ -118,7 +121,7 @@ public class Trie<K,V> {
         V value = null;
         if (node != null) {
             // Normal matching scenario
-            if (node.matchAll || node.key.equals(keys[level])) {
+            if (node.matchAny || node.key.equals(keys[level])) {
                 if (level == (keys.length - 1)) {
                     value = node.value;
                 } else if (level < (keys.length - 1)) {
@@ -134,7 +137,7 @@ public class Trie<K,V> {
                         nextNode = nextNode.rightSibling;
                     }
 
-                    if (currentNode.matchAll) {
+                    if (currentNode.matchAny) {
                         if (level == (keys.length - 1)) {
                             value = node.value;
                         } else {
@@ -169,7 +172,7 @@ public class Trie<K,V> {
         if (node.key != null) {
             strBuilder.append(node.key);
         }
-        if (node.matchAll) {
+        if (node.matchAny) {
             strBuilder.append("*");
         }
         if (node.value != null) {

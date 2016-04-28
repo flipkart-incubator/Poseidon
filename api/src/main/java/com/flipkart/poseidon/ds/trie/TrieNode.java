@@ -22,7 +22,7 @@ package com.flipkart.poseidon.ds.trie;
 public class TrieNode<K,V> {
     K key;
     V value;
-    boolean matchAll;
+    boolean matchAny;
     TrieNode<K,V> parent;
     TrieNode<K,V> rightSibling;
     TrieNode<K,V> firstChild;
