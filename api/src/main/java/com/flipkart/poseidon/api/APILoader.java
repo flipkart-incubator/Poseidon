@@ -67,13 +67,12 @@ public class APILoader {
                     if (pojo.getHttpMethod() != null) {
                         completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
                     } else {
-                        // to remove extra slashes in url
-                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), HttpMethod.GET.toString());
+                        throw new UnsupportedOperationException();
                     }
                     buildables.put(completeUrl, apiBuildable);
                 }
             } catch (Throwable error) {
-                logger.error("Buildable loading failed for atleast one api: " + pojo.getUrl(), error);
+                logger.error("Buildable loading failed for api: " + pojo.getUrl(), error);
             }
         }
 
