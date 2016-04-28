@@ -17,13 +17,7 @@
 package com.flipkart.poseidon.datatypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import flipkart.lego.api.entities.DataType;
-
-import java.util.List;
-
-import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
 
 /**
  * AbstractDataType is a {@link DataType} with default implementations for
