@@ -61,7 +61,11 @@ public class Trie<K, V> {
                 newNode.rightSibling = currentParent.firstChild;
                 currentParent.firstChild = newNode;
             } else {
+                while (currentNode.rightSibling != null) {
+                    currentNode = currentNode.rightSibling;
+                }
                 currentNode.rightSibling = newNode;
+                currentParent.wildChild = newNode;
             }
 
             addChainAsFirstChild(newNode, Arrays.copyOfRange(keys, i + 1, keys.length), value);
@@ -99,12 +103,15 @@ public class Trie<K, V> {
             newNode.value = i == keys.length - 1 ? value : null;
 
             currentNode.firstChild = newNode;
+            if (newNode.matchAny) {
+                currentNode.wildChild = newNode;
+            }
             currentNode = currentNode.firstChild;
         }
     }
 
     public V get(K[] keys) {
-        return get(root.firstChild, 0, keys);
+        return get(root, 0, keys);
     }
 
     /**
@@ -117,35 +124,32 @@ public class Trie<K, V> {
     private V get(TrieNode<K, V> node, int level, K[] keys) {
         V value = null;
         if (node != null) {
-            // Normal matching scenario
-            if (node.matchAny || node.key.equals(keys[level])) {
-                if (level == (keys.length - 1)) {
-                    value = node.value;
-                } else if (level < (keys.length - 1)) {
-                    value = get(node.firstChild, level + 1, keys);
-                }
+            TrieNode<K, V> matchingChild = node.firstChild;
+            TrieNode<K, V> wildChild = node.wildChild;
 
-                // If value is null here then backtrack
-                if (value == null) {
-                    TrieNode<K, V> currentNode = node;
-                    TrieNode<K, V> nextNode = node.rightSibling;
-                    while (nextNode != null) {
-                        currentNode = nextNode;
-                        nextNode = nextNode.rightSibling;
-                    }
-
-                    if (currentNode.matchAny) {
-                        if (level == (keys.length - 1)) {
-                            value = currentNode.value;
-                        } else {
-                            value = get(node.firstChild, level + 1, keys);
-                        }
-                    }
-                } else {
-                    return value;
+            while (matchingChild != null) {
+                if (matchingChild.matchAny || matchingChild.key.equals(keys[level])) {
+                    break;
                 }
+                matchingChild = matchingChild.rightSibling;
+            }
+
+            if (matchingChild == null) {
+                return null;
+            }
+
+            if (level == keys.length - 1) {
+                value = matchingChild.value;
             } else {
-                value = get(node.rightSibling, level, keys);
+                value = get(matchingChild, level + 1, keys);
+            }
+
+            if (value == null && !matchingChild.matchAny && wildChild != null) {
+                if (level == keys.length - 1) {
+                    value = wildChild.value;
+                } else {
+                    value = get(wildChild, level + 1, keys);
+                }
             }
         }
 

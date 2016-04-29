@@ -25,4 +25,5 @@ public class TrieNode<K,V> {
     boolean matchAny;
     TrieNode<K,V> rightSibling;
     TrieNode<K,V> firstChild;
+    TrieNode<K,V> wildChild;
 }

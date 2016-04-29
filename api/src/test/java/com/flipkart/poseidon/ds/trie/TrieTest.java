@@ -47,6 +47,7 @@ public class TrieTest {
     public void placeholderTest1() {
         Trie<String, String> trie = new Trie<>();
         trie.add(new String[]{"a", null}, "a*");
+        trie.add(new String[]{"n", null}, "n*");
         trie.add(new String[]{null, "a", null, "a"}, "prada");
         trie.add(new String[]{null, "a", "d", "a"}, "nada");
         trie.add(new String[]{"a", "b"}, "ab");
@@ -96,6 +97,36 @@ public class TrieTest {
         Assert.assertEquals("a*", trie.get(new String[]{"a", "c"}));
         Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything1", "e"}));
         Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
+
+        System.out.println("Tree for placeholderTest2:");
+        trie.printAllPaths("/");
+        System.out.println();
+    }
+
+    @Test
+    public void placeholderTest3() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(new String[]{"a", "b"}, "ab");
+        trie.add(new String[]{"a", "c"}, "ac");
+        trie.add(new String[]{"a", null}, "a*");
+
+        Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
+        Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
+
+        System.out.println("Tree for placeholderTest2:");
+        trie.printAllPaths("/");
+        System.out.println();
+    }
+
+    @Test
+    public void placeholderTest4() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(new String[]{"a", "b", "d"}, "abd");
+        trie.add(new String[]{"a", "c"}, "ac");
+
+        Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
+        Assert.assertEquals(null, trie.get(new String[]{"a", "b"}));
+        Assert.assertEquals(null, trie.get(new String[]{"a", "b", "c"}));
 
         System.out.println("Tree for placeholderTest2:");
         trie.printAllPaths("/");
