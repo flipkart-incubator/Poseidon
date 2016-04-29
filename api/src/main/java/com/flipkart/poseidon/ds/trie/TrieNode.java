@@ -23,7 +23,7 @@ public class TrieNode<K,V> {
     K key;
     V value;
     boolean matchAny;
-    TrieNode<K,V> parent;
     TrieNode<K,V> rightSibling;
     TrieNode<K,V> firstChild;
+    TrieNode<K,V> wildChild;
 }

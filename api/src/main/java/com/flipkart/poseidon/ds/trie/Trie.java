@@ -16,14 +16,13 @@
 
 package com.flipkart.poseidon.ds.trie;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * Created by mohan.pandian on 20/11/15.
  */
-public class Trie<K,V> {
-    private TrieNode<K,V> root;
+public class Trie<K, V> {
+    private TrieNode<K, V> root;
 
     public Trie() {
         root = new TrieNode<>();
@@ -37,118 +36,120 @@ public class Trie<K,V> {
      * If no match found and reached the end then add all nodes left as firstChild
      **/
     public void add(K[] keys, V value) {
-        Boolean EXIT_STATUS = false;
-        TrieNode<K,V> currNode, prevNode;
+        if (root.firstChild == null) {
+            addChainAsFirstChild(root, keys, value);
+            return;
+        }
 
-        int noOfParts = keys.length - 1;
-        int currPosition = 0;
-
-        currNode = root.firstChild;
-        prevNode = root;
-        Boolean insertAsRightSibling = false;
-
-        while (!EXIT_STATUS && currPosition <= noOfParts) {
-            if (currNode == null) {          // this means insert all parts of url as firstChild
-                for (int pos = currPosition; pos <= noOfParts; pos++) {
-                    if (!insertAsRightSibling) {
-                        currNode = prevNode.firstChild = new TrieNode<>();
-                        currNode.parent = prevNode;
-                    } else {
-                        currNode = prevNode.rightSibling = new TrieNode<>();
-                        currNode.parent = prevNode;
-                        insertAsRightSibling = false;
-                    }
-                    currNode.key = keys[pos];
-
-                    // Mark this node as a placeholder if key is null
-                    if (currNode.key == null) {
-                        currNode.matchAny = true;
-                    }
-
-                    if (pos == noOfParts) {
-                        currNode.value = value;
-                    }
-
-                    // Check if new node is on right of placeHolder Node, if not move it to right
-                    if (currNode.parent.matchAny && currNode.parent.rightSibling == currNode) {
-                        currNode.parent = prevNode.parent;
-                        if (prevNode == prevNode.parent.rightSibling) {
-                            prevNode.parent.rightSibling = currNode;
-                        } else {
-                            prevNode.parent.firstChild = currNode;
-                        }
-
-                        prevNode.rightSibling = null;
-                        currNode.rightSibling = prevNode;
-                        prevNode.parent = currNode;
-                    }
-
-                    prevNode = currNode;
-                    currNode = currNode.firstChild;
-                    currPosition++;
-                }
-                EXIT_STATUS = true;
-            } else if ((currNode.key == null && keys[currPosition] == null) || (currNode.key != null && currNode.key.equals(keys[currPosition]))) {
-                if (currPosition == noOfParts) {
-                    currNode.value = value;
-                    EXIT_STATUS = true;
-                } else {
-                    currPosition++;
-                    prevNode = currNode;
-                    currNode = currNode.firstChild;
-                    insertAsRightSibling = false;
-                }
-            } else {
-                prevNode = currNode;
-                currNode = currNode.rightSibling;
-                insertAsRightSibling = true;
+        TrieNode currentNode = root.firstChild;
+        TrieNode currentParent = root;
+        for (int i = 0; i < keys.length; i++) {
+            TrieNode matchingNode = findMatchingNode(currentNode, keys[i]);
+            if (matchingNode != null) {
+                currentParent = matchingNode;
+                currentNode = matchingNode.firstChild;
+                matchingNode.value = i == keys.length - 1 ? value : matchingNode.value;
+                continue;
             }
+
+            TrieNode newNode = new TrieNode();
+            newNode.key = keys[i];
+            newNode.matchAny = keys[i] == null;
+            newNode.value = i == keys.length - 1 ? value : null;
+
+            if (newNode.key != null) {
+                newNode.rightSibling = currentParent.firstChild;
+                currentParent.firstChild = newNode;
+            } else {
+                while (currentNode.rightSibling != null) {
+                    currentNode = currentNode.rightSibling;
+                }
+                currentNode.rightSibling = newNode;
+                currentParent.wildChild = newNode;
+            }
+
+            addChainAsFirstChild(newNode, Arrays.copyOfRange(keys, i + 1, keys.length), value);
+            return;
+        }
+    }
+
+    private TrieNode findMatchingNode(TrieNode node, K key) {
+        if (node == null) {
+            return null;
+        }
+
+        TrieNode correctNode = null;
+        if ((node.matchAny && key == null) || (!node.matchAny && node.key.equals(key))) {
+            correctNode = node;
+        } else {
+            TrieNode current = node.rightSibling;
+            while (current != null) {
+                if ((current.matchAny && key == null) || (!current.matchAny && current.key.equals(key))) {
+                    correctNode = current;
+                    break;
+                }
+                current = current.rightSibling;
+            }
+        }
+        return correctNode;
+    }
+
+    private void addChainAsFirstChild(TrieNode node, K[] keys, V value) {
+        TrieNode currentNode = node;
+        for (int i = 0; i < keys.length; i++) {
+            TrieNode newNode = new TrieNode();
+            newNode.key = keys[i];
+            newNode.matchAny = keys[i] == null;
+            newNode.value = i == keys.length - 1 ? value : null;
+
+            currentNode.firstChild = newNode;
+            if (newNode.matchAny) {
+                currentNode.wildChild = newNode;
+            }
+            currentNode = currentNode.firstChild;
         }
     }
 
     public V get(K[] keys) {
-        return get(root.firstChild, 0, keys);
+        return get(root, 0, keys);
     }
 
     /**
      * 1. First check if the given string is matched with a placeholder node (matchAll:true)?
      * 2. If yes, assign the value to a path variable
      * 3. where the input url ends, check and return value from
-     *    that node else ERROR msg
+     * that node else ERROR msg
      * 4. back-tracking rules to be defined
      **/
-    private V get(TrieNode<K,V> node, int level, K[] keys) {
+    private V get(TrieNode<K, V> node, int level, K[] keys) {
         V value = null;
         if (node != null) {
-            // Normal matching scenario
-            if (node.matchAny || node.key.equals(keys[level])) {
-                if (level == (keys.length - 1)) {
-                    value = node.value;
-                } else if (level < (keys.length - 1)) {
-                    value = get(node.firstChild, level + 1, keys);
-                }
+            TrieNode<K, V> matchingChild = node.firstChild;
+            TrieNode<K, V> wildChild = node.wildChild;
 
-                // If value is null here then backtrack
-                if (value == null) {
-                    TrieNode<K, V> currentNode = node;
-                    TrieNode<K, V> nextNode = node.rightSibling;
-                    while (nextNode != null) {
-                        currentNode = nextNode;
-                        nextNode = nextNode.rightSibling;
-                    }
-
-                    if (currentNode.matchAny) {
-                        if (level == (keys.length - 1)) {
-                            value = node.value;
-                        } else {
-                            value = get(node.firstChild, level + 1, keys);
-                        }
-                    }
-                } else {
-                    return value;
+            while (matchingChild != null) {
+                if (matchingChild.matchAny || matchingChild.key.equals(keys[level])) {
+                    break;
                 }
+                matchingChild = matchingChild.rightSibling;
+            }
+
+            if (matchingChild == null) {
+                return null;
+            }
+
+            if (level == keys.length - 1) {
+                value = matchingChild.value;
             } else {
-                value = get(node.rightSibling, level, keys);
+                value = get(matchingChild, level + 1, keys);
+            }
+
+            if (value == null && !matchingChild.matchAny && wildChild != null) {
+                if (level == keys.length - 1) {
+                    value = wildChild.value;
+                } else {
+                    value = get(wildChild, level + 1, keys);
+                }
             }
         }
 
