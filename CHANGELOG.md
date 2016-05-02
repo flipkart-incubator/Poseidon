@@ -1,8 +1,9 @@
-## 4.0.0-SNAPSHOT (Apr 28, 2016)
+## 4.0.0-SNAPSHOT (May 2, 2016)
 - Pass through headers can be configured by Applications
 - Service Clients - runtime and generation dependencies are separated
 - Moved to Lego 2.0.0
 - [Bug fix](https://github.com/flipkart-incubator/Poseidon/issues/17) - Path parameter at the end of URL
+- Pretty printing of all API URLs
 
 ## 3.1.1 (Apr 6, 2016)
 - Included snapshot version fixes
