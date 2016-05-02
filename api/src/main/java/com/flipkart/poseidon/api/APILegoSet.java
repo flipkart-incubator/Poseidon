@@ -26,6 +26,7 @@ import flipkart.lego.api.entities.Buildable;
 import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.LegoSetException;
+import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -39,7 +40,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public abstract class APILegoSet extends PoseidonLegoSet {
     private static final Logger logger = getLogger(APILegoSet.class);
-    private final int methodLength = 7;
+    private final int MAX_METHOD_LENGTH = HttpMethod.OPTIONS.asString().length();
 
     private Trie<String, Buildable> trie = new Trie<>();
 
@@ -75,11 +76,9 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     }
 
     private void equalizeAndPrintHttpMethod(String method) {
-        int diff = methodLength - method.length();
-        if (diff > 0) {
-            for (int i = 0; i < diff; i++) {
-                method = method + " ";
-            }
+        int diff = MAX_METHOD_LENGTH - method.length();
+        for (int i = 0; i < diff; i++) {
+            method = method + " ";
         }
         System.out.print(method + "\t\t\t\t");
     }

@@ -170,21 +170,21 @@ public class Trie<K, V> {
             return;
         }
 
-        List<String> strBuilder = new ArrayList<>(pathStr);
+        List<String> pathParts = new ArrayList<>(pathStr);
         if (pathStr.lastIndexOf(separator) != pathStr.size() - 1) {
-            strBuilder.add(separator);
+            pathParts.add(separator);
         }
         if (node.key != null) {
-            strBuilder.add(node.key.toString());
+            pathParts.add(node.key.toString());
         }
         if (node.matchAny) {
-            strBuilder.add("*");
+            pathParts.add("*");
         }
         if (node.value != null) {
-            paths.add(strBuilder);
+            paths.add(pathParts);
         }
 
-        traverseAndPrint(node.firstChild, strBuilder, separator, paths);
+        traverseAndPrint(node.firstChild, pathParts, separator, paths);
         traverseAndPrint(node.rightSibling, pathStr, separator, paths);
     }
 }
