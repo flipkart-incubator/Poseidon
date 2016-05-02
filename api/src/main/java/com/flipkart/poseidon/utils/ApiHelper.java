@@ -28,6 +28,6 @@ public class ApiHelper {
             return url;
         }
         // remove the extra slashes passed in the url
-        return String.format("_%s_/%s", httpMethod, url ).replaceAll("[/]{2,}", "/");
+        return String.format("%s/%s", httpMethod, url ).replaceAll("[/]{2,}", "/");
     }
 }
