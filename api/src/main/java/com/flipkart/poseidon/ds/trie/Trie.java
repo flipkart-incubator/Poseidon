@@ -16,7 +16,9 @@
 
 package com.flipkart.poseidon.ds.trie;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by mohan.pandian on 20/11/15.
@@ -157,30 +159,32 @@ public class Trie<K, V> {
         return value;
     }
 
-    public void printAllPaths(String separator) {
-        traverseAndPrint(root, "", separator);
+    public List<List<String>> printAllPaths(String separator) {
+        List<List<String>> paths = new ArrayList<>();
+        traverseAndPrint(root, new ArrayList<>(), separator, paths);
+        return paths;
     }
 
-    private void traverseAndPrint(TrieNode<K, V> node, String pathStr, String separator) {
+    private void traverseAndPrint(TrieNode<K, V> node, List<String> pathStr, String separator, List<List<String>> paths) {
         if (node == null) {
             return;
         }
 
-        StringBuilder strBuilder = new StringBuilder(pathStr);
-        if (!pathStr.endsWith(separator)) {
-            strBuilder.append(separator);
+        List<String> pathParts = new ArrayList<>(pathStr);
+        if (!pathStr.isEmpty() && !separator.equals(pathStr.get(pathStr.size() - 1))) {
+            pathParts.add(separator);
         }
         if (node.key != null) {
-            strBuilder.append(node.key);
+            pathParts.add(node.key.toString());
         }
         if (node.matchAny) {
-            strBuilder.append("*");
+            pathParts.add("*");
         }
         if (node.value != null) {
-            System.out.println(strBuilder);
+            paths.add(pathParts);
         }
 
-        traverseAndPrint(node.firstChild, strBuilder.toString(), separator);
-        traverseAndPrint(node.rightSibling, pathStr, separator);
+        traverseAndPrint(node.firstChild, pathParts, separator, paths);
+        traverseAndPrint(node.rightSibling, pathStr, separator, paths);
     }
 }

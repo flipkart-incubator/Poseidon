@@ -26,8 +26,10 @@ import flipkart.lego.api.entities.Buildable;
 import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.LegoSetException;
+import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
@@ -38,6 +40,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public abstract class APILegoSet extends PoseidonLegoSet {
     private static final Logger logger = getLogger(APILegoSet.class);
+    private final int MAX_METHOD_LENGTH = HttpMethod.OPTIONS.asString().length();
 
     private Trie<String, Buildable> trie = new Trie<>();
 
@@ -54,8 +57,30 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             trie.add(keys, entry.getValue());
         }
 
+        printPaths();
+    }
+
+    private void printPaths() {
         logger.info("Registered URLs: ");
-        trie.printAllPaths("/");
+        List<List<String>> paths = trie.printAllPaths("/");
+        System.out.println("==========================================================================================");
+        System.out.println();
+        paths.forEach(list -> {
+            equalizeAndPrintHttpMethod(list.get(0));
+            list.subList(1, list.size()).forEach(System.out::print);
+            System.out.println();
+        });
+        System.out.println();
+        System.out.println("==========================================================================================");
+        System.out.println();
+    }
+
+    private void equalizeAndPrintHttpMethod(String method) {
+        int diff = MAX_METHOD_LENGTH - method.length();
+        for (int i = 0; i < diff; i++) {
+            method = method + " ";
+        }
+        System.out.print(method + "\t\t\t\t");
     }
 
     @Override

@@ -19,6 +19,8 @@ package com.flipkart.poseidon.ds.trie;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * Created by mohan.pandian on 20/11/15.
  */
@@ -39,7 +41,7 @@ public class TrieTest {
         Assert.assertEquals("ada", trie.get(new String[]{"a", "d", "a"}));
 
         System.out.println("Tree for noPlaceholderTest:");
-        trie.printAllPaths("/");
+        printPaths(trie);
         System.out.println();
     }
 
@@ -82,7 +84,7 @@ public class TrieTest {
         Assert.assertNull(trie.get(new String[]{null, "d", "a", null}));
 
         System.out.println("Tree for placeholderTest1:");
-        trie.printAllPaths("/");
+        printPaths(trie);
         System.out.println();
     }
 
@@ -99,7 +101,7 @@ public class TrieTest {
         Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
 
         System.out.println("Tree for placeholderTest2:");
-        trie.printAllPaths("/");
+        printPaths(trie);
         System.out.println();
     }
 
@@ -113,8 +115,8 @@ public class TrieTest {
         Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
         Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
 
-        System.out.println("Tree for placeholderTest2:");
-        trie.printAllPaths("/");
+        System.out.println("Tree for placeholderTest3:");
+        printPaths(trie);
         System.out.println();
     }
 
@@ -128,8 +130,15 @@ public class TrieTest {
         Assert.assertEquals(null, trie.get(new String[]{"a", "b"}));
         Assert.assertEquals(null, trie.get(new String[]{"a", "b", "c"}));
 
-        System.out.println("Tree for placeholderTest2:");
-        trie.printAllPaths("/");
+        System.out.println("Tree for placeholderTest4:");
+        printPaths(trie);
         System.out.println();
+    }
+
+    private <K, V> void printPaths(Trie<K, V> trie) {
+        trie.printAllPaths("/").forEach(list -> {
+            list.forEach(System.out::print);
+            System.out.println();
+        });
     }
 }
