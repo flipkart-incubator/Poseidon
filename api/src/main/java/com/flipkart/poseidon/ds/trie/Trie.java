@@ -171,7 +171,7 @@ public class Trie<K, V> {
         }
 
         List<String> pathParts = new ArrayList<>(pathStr);
-        if (pathStr.lastIndexOf(separator) != pathStr.size() - 1) {
+        if (!pathStr.isEmpty() && !separator.equals(pathStr.get(pathStr.size() - 1))) {
             pathParts.add(separator);
         }
         if (node.key != null) {
