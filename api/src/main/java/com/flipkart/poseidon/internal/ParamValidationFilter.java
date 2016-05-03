@@ -72,6 +72,7 @@ public class ParamValidationFilter implements Filter {
                 String name = param.getName();
                 String internalName = param.getInternalName();
                 ParamPOJO.DataType datatype = param.getDatatype();
+                Object defaultValue = param.getDefaultValue();
                 boolean multivalue = param.getMultivalue();
                 boolean isBodyRequest = param.isBody();
                 boolean isHeader = param.isHeader();
@@ -82,7 +83,12 @@ public class ParamValidationFilter implements Filter {
                     if (failOnMissingValue && attribute == null) {
                         throw new BadRequestException("Missing header : " + name);
                     }
-                    value = attribute;
+                    if (!failOnMissingValue && attribute == null && defaultValue != null) {
+                        // Optional param, value is not present but default is specified
+                        value = defaultValue;
+                    } else {
+                        value = attribute;
+                    }
                 }
                 else if(isBodyRequest) {
                     String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
@@ -121,7 +127,12 @@ public class ParamValidationFilter implements Filter {
                     if (failOnMissingValue && attribute == null) {
                         throw new BadRequestException("Missing parameter : " + name);
                     }
-                    value = parseParamValues(name, (String[]) attribute, datatype, multivalue);
+                    if (!failOnMissingValue && attribute == null && defaultValue != null) {
+                        // Optional param, value is not present but default is specified
+                        value = defaultValue;
+                    } else {
+                        value = parseParamValues(name, (String[]) attribute, datatype, multivalue);
+                    }
                 }
                 if (internalName != null && !internalName.isEmpty()) {
                     parsedParams.put(internalName, value);
@@ -156,6 +167,8 @@ public class ParamValidationFilter implements Filter {
                 return getDoubleValues(values);
             case INTEGER:
                 return getIntegerValues(values);
+            case BOOLEAN:
+                return getBooleanValues(values);
         }
 
         return getStringValues(values);
@@ -177,6 +190,15 @@ public class ParamValidationFilter implements Filter {
         }
 
         return integerValues;
+    }
+
+    private List<Boolean> getBooleanValues(String[] values) {
+        List<Boolean> booleanValues = new ArrayList<>();
+        for (String value : values) {
+            booleanValues.add(Boolean.parseBoolean(value));
+        }
+
+        return booleanValues;
     }
 
     private List<String> getStringValues(String[] values) {

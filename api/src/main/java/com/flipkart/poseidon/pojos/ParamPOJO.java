@@ -23,6 +23,15 @@ public class ParamPOJO {
     private String name;
     private String internalName;
     private DataType datatype;
+    /*
+     * Used only for optional query params and headers (including multivalue)
+     * Please provide constants in corresponding datatype.
+     * Ex:
+     *   "name": "myFlag",
+     *   "datatype": "Boolean",
+     *   "defaultValue": true
+     */
+    private Object defaultValue;
     private boolean multivalue;
     private boolean file;
     private boolean body = false;
@@ -41,6 +50,10 @@ public class ParamPOJO {
 
     public DataType getDatatype() {
         return datatype;
+    }
+
+    public Object getDefaultValue() {
+        return defaultValue;
     }
 
     public boolean getMultivalue() {
@@ -68,7 +81,7 @@ public class ParamPOJO {
     public int getPosition() {return  position; }
 
     public static enum DataType {
-        STRING, INTEGER, NUMBER;
+        STRING, INTEGER, NUMBER, BOOLEAN;
 
         @JsonCreator
         public static DataType getValueFor(String value) {
