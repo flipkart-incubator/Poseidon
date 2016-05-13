@@ -36,7 +36,6 @@ import com.flipkart.poseidon.api.JettyConfiguration;
 import com.flipkart.poseidon.core.PoseidonServlet;
 import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
-import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
@@ -220,7 +219,6 @@ public class Poseidon {
         }
         servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
-        servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
     }
 
     /*
