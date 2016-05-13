@@ -218,7 +218,16 @@ public class Poseidon {
             servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
         }
         servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
-        servletContextHandler.addFilter(new FilterHolder(new GzipFilter()), "/*", EnumSet.of(REQUEST));
+        servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
+    }
+
+    /*
+     * Jetty9 GzipFilter, by default, enables compressing of response only for GET requests.
+     */
+    private FilterHolder getGzipFilter() {
+        FilterHolder gzipFilterHolder = new FilterHolder(new GzipFilter());
+        gzipFilterHolder.setInitParameter("methods", "GET,POST,PUT,DELETE");
+        return gzipFilterHolder;
     }
 
     private PoseidonServlet getPoseidonServlet() {
