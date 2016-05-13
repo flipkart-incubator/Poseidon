@@ -36,6 +36,7 @@ import com.flipkart.poseidon.api.JettyConfiguration;
 import com.flipkart.poseidon.core.PoseidonServlet;
 import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
+import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
@@ -218,7 +219,17 @@ public class Poseidon {
             servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
         }
         servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
-        servletContextHandler.addFilter(new FilterHolder(new GzipFilter()), "/*", EnumSet.of(REQUEST));
+        servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
+        servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
+    }
+
+    /*
+     * Jetty9 GzipFilter, by default, enables compressing of response only for GET requests.
+     */
+    private FilterHolder getGzipFilter() {
+        FilterHolder gzipFilterHolder = new FilterHolder(new GzipFilter());
+        gzipFilterHolder.setInitParameter("methods", "GET,POST,PUT,DELETE");
+        return gzipFilterHolder;
     }
 
     private PoseidonServlet getPoseidonServlet() {
