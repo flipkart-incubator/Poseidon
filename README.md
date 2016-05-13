@@ -17,6 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 4.0.0             | May 13 2016      |    Lego 2.0.0, service clients runtime and generation separated, headers configuration 
 | Version 3.1.1             | Apr 06 2016      |    [Snapshot fixes](https://github.com/flipkart-incubator/Poseidon/blob/master/CHANGELOG.md#311-snapshot-mar-20-2016), API - endPoint JMX metrics (latency and request rate)
 | Version 3.1.0             | Feb 10 2016      |    Service and API IDL enhancements, Jetty configuration can be tuned
 | Version 3.0.0             | Feb 02 2016      |    Batching support, collections with nested generics support in service clients 
