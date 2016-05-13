@@ -1,14 +1,14 @@
 ## 4.0.0 (May 13, 2016)
 - Included snapshot version fixes
-- Response gzipping for POST, PUT & DELETE
 
-## 4.0.0-SNAPSHOT (May 3, 2016)
+## 4.0.0-SNAPSHOT (May 13, 2016)
 - Pass through headers can be configured by Applications
 - Service Clients - runtime and generation dependencies are separated
 - Moved to Lego 2.0.0
 - [Bug fix](https://github.com/flipkart-incubator/Poseidon/issues/17) - Path parameter at the end of URL
 - Pretty printing of all API URLs
 - API - support for Boolean parameter and default values
+- Response gzipping for POST, PUT & DELETE
 
 ## 3.1.1 (Apr 6, 2016)
 - Included snapshot version fixes
