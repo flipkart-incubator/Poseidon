@@ -1,4 +1,4 @@
-## 4.0.0 (May 13, 2016)
+## 4.0.0 (May 18, 2016)
 - Included snapshot version fixes
 
 ## 4.0.0-SNAPSHOT (May 13, 2016)
