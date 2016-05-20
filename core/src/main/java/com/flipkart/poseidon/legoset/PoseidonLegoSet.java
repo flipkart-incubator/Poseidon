@@ -16,16 +16,17 @@
 
 package com.flipkart.poseidon.legoset;
 
-import com.flipkart.poseidon.annotations.Name;
-import com.flipkart.poseidon.annotations.Version;
-import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.helper.AnnotationHelper;
+import com.flipkart.poseidon.helper.CallableNameHelper;
+import com.flipkart.poseidon.mappers.Mapper;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.LegoSetException;
-import flipkart.lego.api.helpers.Identifiable;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -71,7 +72,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     Constructor<DataSource> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
                     Optional<String> id = getBlockId(klass);
                     if (!id.isPresent()) {
-                        id = Optional.ofNullable(constructor.newInstance(this, null).getId());
+                        id = Optional.of(constructor.newInstance(this, null).getId());
                     }
                     dataSources.put(id.get(), constructor);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
@@ -100,8 +101,8 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
     private Optional<String> getBlockId(Class klass) {
         Optional<String> optionalName = Optional.ofNullable((Name) klass.getDeclaredAnnotation(Name.class)).map(Name::value);
-        Optional<String> optionalVersion = Optional.ofNullable((Version) klass.getDeclaredAnnotation(Version.class)).map(value -> String.format("%s.%s.%s", value.major(), value.minor(), value.patch()));
-        String id = String.format("%s_%s", optionalName.orElse(klass.getSimpleName()), optionalVersion.orElse(""));
+        Optional<String> optionalVersion = Optional.ofNullable((Version) klass.getDeclaredAnnotation(Version.class)).map(AnnotationHelper::constructVersion);
+        String id = CallableNameHelper.versionedName(optionalName.orElse(klass.getSimpleName()), optionalVersion.orElse(""));
         return optionalVersion.isPresent() ? Optional.of(id) : Optional.empty();
     }
 

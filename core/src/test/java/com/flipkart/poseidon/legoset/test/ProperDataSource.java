@@ -16,8 +16,8 @@
 
 package com.flipkart.poseidon.legoset.test;
 
-import com.flipkart.poseidon.annotations.Name;
-import com.flipkart.poseidon.annotations.Version;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.legoset.PoseidonLegoSetTest;
 import flipkart.lego.api.entities.DataType;

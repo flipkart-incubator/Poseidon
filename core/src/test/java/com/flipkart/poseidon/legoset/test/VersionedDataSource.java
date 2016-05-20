@@ -16,7 +16,7 @@
 
 package com.flipkart.poseidon.legoset.test;
 
-import com.flipkart.poseidon.annotations.Version;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
@@ -25,7 +25,7 @@ import flipkart.lego.api.entities.Request;
 /**
  * Created by shrey.garg on 19/05/16.
  */
-@Version(major = 1)
+@Version(major = 1, minor = 0, patch = 0)
 public class VersionedDataSource extends AbstractDataSource {
     public VersionedDataSource(LegoSet legoset, Request request) {
         super(legoset, request);

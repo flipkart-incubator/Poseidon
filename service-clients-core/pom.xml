@@ -34,6 +34,11 @@
             <groupId>com.flipkart.lego</groupId>
             <artifactId>lego</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.flipkart.poseidon</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!--Test Dependencies-->
         <dependency>
@@ -46,5 +51,4 @@
         </dependency>
         <!--Test Dependencies-->
     </dependencies>
-
 </project>

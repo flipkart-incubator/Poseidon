@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.flipkart.poseidon.serviceclients.CallableNameHelper.canonicalName;
+import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 /**
  * Created by mohan.pandian on 20/02/15.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.annotations;
+package com.flipkart.poseidon.model.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,4 +28,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
     String value();
+    String verbose() default "";
 }

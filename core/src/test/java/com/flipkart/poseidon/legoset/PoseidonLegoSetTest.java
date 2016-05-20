@@ -16,20 +16,20 @@
 
 package com.flipkart.poseidon.legoset;
 
+import com.flipkart.poseidon.helper.CallableNameHelper;
 import com.flipkart.poseidon.legoset.test.NamedDataSource;
 import com.flipkart.poseidon.legoset.test.OldSchoolDataSource;
 import com.flipkart.poseidon.legoset.test.ProperDataSource;
 import com.flipkart.poseidon.legoset.test.VersionedDataSource;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Created by shrey.garg on 19/05/16.
@@ -48,7 +48,7 @@ public class PoseidonLegoSetTest {
         DataSource oldStyleDS = new OldSchoolDataSource(null, null);
         legoSet.getDataSource(oldStyleDS.getId(), null);
 
-        legoSet.getDataSource(PROPER_DS_NAME + "_4.1.6", null);
+        legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_DS_NAME, "4.1.6"), null);
         legoSet.getDataSource("VersionedDataSource_1.0.0", null);
 
         try {

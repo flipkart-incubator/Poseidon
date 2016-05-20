@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.datasources.util;
+package com.flipkart.poseidon.model.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Created by mohan.pandian on 26/03/15.
+ * Created by shrey.garg on 19/05/16.
  */
-public class CallableNameHelper {
-    public static String canonicalName(String name, String oldSuffix, String newSuffix) {
-        if (name.endsWith(oldSuffix)) {
-            name = name.substring(0, name.length() - oldSuffix.length());
-            if (name.length() > 0)
-                name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-            name = name + newSuffix;
-        }
-
-        return name;
-    }
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Version {
+    int major();
+    int minor();
+    int patch();
 }
