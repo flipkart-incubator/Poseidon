@@ -142,13 +142,13 @@ public class PoseidonServlet extends HttpServlet {
             redirect(response, httpResponse);
         } catch (BadRequestException exception) {
             logger.error("400: {}", exception);
-            badRequest(httpResponse, exception);
+            badRequest(response, httpResponse, exception);
         } catch (ElementNotFoundException exception) {
             logger.error("404: {}", exception);
-            elementNotFound(httpResponse, exception);
+            elementNotFound(response, httpResponse, exception);
         } catch (Throwable exception) {
             logger.error("500: {}", exception);
-            internalError(httpResponse, exception);
+            internalError(response, httpResponse, exception);
         }
     }
 
@@ -252,19 +252,22 @@ public class PoseidonServlet extends HttpServlet {
         }
     }
 
-    private void badRequest(HttpServletResponse httpServletResponse, Exception exception) throws IOException {
-        processErrorResponse(SC_BAD_REQUEST, httpServletResponse, exception);
+    private void badRequest(PoseidonResponse response, HttpServletResponse httpServletResponse, Exception exception) throws IOException {
+        processErrorResponse(SC_BAD_REQUEST, response, httpServletResponse, exception);
     }
 
-    private void elementNotFound(HttpServletResponse httpResponse, Exception exception) throws IOException {
-        processErrorResponse(SC_NOT_FOUND, httpResponse, exception);
+    private void elementNotFound(PoseidonResponse response, HttpServletResponse httpResponse, Exception exception) throws IOException {
+        processErrorResponse(SC_NOT_FOUND, response, httpResponse, exception);
     }
 
-    private void internalError(HttpServletResponse httpResponse, Throwable throwable) throws IOException {
-        processErrorResponse(SC_INTERNAL_SERVER_ERROR, httpResponse, throwable);
+    private void internalError(PoseidonResponse response, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+        processErrorResponse(SC_INTERNAL_SERVER_ERROR, response, httpResponse, throwable);
     }
 
-    private void processErrorResponse(int statusCode, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+    private void processErrorResponse(int statusCode, PoseidonResponse response, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+        setHeaders(response, httpResponse);
+        setCookies(response, httpResponse);
+
         Throwable generatedException = Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable);
         if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(generatedException, httpResponse)) {
             MediaType contentType = application.getDefaultMediaType();
