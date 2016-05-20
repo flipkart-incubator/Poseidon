@@ -69,13 +69,16 @@ public abstract class PoseidonLegoSet implements LegoSet {
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
                     Constructor<DataSource> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
-                    String id = getBlockId(klass).orElse(constructor.newInstance(this, null).getId());
-                    dataSources.put(id, constructor);
+                    Optional<String> id = getBlockId(klass);
+                    if (!id.isPresent()) {
+                        id = Optional.ofNullable(constructor.newInstance(this, null).getId());
+                    }
+                    dataSources.put(id.get(), constructor);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
                     Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     ServiceClient serviceClient = constructor.newInstance();
-                    serviceClients.put(getBlockId(klass).orElse(serviceClient.getId()), serviceClient);
+                    serviceClients.put(getBlockId(klass).orElseGet(serviceClient::getId), serviceClient);
                 } else if (Filter.class.isAssignableFrom(klass)) {
                     Filter filter;
                     try {
@@ -84,10 +87,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     } catch (NoSuchMethodException e) {
                         filter = (Filter) klass.newInstance();
                     }
-                    filters.put(getBlockId(klass).orElse(filter.getId()), filter);
+                    filters.put(getBlockId(klass).orElseGet(filter::getId), filter);
                 } else if (Mapper.class.isAssignableFrom(klass)) {
                     Mapper mapper = (Mapper) klass.newInstance();
-                    mappers.put(getBlockId(klass).orElse(mapper.getId()), mapper);
+                    mappers.put(getBlockId(klass).orElseGet(mapper::getId), mapper);
                 }
             }
         } catch (Throwable t) {
