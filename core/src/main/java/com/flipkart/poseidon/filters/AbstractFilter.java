@@ -24,7 +24,7 @@ import flipkart.lego.api.entities.LegoSet;
 
 import java.util.List;
 
-import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
+import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 /**
  * AbstractFilter is a {@link Filter} with default implementations for

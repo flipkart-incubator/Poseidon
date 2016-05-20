@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
+import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 public abstract class AbstractDataSource<T extends DataType> implements DataSource {
 

@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
+import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 /**
  * AbstractMapper is a {@link Mapper} with default implementations for {@link flipkart.lego.api.helpers.Identifiable}

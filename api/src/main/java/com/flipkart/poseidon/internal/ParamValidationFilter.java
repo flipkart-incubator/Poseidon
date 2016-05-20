@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.*;
 
-import static com.flipkart.poseidon.datasources.util.CallableNameHelper.canonicalName;
+import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static org.slf4j.LoggerFactory.getLogger;
 

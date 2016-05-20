@@ -16,8 +16,12 @@
 
 package com.flipkart.poseidon.legoset;
 
-import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.helper.AnnotationHelper;
+import com.flipkart.poseidon.helper.CallableNameHelper;
+import com.flipkart.poseidon.mappers.Mapper;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
@@ -30,6 +34,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -65,13 +70,16 @@ public abstract class PoseidonLegoSet implements LegoSet {
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
                     Constructor<DataSource> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
-                    DataSource dataSource = constructor.newInstance(this, null);
-                    dataSources.put(dataSource.getId(), constructor);
+                    Optional<String> id = getBlockId(klass);
+                    if (!id.isPresent()) {
+                        id = Optional.of(constructor.newInstance(this, null).getId());
+                    }
+                    dataSources.put(id.get(), constructor);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
                     Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     ServiceClient serviceClient = constructor.newInstance();
-                    serviceClients.put(serviceClient.getId(), serviceClient);
+                    serviceClients.put(getBlockId(klass).orElseGet(serviceClient::getId), serviceClient);
                 } else if (Filter.class.isAssignableFrom(klass)) {
                     Filter filter;
                     try {
@@ -80,15 +88,22 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     } catch (NoSuchMethodException e) {
                         filter = (Filter) klass.newInstance();
                     }
-                    filters.put(filter.getId(), filter);
+                    filters.put(getBlockId(klass).orElseGet(filter::getId), filter);
                 } else if (Mapper.class.isAssignableFrom(klass)) {
                     Mapper mapper = (Mapper) klass.newInstance();
-                    mappers.put(mapper.getId(), mapper);
+                    mappers.put(getBlockId(klass).orElseGet(mapper::getId), mapper);
                 }
             }
         } catch (Throwable t) {
             logger.error("Unable to instantiate " + aClass.getName(), t);
         }
+    }
+
+    private Optional<String> getBlockId(Class klass) {
+        Optional<String> optionalName = Optional.ofNullable((Name) klass.getDeclaredAnnotation(Name.class)).map(Name::value);
+        Optional<String> optionalVersion = Optional.ofNullable((Version) klass.getDeclaredAnnotation(Version.class)).map(AnnotationHelper::constructVersion);
+        String id = CallableNameHelper.versionedName(optionalName.orElse(klass.getSimpleName()), optionalVersion.orElse(""));
+        return optionalVersion.isPresent() ? Optional.of(id) : Optional.empty();
     }
 
     private boolean isAbstract(Class klass) {
