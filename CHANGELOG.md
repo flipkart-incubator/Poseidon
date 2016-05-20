@@ -1,3 +1,6 @@
+## 4.1.0-SNAPSHOT (May 20, 2016)
+- Annotation driven Identifiable, Versioned and Describable
+
 ## 4.0.0 (May 18, 2016)
 - Included snapshot version fixes
 
