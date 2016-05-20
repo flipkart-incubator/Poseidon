@@ -33,6 +33,7 @@ import com.flipkart.phantom.runtime.impl.jetty.filter.ServletTraceFilter;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.JettyConfiguration;
+import com.flipkart.poseidon.api.JettyFilterConfiguration;
 import com.flipkart.poseidon.core.PoseidonServlet;
 import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
@@ -57,6 +58,7 @@ import org.trpr.platform.runtime.impl.bootstrap.spring.Bootstrap;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -219,6 +221,15 @@ public class Poseidon {
         }
         servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
+
+        List<JettyFilterConfiguration> jettyFilterConfigurations = Optional.ofNullable(configuration.getJettyConfiguration()).map(JettyConfiguration::getJettyFilterConfigurations).orElse(new ArrayList<>());
+        for (JettyFilterConfiguration filterConfig : jettyFilterConfigurations) {
+            FilterHolder filterHolder = new FilterHolder(filterConfig.getFilter());
+            filterHolder.setInitParameters(filterConfig.getInitParameters());
+            for (String mapping : filterConfig.getMappings()) {
+                servletContextHandler.addFilter(filterHolder, mapping, filterConfig.getDispatcherTypes());
+            }
+        }
     }
 
     /*
