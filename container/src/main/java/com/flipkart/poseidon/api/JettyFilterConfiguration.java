@@ -41,26 +41,6 @@ public class JettyFilterConfiguration {
         this.dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
     }
 
-    public JettyFilterConfiguration(Filter filter, List<String> mappings) {
-        if (filter == null || mappings == null) {
-            throw new IllegalArgumentException("Filter configurations cannot be empty");
-        }
-
-        this.filter = filter;
-        this.mappings = mappings;
-        this.dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
-    }
-
-    public JettyFilterConfiguration(Filter filter, List<String> mappings, EnumSet<DispatcherType> dispatcherTypes) {
-        if (filter == null || mappings == null || dispatcherTypes == null) {
-            throw new IllegalArgumentException("Filter configurations cannot be empty");
-        }
-
-        this.filter = filter;
-        this.mappings = mappings;
-        this.dispatcherTypes = dispatcherTypes;
-    }
-
     public Filter getFilter() {
         return filter;
     }
