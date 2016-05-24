@@ -31,7 +31,7 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
+import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getPoseidonMapper;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -98,7 +98,7 @@ public class APIManager {
 
     private boolean validateConfig(String config) {
         try {
-            getMapper().readValue(config, EndpointPOJO.class);
+            getPoseidonMapper().readValue(config, EndpointPOJO.class);
         } catch (IOException e) {
             logger.error("Unable to parse one of the config. Content = [[" + config + "]]");
             return false;

@@ -21,7 +21,6 @@ import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.exception.DataSourceException;
-import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
@@ -52,7 +51,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -224,7 +222,7 @@ public class PoseidonServlet extends HttpServlet {
             if (responseObj instanceof String) {
                 responseStr = (String) responseObj;
             } else {
-                responseStr = getMapper().writeValueAsString(responseObj);
+                responseStr = configuration.getObjectMapper().writeValueAsString(responseObj);
             }
             httpResponse.getWriter().println(responseStr);
         }
@@ -276,7 +274,7 @@ public class PoseidonServlet extends HttpServlet {
             if (generatedException != null && generatedException instanceof DataSourceException) {
                 DataSourceException dsException = (DataSourceException) generatedException;
                 if (dsException.getResponse() != null) {
-                    errorMsg = ObjectMapperHelper.getMapper().writeValueAsString(dsException.getResponse());
+                    errorMsg = configuration.getObjectMapper().writeValueAsString(dsException.getResponse());
                 }
                 if (dsException.getStatusCode() > 0) {
                     statusCode = dsException.getStatusCode();
