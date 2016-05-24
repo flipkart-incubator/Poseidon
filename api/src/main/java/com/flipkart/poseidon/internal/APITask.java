@@ -70,8 +70,10 @@ public class APITask extends DefaultMultiTask {
 
     private DataSourceRequest getDataSourceRequest(Map<String, Object> values) {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
-        for (String key : values.keySet()) {
-            dataSourceRequest.setAttribute(key, values.get(key));
+        if (values != null) {
+            for (String key : values.keySet()) {
+                dataSourceRequest.setAttribute(key, values.get(key));
+            }
         }
 
         return dataSourceRequest;

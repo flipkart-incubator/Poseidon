@@ -21,7 +21,6 @@ import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.exception.DataSourceException;
-import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
@@ -52,7 +51,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
 import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -142,13 +140,13 @@ public class PoseidonServlet extends HttpServlet {
             redirect(response, httpResponse);
         } catch (BadRequestException exception) {
             logger.error("400: {}", exception);
-            badRequest(httpResponse, exception);
+            badRequest(response, httpResponse, exception);
         } catch (ElementNotFoundException exception) {
             logger.error("404: {}", exception);
-            elementNotFound(httpResponse, exception);
+            elementNotFound(response, httpResponse, exception);
         } catch (Throwable exception) {
             logger.error("500: {}", exception);
-            internalError(httpResponse, exception);
+            internalError(response, httpResponse, exception);
         }
     }
 
@@ -224,7 +222,7 @@ public class PoseidonServlet extends HttpServlet {
             if (responseObj instanceof String) {
                 responseStr = (String) responseObj;
             } else {
-                responseStr = getMapper().writeValueAsString(responseObj);
+                responseStr = configuration.getObjectMapper().writeValueAsString(responseObj);
             }
             httpResponse.getWriter().println(responseStr);
         }
@@ -252,19 +250,22 @@ public class PoseidonServlet extends HttpServlet {
         }
     }
 
-    private void badRequest(HttpServletResponse httpServletResponse, Exception exception) throws IOException {
-        processErrorResponse(SC_BAD_REQUEST, httpServletResponse, exception);
+    private void badRequest(PoseidonResponse response, HttpServletResponse httpServletResponse, Exception exception) throws IOException {
+        processErrorResponse(SC_BAD_REQUEST, response, httpServletResponse, exception);
     }
 
-    private void elementNotFound(HttpServletResponse httpResponse, Exception exception) throws IOException {
-        processErrorResponse(SC_NOT_FOUND, httpResponse, exception);
+    private void elementNotFound(PoseidonResponse response, HttpServletResponse httpResponse, Exception exception) throws IOException {
+        processErrorResponse(SC_NOT_FOUND, response, httpResponse, exception);
     }
 
-    private void internalError(HttpServletResponse httpResponse, Throwable throwable) throws IOException {
-        processErrorResponse(SC_INTERNAL_SERVER_ERROR, httpResponse, throwable);
+    private void internalError(PoseidonResponse response, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+        processErrorResponse(SC_INTERNAL_SERVER_ERROR, response, httpResponse, throwable);
     }
 
-    private void processErrorResponse(int statusCode, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+    private void processErrorResponse(int statusCode, PoseidonResponse response, HttpServletResponse httpResponse, Throwable throwable) throws IOException {
+        setHeaders(response, httpResponse);
+        setCookies(response, httpResponse);
+
         Throwable generatedException = Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable);
         if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(generatedException, httpResponse)) {
             MediaType contentType = application.getDefaultMediaType();
@@ -273,7 +274,7 @@ public class PoseidonServlet extends HttpServlet {
             if (generatedException != null && generatedException instanceof DataSourceException) {
                 DataSourceException dsException = (DataSourceException) generatedException;
                 if (dsException.getResponse() != null) {
-                    errorMsg = ObjectMapperHelper.getMapper().writeValueAsString(dsException.getResponse());
+                    errorMsg = configuration.getObjectMapper().writeValueAsString(dsException.getResponse());
                 }
                 if (dsException.getStatusCode() > 0) {
                     statusCode = dsException.getStatusCode();

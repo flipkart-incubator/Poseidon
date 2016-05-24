@@ -24,7 +24,7 @@ public class ObjectMapperHelper {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    public static ObjectMapper getMapper() {
+    public static ObjectMapper getPoseidonMapper() {
         return mapper.configure(FAIL_ON_EMPTY_BEANS, false);
     }
 }

@@ -1,5 +1,6 @@
-## 4.1.0-SNAPSHOT (May 20, 2016)
+## 4.1.0-SNAPSHOT (May 23, 2016)
 - Annotation driven Identifiable, Versioned and Describable
+- Retaining response headers and cookies in non 2xx responses too
 
 ## 4.0.0 (May 18, 2016)
 - Included snapshot version fixes

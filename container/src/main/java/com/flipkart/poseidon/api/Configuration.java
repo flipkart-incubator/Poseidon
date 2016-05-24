@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flipkart.poseidon.helpers.ObjectMapperHelper;
+
 public interface Configuration {
 
     public int getPort();
@@ -44,4 +47,8 @@ public interface Configuration {
     public ExceptionMapper getExceptionMapper();
 
     public Headers getHeadersConfiguration();
+
+    default ObjectMapper getObjectMapper() {
+        return ObjectMapperHelper.getPoseidonMapper();
+    }
 }
