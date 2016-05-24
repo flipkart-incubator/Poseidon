@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.api;
 
+import java.util.List;
+
 /**
  * Configuration to be provided by application to tune jetty.
  *
@@ -64,4 +66,11 @@ public interface JettyConfiguration {
      * is 60000 ms / 1 minute
      */
     int getThreadIdleTimeout();
+
+    /*
+     * Filters that the application would like to be executed in the jetty thread
+     */
+    default List<JettyFilterConfiguration> getJettyFilterConfigurations() {
+        return null;
+    }
 }
