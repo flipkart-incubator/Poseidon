@@ -30,10 +30,8 @@ import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.LegoException;
 
-import java.io.IOException;
 import java.util.*;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static com.google.common.net.MediaType.JSON_UTF_8;
 
 public class APIBuildable implements Buildable {
@@ -86,7 +84,7 @@ public class APIBuildable implements Buildable {
     @Override
     public LinkedHashSet<Filter> getFilters(Request request) throws InternalErrorException {
         LinkedHashSet<Filter> filters = new LinkedHashSet<>();
-        filters.add(new ParamValidationFilter(pojo.getParams()));
+        filters.add(new ParamValidationFilter(pojo.getParams(), configuration));
 
         try {
             // Add global filters

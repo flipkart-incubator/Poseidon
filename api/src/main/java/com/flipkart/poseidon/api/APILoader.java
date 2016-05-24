@@ -26,14 +26,13 @@ import com.flipkart.poseidon.pojos.TaskPOJO;
 import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import org.slf4j.Logger;
-import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
+import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getPoseidonMapper;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class APILoader {
@@ -80,7 +79,7 @@ public class APILoader {
     }
 
     private void loadBuildables(String config) throws Exception {
-        JsonNode nodes = getMapper().readTree(config);
+        JsonNode nodes = getPoseidonMapper().readTree(config);
 
         if (!nodes.isArray()) {
             throw new Exception("Config is not an array of buildables");
@@ -88,7 +87,7 @@ public class APILoader {
 
         for (JsonNode node : nodes) {
             try {
-                pojos.add(getMapper().readValue(node.toString(), EndpointPOJO.class));
+                pojos.add(getPoseidonMapper().readValue(node.toString(), EndpointPOJO.class));
             } catch (Exception exception) {
                 logger.error("Error in de-serializing a config: " + node.toString(), exception);
             }

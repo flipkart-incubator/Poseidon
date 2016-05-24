@@ -16,10 +16,11 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.flipkart.poseidon.pojos.ParamPOJO;
-import com.flipkart.poseidon.pojos.ParamsPOJO;
+import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.pojos.ParamPOJO;
+import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.Filter;
 import flipkart.lego.api.entities.Request;
@@ -34,21 +35,22 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class ParamValidationFilter implements Filter {
 
     private final ParamsPOJO params;
+    private final Configuration configuration;
 
     private static final Logger logger = getLogger(ParamValidationFilter.class);
 
     public ParamValidationFilter() {
-        this(new ParamsPOJO());
+        this(new ParamsPOJO(), null);
     }
 
-    public ParamValidationFilter(ParamsPOJO params) {
+    public ParamValidationFilter(ParamsPOJO params, Configuration configuration) {
         this.params = params;
+        this.configuration = configuration;
     }
 
     @Override
@@ -100,7 +102,7 @@ public class ParamValidationFilter implements Filter {
                                     (param.getDatatype() == null)) {
                                 value = bodyString;
                             } else {
-                                value = getMapper().readValue(bodyString, Class.forName(param.getJavatype()));
+                                value = configuration.getObjectMapper().readValue(bodyString, Class.forName(param.getJavatype()));
                             }
                         } catch (IOException e) {
                             logger.error("Error in reading body : {}", e.getMessage());
