@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getPoseidonMapper;
+import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class APILoader {
@@ -79,7 +79,7 @@ public class APILoader {
     }
 
     private void loadBuildables(String config) throws Exception {
-        JsonNode nodes = getPoseidonMapper().readTree(config);
+        JsonNode nodes = getMapper().readTree(config);
 
         if (!nodes.isArray()) {
             throw new Exception("Config is not an array of buildables");
@@ -87,7 +87,7 @@ public class APILoader {
 
         for (JsonNode node : nodes) {
             try {
-                pojos.add(getPoseidonMapper().readValue(node.toString(), EndpointPOJO.class));
+                pojos.add(getMapper().readValue(node.toString(), EndpointPOJO.class));
             } catch (Exception exception) {
                 logger.error("Error in de-serializing a config: " + node.toString(), exception);
             }

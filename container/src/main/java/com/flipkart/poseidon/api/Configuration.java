@@ -49,6 +49,6 @@ public interface Configuration {
     public Headers getHeadersConfiguration();
 
     default ObjectMapper getObjectMapper() {
-        return ObjectMapperHelper.getPoseidonMapper();
+        return ObjectMapperHelper.getMapper();
     }
 }

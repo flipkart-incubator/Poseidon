@@ -67,7 +67,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getPoseidonMapper;
+import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static javax.servlet.DispatcherType.REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -159,8 +159,8 @@ public class Poseidon {
                 rewriteHandler.setOriginalPathAttribute("__path");
                 rewriteHandler.setHandler(handler);
 
-                JavaType listRuleType = getPoseidonMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
-                List<RewriteRule> rules = getPoseidonMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
+                JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
+                List<RewriteRule> rules = getMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
                 for (RewriteRule rule : rules) {
                     if (rule.isActive()) {
                         RewriteRegexRule regexRule = new RewriteRegexRule();
