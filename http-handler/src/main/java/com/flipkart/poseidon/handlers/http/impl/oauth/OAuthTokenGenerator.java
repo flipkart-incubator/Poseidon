@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,13 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * OAuth Token Generator gets the token at init step and creates a thread which refreshes it.
+ *
+ * Thread will refresh token after 90% of expiry time
+ *
+ * we only support grant_type as client_credentials while making call to Oauth end point.
+ */
 public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
     private static final Logger logger = LogFactory.getLogger(OAuthTokenGenerator.class);
     private Thread thread;
@@ -46,6 +53,12 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
 
     /**
      * interface method implementation
+     *
+     * validate clientId and secret
+     *
+     * try to generate access token. If not success, raises an error
+     *
+     * If succeeded to get access token, we create thread to refresh access token #see refreshAccessToken method
      */
     @Override
     public void init(TaskContext taskContext) throws Exception {
@@ -59,12 +72,20 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
         refreshAccessToken();
     }
 
+    /**
+     * validates clientId and secret
+     * @throws Exception
+     */
     private void validate() throws Exception{
         if (StringUtils.isNullOrEmpty(clientId) || StringUtils.isNullOrEmpty(secret)) {
             throw new Exception("clientId or secret cannot be null");
         }
     }
 
+    /**
+     * makes call to Oauth end point. On success, return true. Else false.
+     * @return true or false
+     */
     private boolean generateAccessToken() {
         HttpResponseData responseData;
         try {
@@ -95,14 +116,29 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
         return true;
     }
 
+    /**
+     * creates a thread and starts it.
+     */
     private void refreshAccessToken() {
         TokenRefresher tokenRefresher = new TokenRefresher();
         thread = new Thread(tokenRefresher);
         thread.start();
     }
 
+    /**
+     * will be used to access accessToken from task handler
+     *
+     * @return string
+     */
     public String getAccessToken() { return accessToken; }
 
+    /**
+     * builds uri for Oauth end point given UriPath and Params
+     *
+     * @param path
+     * @param params
+     * @return string
+     */
     private String uriBuilder(String path, Map<String, String> params) {
         URIBuilder builder = new URIBuilder();
         builder.setPath(path);
@@ -112,6 +148,10 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
         return builder.toString();
     }
 
+    /**
+     * get request headers for making call to Oauth end point
+     * @return
+     */
     private Map<String, String> getRequestHeaders() {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         String credentials = clientId + ":" + secret;
@@ -130,6 +170,13 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
         super.shutdown(taskContext);
     }
 
+    /**
+     * implements Runnable interface
+     *
+     * Thread will sleep for 90% of expiry time and refreshes then and update accessToken variable with new token
+     *
+     * If we fail to get new access token, we will sleep for 5 secs and then again try to get new access token.
+     */
     private class TokenRefresher implements Runnable {
         public void run() {
             refreshAccessToken();
@@ -145,7 +192,6 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
                     };
                 }
             } catch (Exception exception) {
-                // trigger an alert for any error
                 logger.error("error occurred while fetching Oauth access token.");
             }
         }

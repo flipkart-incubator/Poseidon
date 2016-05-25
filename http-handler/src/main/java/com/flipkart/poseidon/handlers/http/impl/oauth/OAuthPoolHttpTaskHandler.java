@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,11 @@ import com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler;
 
 import java.util.Map;
 
+/**
+ * Can be used for OAuth 2.0 protocol
+ *
+ * OAuthTokenGenerator used in this task handler only supports grant_type as client_credentials.
+ */
 public class OAuthPoolHttpTaskHandler extends SinglePoolHttpTaskHandler {
 
     private OAuthTokenGenerator oAuthTokenGenerator;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ public class OAuthTokenResponse {
     private String tokenType;
     private int expiresIn;
     private String scope;
-    private String jti;
 
     public String getAccessToken() {
         return accessToken;
@@ -46,19 +45,7 @@ public class OAuthTokenResponse {
 
     public void setExpiresIn(int expiresIn) { this.expiresIn = expiresIn; }
 
-    public String getScope() {
-        return scope;
-    }
+    public String getScope() { return scope; }
 
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-    public String getJti() {
-        return jti;
-    }
-
-    public void setJti(String jti) {
-        this.jti = jti;
-    }
+    public void setScope(String scope) { this.scope = scope; }
 }
