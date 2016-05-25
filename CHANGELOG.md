@@ -1,6 +1,9 @@
-## 4.1.0-SNAPSHOT (May 23, 2016)
+## 4.1.0-SNAPSHOT (May 25, 2016)
 - Annotation driven Identifiable, Versioned and Describable
 - Retaining response headers and cookies in non 2xx responses too
+- API - params is optional
+- Jetty filters, object mappers are configurable
+- OAuth Task Handler
 
 ## 4.0.0 (May 18, 2016)
 - Included snapshot version fixes
