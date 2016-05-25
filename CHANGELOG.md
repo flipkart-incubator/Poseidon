@@ -4,6 +4,7 @@
 - API - params is optional
 - Jetty filters, object mappers are configurable
 - OAuth Task Handler
+- Upgrade to phantom 2.0.0
 
 ## 4.0.0 (May 18, 2016)
 - Included snapshot version fixes
