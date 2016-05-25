@@ -48,6 +48,7 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
     private Map<String, String> authParams;
     private long expiryTime;
     private boolean stopThread = false;
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     public OAuthTokenGenerator() {}
 
@@ -102,7 +103,7 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
 
         OAuthTokenResponse tokenResponse;
         try {
-            tokenResponse = new ObjectMapper().readValue(new String(responseData.getResponseBody()), OAuthTokenResponse.class);
+            tokenResponse = objectMapper.readValue(new String(responseData.getResponseBody()), OAuthTokenResponse.class);
         } catch (Exception e){
             logger.error("unable to cast response from Oauth to OAuthTokenResponse");
             return false;
