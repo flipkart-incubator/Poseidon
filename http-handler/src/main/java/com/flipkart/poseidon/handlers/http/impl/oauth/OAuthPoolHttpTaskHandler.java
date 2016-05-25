@@ -60,5 +60,5 @@ public class OAuthPoolHttpTaskHandler extends SinglePoolHttpTaskHandler {
         return requestHeaders;
     }
 
-    public void setoAuthTokenGenerator(OAuthTokenGenerator oAuthTokenGenerator) { this.oAuthTokenGenerator = oAuthTokenGenerator; }
+    public void setOAuthTokenGenerator(OAuthTokenGenerator oAuthTokenGenerator) { this.oAuthTokenGenerator = oAuthTokenGenerator; }
 }
