@@ -1,3 +1,7 @@
+## 4.1.0 (May 27, 2016)
+- Included snapshot version fixes
+- Filter to unzip POST/PUT request body
+
 ## 4.1.0-SNAPSHOT (May 25, 2016)
 - Annotation driven Identifiable, Versioned and Describable
 - Retaining response headers and cookies in non 2xx responses too
