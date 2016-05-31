@@ -43,6 +43,10 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.flipkart.phantom</groupId>
+            <artifactId>runtime</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.kristofa</groupId>
             <artifactId>brave-impl</artifactId>
         </dependency>
