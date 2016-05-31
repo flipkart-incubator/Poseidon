@@ -120,6 +120,10 @@ public class APIBuildable implements Buildable {
         return mappers;
     }
 
+    public EndpointPOJO getPojo() {
+        return pojo;
+    }
+
     @Override
     public String getId() throws UnsupportedOperationException {
         return getName() + "_" + Joiner.on(".").join(getVersion());
