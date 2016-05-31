@@ -28,6 +28,7 @@ public class RequestConstants {
 
     // Used in RequestContext as keys
     public static final String METHOD = "poseidon.method";
+    public static final String URI = "poseidon.uri";
     public static final String REDIRECT_URL = "poseidon.redirectURL";
     public static final String HEADERS = "poseidon.headers";
 }
