@@ -1,3 +1,6 @@
+## 4.2.0-SNAPSHOT (May 31, 2016)
+- Datasources and filters can participate in Distributed Tracing
+
 ## 4.1.0 (May 27, 2016)
 - Included snapshot version fixes
 - Filter to unzip POST/PUT request body
