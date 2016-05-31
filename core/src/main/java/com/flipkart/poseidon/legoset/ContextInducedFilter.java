@@ -18,6 +18,7 @@ package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.flipkart.poseidon.tracing.TraceHelper;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
@@ -54,6 +55,7 @@ public class ContextInducedFilter implements Filter {
     @Override
     public void filterRequest(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
+        boolean success = false;
         try {
             RequestContext.initialize(parentContext);
             ServiceContext.initialize(parentServiceContext);
@@ -62,11 +64,15 @@ public class ContextInducedFilter implements Filter {
             if (serverSpan != null && serverSpan.getSpan() != null) {
                 Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
             }
+            // We don't want to trace requests in filter traces
+            TraceHelper.startTrace(filter);
             filter.filterRequest(request, response);
+            success = true;
         } finally {
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
+            TraceHelper.endTrace(filter, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }
@@ -74,6 +80,7 @@ public class ContextInducedFilter implements Filter {
     @Override
     public void filterResponse(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
+        boolean success = false;
         try {
             RequestContext.initialize(parentContext);
             ServiceContext.initialize(parentServiceContext);
@@ -82,11 +89,15 @@ public class ContextInducedFilter implements Filter {
             if (serverSpan != null && serverSpan.getSpan() != null) {
                 Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
             }
+            // We don't want to trace responses in filter traces
+            TraceHelper.startTrace(filter);
             filter.filterResponse(request, response);
+            success = true;
         } finally {
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
+            TraceHelper.endTrace(filter, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }

@@ -23,9 +23,12 @@ import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
+import flipkart.lego.api.entities.Request;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.flipkart.poseidon.tracing.TraceHelper.*;
 
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
@@ -34,13 +37,15 @@ import java.util.Map;
 public class ContextInducedDataSource implements DataSource {
 
     private final DataSource dataSource;
+    private final Request request;
     private final Map<String, Object> parentContext;
     private final Map<String, Object> parentServiceContext;
     private final HystrixRequestContext parentThreadState;
     private final ServerSpan serverSpan;
 
-    public ContextInducedDataSource(DataSource dataSource) {
+    public ContextInducedDataSource(DataSource dataSource, Request request) {
         this.dataSource = dataSource;
+        this.request = request;
         parentContext = RequestContext.getContextMap();
         parentServiceContext = ServiceContext.getContextMap();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
@@ -50,6 +55,7 @@ public class ContextInducedDataSource implements DataSource {
     @Override
     public DataType call() throws Exception {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
+        boolean success = false;
         try {
             RequestContext.initialize(parentContext);
             ServiceContext.initialize(parentServiceContext);
@@ -58,11 +64,15 @@ public class ContextInducedDataSource implements DataSource {
             if (serverSpan != null && serverSpan.getSpan() != null) {
                 Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
             }
-            return dataSource.call();
+            startTrace(dataSource, request);
+            DataType dataType = dataSource.call();
+            success = true;
+            return dataType;
         } finally {
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
+            endTrace(dataSource, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }

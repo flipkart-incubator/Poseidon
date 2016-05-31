@@ -49,4 +49,9 @@ public class DataSourceRequest implements Request {
     public boolean hasAttribute(String key) {
         return attributes.containsKey(key);
     }
+
+    @Override
+    public String toString() {
+        return attributes.toString();
+    }
 }
