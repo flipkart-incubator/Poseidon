@@ -1,5 +1,6 @@
 ## 4.2.0-SNAPSHOT (May 31, 2016)
 - Datasources and filters can participate in Distributed Tracing
+- Parameterized URI is available in RequestContext
 
 ## 4.1.0 (May 27, 2016)
 - Included snapshot version fixes
