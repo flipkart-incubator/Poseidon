@@ -43,6 +43,9 @@
         },
         "commandName": {
           "type": "string"
+        },
+        "objectMapperClass": {
+          "type": "string"
         }
       },
       "required": [

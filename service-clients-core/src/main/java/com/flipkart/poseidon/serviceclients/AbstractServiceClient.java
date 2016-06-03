@@ -95,7 +95,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Map<String, String> injectedHeadersMap = injectHeaders(headersMap);
         if (!injectedHeadersMap.isEmpty()) {
             try {
-                params.put("headers", objectMapper.writeValueAsString(injectedHeadersMap));
+                params.put("headers", getObjectMapper().writeValueAsString(injectedHeadersMap));
             } catch (Exception e) {
                 logger.error("Error serializing headers", e);
                 throw new IOException("Headers serialization error", e);
@@ -108,7 +108,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
                 if (requestObject instanceof String)
                     payload = ((String) requestObject).getBytes();
                 else
-                    payload = objectMapper.writeValueAsBytes(requestObject);
+                    payload = getObjectMapper().writeValueAsBytes(requestObject);
             } catch (Exception e) {
                 logger.error("Error serializing request object", e);
                 throw new IOException("Request object serialization error", e);
@@ -116,7 +116,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(objectMapper, javaType, errorType, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(getObjectMapper(), javaType, errorType, logger, exceptions);
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
@@ -210,5 +210,9 @@ public abstract class AbstractServiceClient implements ServiceClient {
     @Override
     public String getId() throws UnsupportedOperationException {
        return getName() + "_" + Joiner.on(".").join(getVersion());
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 }
