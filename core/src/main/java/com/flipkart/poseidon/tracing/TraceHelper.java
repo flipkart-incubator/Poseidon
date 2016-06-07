@@ -19,6 +19,7 @@ package com.flipkart.poseidon.tracing;
 import com.flipkart.phantom.runtime.impl.spring.ServiceProxyComponentContainer;
 import com.flipkart.phantom.task.impl.collector.EventDispatchingSpanCollector;
 import com.flipkart.phantom.task.spi.AbstractHandler;
+import com.flipkart.poseidon.core.RequestContext;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ClientTracer;
 import com.github.kristofa.brave.TraceFilter;
@@ -28,6 +29,7 @@ import flipkart.lego.api.helpers.Identifiable;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.flipkart.poseidon.constants.RequestConstants.ENABLE_TRACING;
 import static com.flipkart.poseidon.helper.BlocksHelper.getName;
 import static com.flipkart.poseidon.helper.BlocksHelper.trace;
 
@@ -61,8 +63,13 @@ public class TraceHelper {
         startTrace(block, null);
     }
 
+    public static boolean isTracingEnabledRequest() {
+        Boolean enableTracing = RequestContext.get(ENABLE_TRACING);
+        return (enableTracing != null && enableTracing);
+    }
+
     public static void startTrace(Identifiable block, Request request) {
-        if (!trace(block)) {
+        if (!isTracingEnabledRequest() || !trace(block)) {
             return;
         }
 
@@ -77,7 +84,7 @@ public class TraceHelper {
     }
 
     public static void endTrace(Identifiable block, boolean success) {
-        if (!trace(block)) {
+        if (!isTracingEnabledRequest() || !trace(block)) {
             return;
         }
 

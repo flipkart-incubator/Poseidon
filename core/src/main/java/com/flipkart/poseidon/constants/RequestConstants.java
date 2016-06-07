@@ -31,4 +31,5 @@ public class RequestConstants {
     public static final String URI = "poseidon.uri";
     public static final String REDIRECT_URL = "poseidon.redirectURL";
     public static final String HEADERS = "poseidon.headers";
+    public static final String ENABLE_TRACING = "poseidon.enableTracing";
 }
