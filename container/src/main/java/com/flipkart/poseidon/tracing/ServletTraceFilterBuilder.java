@@ -70,6 +70,7 @@ public class ServletTraceFilterBuilder {
         DelegatingZipkinSpanCollector spanCollector = new DelegatingZipkinSpanCollector();
         spanCollector.setZipkinCollectorHost(collectorHost);
         spanCollector.setZipkinCollectorPort(collectorPort);
+        spanCollector.setFailOnSetup(false);
 
         RequestLogger requestLogger = TraceHelper.getBean("commonRequestLogger", RequestLogger.class);
         PushToZipkinEventConsumer pushToZipkinEventConsumer = new PushToZipkinEventConsumer();
