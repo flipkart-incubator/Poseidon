@@ -18,7 +18,6 @@ package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
-import com.flipkart.poseidon.tracing.TraceHelper;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
@@ -31,6 +30,9 @@ import flipkart.lego.api.exceptions.ProcessingException;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.flipkart.poseidon.tracing.TraceHelper.endTrace;
+import static com.flipkart.poseidon.tracing.TraceHelper.startTrace;
 
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
@@ -65,14 +67,14 @@ public class ContextInducedFilter implements Filter {
                 Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
             }
             // We don't want to trace requests in filter traces
-            TraceHelper.startTrace(filter);
+            startTrace(filter);
             filter.filterRequest(request, response);
             success = true;
         } finally {
+            endTrace(filter, success);
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
-            TraceHelper.endTrace(filter, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }
@@ -90,14 +92,14 @@ public class ContextInducedFilter implements Filter {
                 Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
             }
             // We don't want to trace responses in filter traces
-            TraceHelper.startTrace(filter);
+            startTrace(filter);
             filter.filterResponse(request, response);
             success = true;
         } finally {
+            endTrace(filter, success);
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
-            TraceHelper.endTrace(filter, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }

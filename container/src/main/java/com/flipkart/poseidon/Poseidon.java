@@ -217,12 +217,13 @@ public class Poseidon {
     }
 
     private void addFilters(ServletContextHandler servletContextHandler) {
+        // RequestContext is required in other filters, hence set it up first
+        servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         // Set up distributed tracing filter
         ServletTraceFilter servletTraceFilter = ServletTraceFilterBuilder.build(configuration);
         if (servletTraceFilter != null) {
             servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
         }
-        servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
 

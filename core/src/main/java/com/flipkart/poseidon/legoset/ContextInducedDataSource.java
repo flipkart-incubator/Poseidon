@@ -28,7 +28,8 @@ import flipkart.lego.api.entities.Request;
 import java.util.List;
 import java.util.Map;
 
-import static com.flipkart.poseidon.tracing.TraceHelper.*;
+import static com.flipkart.poseidon.tracing.TraceHelper.endTrace;
+import static com.flipkart.poseidon.tracing.TraceHelper.startTrace;
 
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
@@ -69,10 +70,10 @@ public class ContextInducedDataSource implements DataSource {
             success = true;
             return dataType;
         } finally {
+            endTrace(dataSource, success);
             RequestContext.shutDown();
             ServiceContext.shutDown();
             HystrixRequestContext.setContextOnCurrentThread(existingState);
-            endTrace(dataSource, success);
             Brave.getServerSpanThreadBinder().setCurrentSpan(null);
         }
     }
