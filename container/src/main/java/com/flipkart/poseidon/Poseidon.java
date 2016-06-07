@@ -162,15 +162,17 @@ public class Poseidon {
 
                 JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
                 List<RewriteRule> rules = getMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
+                boolean isAnyRuleActive = false;
                 for (RewriteRule rule : rules) {
                     if (rule.isActive()) {
                         RewriteRegexRule regexRule = new RewriteRegexRule();
                         regexRule.setRegex(rule.getFrom());
                         regexRule.setReplacement(rule.getTo());
                         rewriteHandler.addRule(regexRule);
+                        isAnyRuleActive = true;
                     }
                 }
-                return Optional.of(rewriteHandler);
+                return isAnyRuleActive ? Optional.of(rewriteHandler) : Optional.empty();
             }
         } catch (IOException e) {
             logger.error("Unable to read Rewrite Rules", e);
