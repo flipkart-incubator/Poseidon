@@ -1,3 +1,6 @@
+## 4.2.1-SNAPSHOT (Jun 7, 2016)
+- Using phantom 2.0.1, bug fix in zipkin span collector
+
 ## 4.2.0 (Jun 7, 2016)
 - Included snapshot version fixes
 - [Bug fix](https://github.com/flipkart-incubator/Poseidon/issues/31) - NPE with inactive rewrite rules
