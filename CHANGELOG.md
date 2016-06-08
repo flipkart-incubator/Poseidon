@@ -1,3 +1,14 @@
+## 4.2.1-SNAPSHOT (Jun 7, 2016)
+- Using phantom 2.0.1, bug fix in zipkin span collector
+
+## 4.2.0 (Jun 7, 2016)
+- Included snapshot version fixes
+- [Bug fix](https://github.com/flipkart-incubator/Poseidon/issues/31) - NPE with inactive rewrite rules
+
+## 4.2.0-SNAPSHOT (May 31, 2016)
+- Datasources and filters can participate in Distributed Tracing
+- Parameterized URI is available in RequestContext
+
 ## 4.1.0 (May 27, 2016)
 - Included snapshot version fixes
 - Filter to unzip POST/PUT request body

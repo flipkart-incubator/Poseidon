@@ -62,7 +62,7 @@ public class APIBuildable implements Buildable {
         OrchestratorDataSource dataSource = new OrchestratorDataSource(legoSet, initialParams,
                 tasks, pojo.getResponse(), getMappers(), mappedBeans);
         Map<String, DataSource> dataSourceMap = new HashMap<>();
-        dataSourceMap.put(RESPONSE_KEY, legoSet.wrapDataSource(dataSource));
+        dataSourceMap.put(RESPONSE_KEY, legoSet.wrapDataSource(dataSource, request));
         return dataSourceMap;
     }
 
@@ -118,6 +118,10 @@ public class APIBuildable implements Buildable {
             throw new InternalErrorException(e);
         }
         return mappers;
+    }
+
+    public EndpointPOJO getPojo() {
+        return pojo;
     }
 
     @Override

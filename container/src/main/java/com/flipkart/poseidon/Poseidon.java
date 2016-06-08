@@ -162,15 +162,17 @@ public class Poseidon {
 
                 JavaType listRuleType = getMapper().getTypeFactory().constructParametricType(List.class, RewriteRule.class);
                 List<RewriteRule> rules = getMapper().readValue(new FileInputStream(rewriteFilePath), listRuleType);
+                boolean isAnyRuleActive = false;
                 for (RewriteRule rule : rules) {
                     if (rule.isActive()) {
                         RewriteRegexRule regexRule = new RewriteRegexRule();
                         regexRule.setRegex(rule.getFrom());
                         regexRule.setReplacement(rule.getTo());
                         rewriteHandler.addRule(regexRule);
+                        isAnyRuleActive = true;
                     }
                 }
-                return Optional.of(rewriteHandler);
+                return isAnyRuleActive ? Optional.of(rewriteHandler) : Optional.empty();
             }
         } catch (IOException e) {
             logger.error("Unable to read Rewrite Rules", e);
@@ -215,12 +217,13 @@ public class Poseidon {
     }
 
     private void addFilters(ServletContextHandler servletContextHandler) {
+        // RequestContext is required in other filters, hence set it up first
+        servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         // Set up distributed tracing filter
         ServletTraceFilter servletTraceFilter = ServletTraceFilterBuilder.build(configuration);
         if (servletTraceFilter != null) {
             servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
         }
-        servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
         servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
 

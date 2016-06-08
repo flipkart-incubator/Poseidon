@@ -19,7 +19,6 @@ package com.flipkart.poseidon.tracing;
 import com.flipkart.phantom.event.consumer.PushToZipkinEventConsumer;
 import com.flipkart.phantom.event.consumer.RequestLogger;
 import com.flipkart.phantom.runtime.impl.jetty.filter.ServletTraceFilter;
-import com.flipkart.phantom.runtime.impl.spring.ServiceProxyComponentContainer;
 import com.flipkart.phantom.task.impl.collector.DelegatingZipkinSpanCollector;
 import com.flipkart.phantom.task.impl.collector.EventDispatchingSpanCollector;
 import com.flipkart.poseidon.api.Configuration;
@@ -52,7 +51,7 @@ public class ServletTraceFilterBuilder {
             return null;
         }
 
-        EventDispatchingSpanCollector eventDispatchingSpanCollector = getBean("eventDispatchingSpanCollector", EventDispatchingSpanCollector.class);
+        EventDispatchingSpanCollector eventDispatchingSpanCollector = TraceHelper.getSpanCollector();
         TraceFilter traceFilter = new DynamicSampleRateTraceFilter(tracingConfiguration);
 
         ServletTraceFilter servletTraceFilter = new ServletTraceFilter();
@@ -71,8 +70,9 @@ public class ServletTraceFilterBuilder {
         DelegatingZipkinSpanCollector spanCollector = new DelegatingZipkinSpanCollector();
         spanCollector.setZipkinCollectorHost(collectorHost);
         spanCollector.setZipkinCollectorPort(collectorPort);
+        spanCollector.setFailOnSetup(false);
 
-        RequestLogger requestLogger = getBean("commonRequestLogger", RequestLogger.class);
+        RequestLogger requestLogger = TraceHelper.getBean("commonRequestLogger", RequestLogger.class);
         PushToZipkinEventConsumer pushToZipkinEventConsumer = new PushToZipkinEventConsumer();
         pushToZipkinEventConsumer.setSpanCollector(spanCollector);
         pushToZipkinEventConsumer.setRequestLogger(requestLogger);
@@ -84,9 +84,5 @@ public class ServletTraceFilterBuilder {
             return null;
         }
         return servletTraceFilter;
-    }
-
-    private static <T> T getBean(String beanId, Class<T> tClass) {
-        return ServiceProxyComponentContainer.getCommonProxyHandlerBeansContext().getBean(beanId, tClass);
     }
 }

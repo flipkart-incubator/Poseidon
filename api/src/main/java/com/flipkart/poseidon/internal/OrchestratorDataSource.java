@@ -21,6 +21,7 @@ import com.flipkart.hydra.dispatcher.Dispatcher;
 import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.mappers.Mapper;
+import com.flipkart.poseidon.model.annotations.Trace;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Trace(false)
 public class OrchestratorDataSource extends AbstractDataSource {
 
     private final Map<String, Object> initialParams;

@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>4.2.1-SNAPSHOT</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>
@@ -70,7 +70,7 @@
         <jackson.version>2.5.2</jackson.version>
         <jetty.version>9.2.10.v20150310</jetty.version>
         <logback.version>1.1.3</logback.version>
-        <phantom.version>2.0.0</phantom.version>
+        <phantom.version>2.0.1-SNAPSHOT</phantom.version>
         <brave.version>2.2.1</brave.version>
     </properties>
 

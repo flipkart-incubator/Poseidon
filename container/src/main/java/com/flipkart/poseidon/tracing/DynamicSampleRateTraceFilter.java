@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.tracing;
 
 import com.flipkart.poseidon.api.TracingConfiguration;
+import com.flipkart.poseidon.core.RequestContext;
 import com.github.kristofa.brave.FixedSampleRateTraceFilter;
 import com.github.kristofa.brave.TraceFilter;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.flipkart.poseidon.constants.RequestConstants.ENABLE_TRACING;
 
 /**
  * <code>DynamicSampleRateTraceFilter</code> is an implementation of {@link TraceFilter}
@@ -68,6 +71,7 @@ public class DynamicSampleRateTraceFilter implements TraceFilter {
     @Override
     public boolean trace(final String requestName) {
         if (!isTracingEnabled() || requestName == null || requestName.isEmpty()) {
+            RequestContext.set(ENABLE_TRACING, false);
             return false;
         }
 
@@ -83,6 +87,7 @@ public class DynamicSampleRateTraceFilter implements TraceFilter {
                 } else {
                     LOGGER.debug("Wildcard match. Tracing not enabled for {}", requestName);
                 }
+                RequestContext.set(ENABLE_TRACING, enableTracing);
                 return enableTracing;
             }
 
@@ -93,10 +98,12 @@ public class DynamicSampleRateTraceFilter implements TraceFilter {
                 } else {
                     LOGGER.debug("Pattern match {}. Tracing not enabled for {}", requestPattern, requestName);
                 }
+                RequestContext.set(ENABLE_TRACING, enableTracing);
                 return enableTracing;
             }
         }
         LOGGER.debug("No pattern matched. Tracing not enabled for {}", requestName);
+        RequestContext.set(ENABLE_TRACING, false);
         return false;
     }
 

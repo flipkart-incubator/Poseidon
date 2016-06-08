@@ -117,14 +117,14 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
         try {
             DataSource dataSource = dataSources.get(id).newInstance(this, request);
-            return wrapDataSource(dataSource);
+            return wrapDataSource(dataSource, request);
         } catch (Exception e) {
             throw new LegoSetException("Unable to instantiate DataSource for provided id = " + id, e);
         }
     }
 
-    public DataSource wrapDataSource(DataSource dataSource) {
-        return new ContextInducedDataSource(dataSource);
+    public DataSource wrapDataSource(DataSource dataSource, Request request) {
+        return new ContextInducedDataSource(dataSource, request);
     }
 
     public ServiceClient getServiceClient(String id) throws ElementNotFoundException {

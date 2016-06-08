@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.flipkart.poseidon</groupId>
 		<artifactId>poseidon</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
+		<version>4.2.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>http-handler</artifactId>
