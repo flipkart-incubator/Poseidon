@@ -454,11 +454,13 @@ public class ServiceGenerator {
         method._throws(jCodeModel.directClass("UnsupportedOperationException"));
         method.body()._return(JExpr.ref("VERSION"));
 
-        methodReturnType = jCodeModel.ref(ObjectMapper.class);
-        method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
-        method.annotate(jCodeModel.ref("Override"));
-        method.javadoc().addReturn().append(methodReturnType);
-        method.body()._return(JExpr.ref("customObjectMapper").invoke("getObjectMapper"));
+        if (serviceIdl.getService().getObjectMapperClass() != null) {
+            methodReturnType = jCodeModel.ref(ObjectMapper.class);
+            method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
+            method.annotate(jCodeModel.ref("Override"));
+            method.javadoc().addReturn().append(methodReturnType);
+            method.body()._return(JExpr.ref("customObjectMapper").invoke("getObjectMapper"));
+        }
 
         String[] description = serviceIdl.getService().getDescription();
         String shortDescription = description.length > 0 ? description[0] : getInterfaceName(serviceIdl);
