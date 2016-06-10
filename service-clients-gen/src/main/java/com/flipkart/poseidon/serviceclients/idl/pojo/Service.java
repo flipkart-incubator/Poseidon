@@ -30,6 +30,7 @@ public class Service {
     private Map<String, String> headers;
     private String[] description;
     private String commandName;
+    // class which configures the objectMapper
     private String objectMapperClass;
 
     public String getName() {

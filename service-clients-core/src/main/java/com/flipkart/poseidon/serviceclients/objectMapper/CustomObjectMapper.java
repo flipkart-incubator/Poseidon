@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.serviceclients;
+package com.flipkart.poseidon.serviceclients.objectMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by venkata.lakshmi on 16/04/15.
  *
- *
+ * Allows to configure object mapper instance. Creates a custom object mapper for a service
  */
-public abstract class JsonObjectMapper {
+public abstract class CustomObjectMapper {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JsonObjectMapper() {
+    public CustomObjectMapper() {
         configure(objectMapper);
     }
     public abstract void configure(final ObjectMapper objectMapper);
 
-    public ObjectMapper getObjectMapper() {
+    public final ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 }

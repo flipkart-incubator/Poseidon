@@ -212,7 +212,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
        return getName() + "_" + Joiner.on(".").join(getVersion());
     }
 
-    public ObjectMapper getObjectMapper() {
+    protected ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 }

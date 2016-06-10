@@ -136,7 +136,7 @@ public class ServiceGenerator {
         versionField.init(invocation);
 
         if (serviceIdl.getService().getObjectMapperClass() != null) {
-            fieldModifier = JMod.PUBLIC | JMod.STATIC | JMod.FINAL;
+            fieldModifier = JMod.PUBLIC | JMod.FINAL;
             JClass objectMapper = jCodeModel.ref(serviceIdl.getService().getObjectMapperClass());
             jDefinedClass.field(fieldModifier, objectMapper, "customObjectMapper", JExpr._new(objectMapper));
         }
@@ -455,7 +455,7 @@ public class ServiceGenerator {
         method.body()._return(JExpr.ref("VERSION"));
 
         methodReturnType = jCodeModel.ref(ObjectMapper.class);
-        method = jDefinedClass.method(JMod.PUBLIC, methodReturnType, "getObjectMapper");
+        method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
         method.annotate(jCodeModel.ref("Override"));
         method.javadoc().addReturn().append(methodReturnType);
         method.body()._return(JExpr.ref("customObjectMapper").invoke("getObjectMapper"));
