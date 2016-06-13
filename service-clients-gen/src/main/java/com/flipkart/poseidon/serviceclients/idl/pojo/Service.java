@@ -30,6 +30,8 @@ public class Service {
     private Map<String, String> headers;
     private String[] description;
     private String commandName;
+    // class which configures the objectMapper
+    private String objectMapperClass;
 
     public String getName() {
         return name;
@@ -77,6 +79,14 @@ public class Service {
 
     public void setCommandName(String commandName) {
         this.commandName = commandName;
+    }
+
+    public String getObjectMapperClass() {
+        return objectMapperClass;
+    }
+
+    public void setObjectMapperClass(String objectMapperClass) {
+        this.objectMapperClass = objectMapperClass;
     }
 
     @Override

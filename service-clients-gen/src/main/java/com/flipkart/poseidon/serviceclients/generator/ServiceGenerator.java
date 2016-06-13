@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.serviceclients.generator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
 import com.flipkart.poseidon.serviceclients.ServiceExecutePropertiesBuilder;
@@ -133,6 +134,12 @@ public class ServiceGenerator {
         invocation.arg(JExpr.lit(serviceIdl.getVersion().getMinor()));
         invocation.arg(JExpr.lit(serviceIdl.getVersion().getPatch()));
         versionField.init(invocation);
+
+        if (serviceIdl.getService().getObjectMapperClass() != null) {
+            fieldModifier = JMod.PUBLIC | JMod.FINAL;
+            JClass objectMapper = jCodeModel.ref(serviceIdl.getService().getObjectMapperClass());
+            jDefinedClass.field(fieldModifier, objectMapper, "customObjectMapper", JExpr._new(objectMapper));
+        }
     }
 
     private void addExtendsImplements(ServiceIDL serviceIdl, JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
@@ -446,6 +453,14 @@ public class ServiceGenerator {
         method.javadoc().addReturn().append(methodReturnType);
         method._throws(jCodeModel.directClass("UnsupportedOperationException"));
         method.body()._return(JExpr.ref("VERSION"));
+
+        if (serviceIdl.getService().getObjectMapperClass() != null) {
+            methodReturnType = jCodeModel.ref(ObjectMapper.class);
+            method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
+            method.annotate(jCodeModel.ref("Override"));
+            method.javadoc().addReturn().append(methodReturnType);
+            method.body()._return(JExpr.ref("customObjectMapper").invoke("getObjectMapper"));
+        }
 
         String[] description = serviceIdl.getService().getDescription();
         String shortDescription = description.length > 0 ? description[0] : getInterfaceName(serviceIdl);
