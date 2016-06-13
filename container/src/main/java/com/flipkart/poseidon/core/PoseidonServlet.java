@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class PoseidonServlet extends HttpServlet {
             StringBuffer requestBuffer = new StringBuffer();
             String line = null;
             try {
-                BufferedReader reader = httpRequest.getReader();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(httpRequest.getInputStream()));
                 while ((line = reader.readLine()) != null)
                     requestBuffer.append(line);
             } catch (Exception e) {
