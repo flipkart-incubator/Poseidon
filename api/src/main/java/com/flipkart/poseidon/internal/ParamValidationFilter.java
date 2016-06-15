@@ -77,7 +77,8 @@ public class ParamValidationFilter implements Filter {
                 String internalName = param.getInternalName();
                 ParamPOJO.DataType datatype = param.getDatatype();
                 Object defaultValue = param.getDefaultValue();
-                boolean multivalue = param.getMultivalue();
+                String separator = param.getSeparator();
+                boolean multivalue = param.getMultivalue() || separator != null;
                 boolean isBodyRequest = param.isBody();
                 boolean isHeader = param.isHeader();
                 boolean isPathParam = param.isPathparam();
@@ -128,9 +129,15 @@ public class ParamValidationFilter implements Filter {
                     }
                 } else {
                     Object attribute = poseidonRequest.getAttribute(name);
+
                     if (failOnMissingValue && attribute == null) {
                         throw new BadRequestException("Missing parameter : " + name);
                     }
+
+                    if (multivalue && separator != null && attribute != null) {
+                        attribute = ((String[]) attribute)[0].split(separator);
+                    }
+
                     if (!failOnMissingValue && attribute == null && defaultValue != null) {
                         // Optional param, value is not present but default is specified
                         value = defaultValue;

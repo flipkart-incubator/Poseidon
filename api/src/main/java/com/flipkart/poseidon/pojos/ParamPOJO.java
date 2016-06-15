@@ -33,6 +33,7 @@ public class ParamPOJO {
      */
     private Object defaultValue;
     private boolean multivalue;
+    private String separator;
     private boolean file;
     private boolean body = false;
     private String javatype;
@@ -79,6 +80,10 @@ public class ParamPOJO {
     public boolean isPathparam() {return pathparam; }
 
     public int getPosition() {return  position; }
+
+    public String getSeparator() {
+        return separator;
+    }
 
     public static enum DataType {
         STRING, INTEGER, NUMBER, BOOLEAN;
