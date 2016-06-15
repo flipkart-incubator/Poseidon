@@ -2,6 +2,7 @@
 - Using phantom 2.0.1, bug fix in zipkin span collector
 - Service clients - object mapper can be configured per service
 - Endpoint name is available in RequestContext
+- API query param values can be tokenized by specifying separator
 
 ## 4.2.0 (Jun 7, 2016)
 - Included snapshot version fixes
