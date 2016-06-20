@@ -88,7 +88,7 @@ public class APIValidator {
                 pojoErrors.addAll(validateParams(pojo.getParams(), pojo.getUrl()));
             }
 
-            if (pojo.getTasks() != null && pojo.getParams() != null) {
+            if (pojo.getTasks() != null) {
                 pojoErrors.addAll(validateTasks(pojo.getTasks(), pojo.getParams()));
             }
 
@@ -182,29 +182,33 @@ public class APIValidator {
                 boolean isExpression = fullContextParam.charAt(0) == '$';
                 if (isExpression) {
                     fullContextParam = fullContextParam.substring(1);
+                } else {
+                    errors.add("Param: " + braced(fullContextParam) + " used in Task: " + braced(taskName) + " is not an expression");
                 }
 
                 String contextParam = fullContextParam.split("\\.")[0];
 
                 boolean located = false;
                 if (contextParam != null && !contextParam.isEmpty()) {
-                    if (params.getRequired() != null) {
-                        for (ParamPOJO param : params.getRequired()) {
-                            if (contextParam.equals(param.getName())) {
-                                located = true;
-                                if (isOptional) {
-                                    errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is not optional");
+                    if (params != null) {
+                        if (params.getRequired() != null) {
+                            for (ParamPOJO param : params.getRequired()) {
+                                if (contextParam.equals(param.getName())) {
+                                    located = true;
+                                    if (isOptional) {
+                                        errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is not optional");
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if (params.getOptional() != null) {
-                        for (ParamPOJO param : params.getOptional()) {
-                            if (contextParam.equals(param.getName())) {
-                                located = true;
-                                if (!isOptional && param.getDefaultValue() == null) {
-                                    errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is optional. Add a \'#\'");
+                        if (params.getOptional() != null) {
+                            for (ParamPOJO param : params.getOptional()) {
+                                if (contextParam.equals(param.getName())) {
+                                    located = true;
+                                    if (!isOptional && param.getDefaultValue() == null) {
+                                        errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is optional. Add a \'#\'");
+                                    }
                                 }
                             }
                         }
