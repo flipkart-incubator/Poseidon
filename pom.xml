@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>4.2.1-SNAPSHOT</version>
+    <version>4.2.1</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>

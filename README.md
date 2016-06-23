@@ -17,6 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 4.2.1             | Jun 23 2016      |    Phantom 2.0.1, configurable object mapper in Service Clients
 | Version 4.2.0             | Jun 07 2016      |    Datasources and filters can participate in Distributed Tracing, bug fix
 | Version 4.1.0             | May 27 2016      |    Phantom 2.0.0, OAuth task handler, configurable object mapper
 | Version 4.0.0             | May 18 2016      |    Lego 2.0.0, service clients runtime and generation separated, headers configuration 

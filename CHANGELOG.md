@@ -1,3 +1,6 @@
+## 4.2.1 (Jun 23, 2016)
+- Included snapshot version fixes
+
 ## 4.2.1-SNAPSHOT (Jun 15, 2016)
 - Using phantom 2.0.1, bug fix in zipkin span collector
 - Service clients - object mapper can be configured per service
