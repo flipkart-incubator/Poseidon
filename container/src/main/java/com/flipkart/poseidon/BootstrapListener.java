@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon;
 
+import com.flipkart.poseidon.metrics.Metrics;
+import com.netflix.hystrix.contrib.codahalemetricspublisher.HystrixCodaHaleMetricsPublisher;
+import com.netflix.hystrix.strategy.HystrixPlugins;
 import org.slf4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
@@ -41,6 +44,7 @@ public class BootstrapListener implements PlatformEventConsumer {
         if (event.getSource() instanceof PlatformEvent) {
             if (((PlatformEvent) event.getSource()).getEventType().equals("BootstrapMonitoredEvent")) {
                 if (((PlatformEvent) event.getSource()).getEventStatus().equals("started")) {
+                    registerHystrixPlugins();
                     logger.info("\n************************************" +
                             "\n______ " +
                             "\n| ___ \\" +
@@ -53,6 +57,14 @@ public class BootstrapListener implements PlatformEventConsumer {
                 }
             }
         }
+    }
+
+    private void registerHystrixPlugins() {
+        // Register hystrix codahale metrics publisher plugin
+        logger.info("Registering hystrix jmx metrics plugin");
+        HystrixCodaHaleMetricsPublisher publisher = new HystrixCodaHaleMetricsPublisher(Metrics.getRegistry());
+        HystrixPlugins.getInstance().registerMetricsPublisher(publisher);
+        logger.info("Registered hystrix jmx metrics plugin");
     }
 
     private void startPoseidon() {

@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>4.2.1</version>
+        <version>4.3.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>container</artifactId>
@@ -109,6 +109,11 @@
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-jetty9</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-codahale-metrics-publisher</artifactId>
         </dependency>
     </dependencies>
 </project>
