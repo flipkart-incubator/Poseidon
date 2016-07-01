@@ -1,5 +1,6 @@
-## 4.3.0-SNAPSHOT (Jun 23, 2016)
+## 4.3.0-SNAPSHOT (Ju1 1, 2016)
 - Hystrix metrics exposed through JMX using plug-in
+- Bug fix in shutdown of OAuthTokenGenerator
 
 ## 4.2.1-SNAPSHOT (Jun 15, 2016)
 - Using phantom 2.0.1, bug fix in zipkin span collector
