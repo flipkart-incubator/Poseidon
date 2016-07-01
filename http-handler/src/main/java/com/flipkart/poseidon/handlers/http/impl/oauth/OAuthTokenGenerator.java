@@ -167,6 +167,7 @@ public class OAuthTokenGenerator extends SinglePoolHttpTaskHandler {
     @Override
     public void shutdown(TaskContext taskContext) throws Exception{
         stopThread = true;
+        thread.interrupt();
         thread.join();
         super.shutdown(taskContext);
     }
