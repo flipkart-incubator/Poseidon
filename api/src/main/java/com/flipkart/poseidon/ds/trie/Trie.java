@@ -59,7 +59,9 @@ public class Trie<K, V> {
             newNode.matchAny = keys[i] == null;
             newNode.value = i == keys.length - 1 ? value : null;
 
-            if (newNode.key != null) {
+            if (currentNode == null) {
+                currentParent.firstChild = newNode;
+            } else if (newNode.key != null) {
                 newNode.rightSibling = currentParent.firstChild;
                 currentParent.firstChild = newNode;
             } else {

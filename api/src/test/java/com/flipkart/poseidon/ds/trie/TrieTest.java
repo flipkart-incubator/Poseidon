@@ -135,6 +135,38 @@ public class TrieTest {
         System.out.println();
     }
 
+    @Test
+    public void noNullPointerTest() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(new String[]{"v1", "accounts", null, "campaigns", null, "banners"}, "1");
+        trie.add(new String[]{"v1", "accounts", null, "campaign", null}, "2");
+        trie.add(new String[]{"v1", "login"}, "3");
+        trie.add(new String[]{"v1", "accounts", null}, "4");
+        trie.add(new String[]{"v1", "accounts", null, "campaigns", "all"}, "5");
+        trie.add(new String[]{"v1", "accounts", null, "campaigns", null}, "6");
+        trie.add(new String[]{"v1", "accounts", null, "campaigns", null, "banners", null}, "7");
+        trie.add(new String[]{"v1", "uploadDocument"}, "8");
+        trie.add(new String[]{"v1", "accounts"}, "9");
+        trie.add(new String[]{"v1", "accounts", null, "session"}, "10");
+        trie.add(new String[]{"v1", "accounts", null, "campaign"}, "11");
+
+        Assert.assertEquals("1", trie.get(new String[]{"v1", "accounts", null, "campaigns", null, "banners"}));
+        Assert.assertEquals("2", trie.get(new String[]{"v1", "accounts", null, "campaign", null}));
+        Assert.assertEquals("3", trie.get(new String[]{"v1", "login"}));
+        Assert.assertEquals("4", trie.get(new String[]{"v1", "accounts", null}));
+        Assert.assertEquals("5", trie.get(new String[]{"v1", "accounts", null, "campaigns", "all"}));
+        Assert.assertEquals("6", trie.get(new String[]{"v1", "accounts", null, "campaigns", null}));
+        Assert.assertEquals("7", trie.get(new String[]{"v1", "accounts", null, "campaigns", null, "banners", null}));
+        Assert.assertEquals("8", trie.get(new String[]{"v1", "uploadDocument"}));
+        Assert.assertEquals("9", trie.get(new String[]{"v1", "accounts"}));
+        Assert.assertEquals("10", trie.get(new String[]{"v1", "accounts", null, "session"}));
+        Assert.assertEquals("11", trie.get(new String[]{"v1", "accounts", null, "campaign"}));
+
+        System.out.println("Tree for placeholderTest1:");
+        printPaths(trie);
+        System.out.println();
+    }
+
     private <K, V> void printPaths(Trie<K, V> trie) {
         trie.printAllPaths("/").forEach(list -> {
             list.forEach(System.out::print);
