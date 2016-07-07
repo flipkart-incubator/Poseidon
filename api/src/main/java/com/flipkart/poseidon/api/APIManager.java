@@ -71,7 +71,7 @@ public class APIManager {
         return "[" + Joiner.on(",").join(validConfigs) + "]";
     }
 
-    private void scanAndAdd(Path dir, List<String> validConfigs) {
+    public static void scanAndAdd(Path dir, List<String> validConfigs) {
         try (DirectoryStream<Path> files = Files.newDirectoryStream(dir)) {
             for (Path entry : files) {
                 File file = entry.toFile();
@@ -96,7 +96,7 @@ public class APIManager {
 
     }
 
-    private boolean validateConfig(String config) {
+    private static boolean validateConfig(String config) {
         try {
             getMapper().readValue(config, EndpointPOJO.class);
         } catch (IOException e) {
