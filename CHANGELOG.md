@@ -2,6 +2,9 @@
 - Hystrix metrics exposed through JMX using plug-in
 - Bug fix in shutdown of OAuthTokenGenerator
 - Bug fix for NPE in Trie
+- API Validator
+- Upgrade to phantom 2.0.1
+- Failed service calls (hystrix commands) are now logged per request
 
 ## 4.2.1-SNAPSHOT (Jun 15, 2016)
 - Using phantom 2.0.1, bug fix in zipkin span collector
