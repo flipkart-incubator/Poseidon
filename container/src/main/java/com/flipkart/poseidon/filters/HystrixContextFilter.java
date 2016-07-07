@@ -18,12 +18,21 @@ package com.flipkart.poseidon.filters;
 
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.netflix.hystrix.HystrixRequestLog;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
+import org.slf4j.Logger;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Map;
+
+import static com.flipkart.poseidon.constants.RequestConstants.HEADERS;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class HystrixContextFilter implements Filter {
+    private static final Logger logger = getLogger(HystrixContextFilter.class);
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -36,6 +45,9 @@ public class HystrixContextFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } finally {
+            // Log all the failed Hystrix commands before shutting down context
+            logFailedHystrixCommands(request);
+
             RequestContext.shutDown();
             ServiceContext.shutDown();
             hystrixRequestContext.shutdown();
@@ -44,5 +56,29 @@ public class HystrixContextFilter implements Filter {
 
     @Override
     public void destroy() {
+    }
+
+    /**
+     * Logs details like full exception stack trace for failed Hystrix commands.
+     * A command might not have been executed (say threadpool/semaphore rejected,
+     * short circuited). Command might have been executed but failed (say timed out,
+     * command execution failed).
+     *
+     * This is required as Phantom's RequestLogger logs failures of sync command
+     * executions alone (and not async command executions) and doesn't provide request
+     * level view of all commands.
+     *
+     * We log global headers here as it typically contains request id
+     */
+    private void logFailedHystrixCommands(ServletRequest request) {
+        String url = ((HttpServletRequest) request).getPathInfo();
+        Map<String, String> globalHeaders = RequestContext.get(HEADERS);
+
+        HystrixRequestLog.getCurrentRequest().getAllExecutedCommands().stream().filter(
+                command -> command.isResponseTimedOut() || command.isFailedExecution() || command.isResponseShortCircuited() || command.isResponseRejected()
+        ).forEach(
+                command -> logger.error("URL: {}. Global headers: {}. Command: {}. Events: {}. Exception: ",
+                        url, globalHeaders, command.getCommandKey().name(), command.getExecutionEvents(), command.getFailedExecutionException())
+        );
     }
 }
