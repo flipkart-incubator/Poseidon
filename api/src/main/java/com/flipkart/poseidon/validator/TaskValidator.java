@@ -50,7 +50,7 @@ public class TaskValidator {
                 if (isExpression) {
                     fullContextParam = fullContextParam.substring(1);
                 } else {
-                    errors.add("Param: " + braced(fullContextParam) + " used in Task: " + braced(taskName) + " is not an expression");
+                    continue;
                 }
 
                 String contextParam = fullContextParam.split("\\.")[0];
