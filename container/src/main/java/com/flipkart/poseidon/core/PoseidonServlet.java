@@ -119,7 +119,7 @@ public class PoseidonServlet extends HttpServlet {
             handleFileUpload(request, httpRequest);
         } else {
             StringBuffer requestBuffer = new StringBuffer();
-            String line = null;
+            String line;
             try {
                 BufferedReader reader = httpRequest.getReader();
                 while ((line = reader.readLine()) != null)
@@ -139,13 +139,10 @@ public class PoseidonServlet extends HttpServlet {
             logger.warn("301: " + exception.getMessage());
             redirect(response, httpResponse);
         } catch (BadRequestException exception) {
-            logger.error("400: {}", exception);
             badRequest(response, httpResponse, exception);
         } catch (ElementNotFoundException exception) {
-            logger.error("404: {}", exception);
             elementNotFound(response, httpResponse, exception);
         } catch (Throwable exception) {
-            logger.error("500: {}", exception);
             internalError(response, httpResponse, exception);
         }
     }
@@ -267,6 +264,8 @@ public class PoseidonServlet extends HttpServlet {
         setCookies(response, httpResponse);
 
         Throwable generatedException = Optional.ofNullable(ExceptionUtils.getRootCause(throwable)).orElse(throwable);
+        logger.error("{}: ", statusCode, generatedException);
+
         if (configuration.getExceptionMapper() == null || !configuration.getExceptionMapper().map(generatedException, httpResponse)) {
             MediaType contentType = application.getDefaultMediaType();
             String errorMsg = "";
