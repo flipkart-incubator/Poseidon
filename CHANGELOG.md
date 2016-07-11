@@ -1,3 +1,6 @@
+## 4.3.0 (Jul 11, 2016)
+- Included snapshot version fixes
+
 ## 4.3.0-SNAPSHOT (Ju1 7, 2016)
 - Hystrix metrics exposed through JMX using plug-in
 - Bug fix in shutdown of OAuthTokenGenerator
