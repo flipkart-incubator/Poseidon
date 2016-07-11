@@ -46,8 +46,8 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return execute(dsId, dataSourceRequest);
     }
 
-    protected Future<DataType> execute(DataSource dataSource) throws Exception {
-        return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, ((AbstractDataSource) dataSource).getRequest()));
+    protected Future<DataType> execute(AbstractDataSource dataSource) throws Exception {
+        return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
     }
 
     protected Future<DataType> execute(String dsId, Request request) throws Exception {
