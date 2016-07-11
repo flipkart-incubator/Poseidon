@@ -47,12 +47,7 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     }
 
     protected Future<DataType> execute(DataSource dataSource) throws Exception {
-        if (!(dataSource instanceof AbstractDataSource)) {
-            throw new UnsupportedOperationException("Executing a DataSource that is not an AbstractDataSource");
-        }
-
-        AbstractDataSource abstractDataSource = (AbstractDataSource) dataSource;
-        return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(abstractDataSource, abstractDataSource.getRequest()));
+        return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, ((AbstractDataSource) dataSource).getRequest()));
     }
 
     protected Future<DataType> execute(String dsId, Request request) throws Exception {
@@ -92,7 +87,7 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return this.getClass().getName();
     }
 
-    public Request getRequest() {
+    protected Request getRequest() {
         return request;
     }
 }
