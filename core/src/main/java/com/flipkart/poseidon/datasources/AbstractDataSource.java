@@ -46,6 +46,10 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return execute(dsId, dataSourceRequest);
     }
 
+    protected Future<DataType> execute(AbstractDataSource dataSource) throws Exception {
+        return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
+    }
+
     protected Future<DataType> execute(String dsId, Request request) throws Exception {
         if (getId().equals(dsId)) {
             throw new IllegalArgumentException("Recursive calling of datasource is not allowed");
@@ -81,5 +85,9 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     @Override
     public String getDescription() {
         return this.getClass().getName();
+    }
+
+    protected Request getRequest() {
+        return request;
     }
 }
