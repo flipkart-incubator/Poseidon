@@ -60,17 +60,11 @@ public class PoseidonServlet extends HttpServlet {
 
     private static final Logger logger = getLogger(PoseidonServlet.class);
     private final Application application;
-    private final ExecutorService datasourceTPE;
-    private final ExecutorService filterTPE;
     private final Configuration configuration;
 
-    public PoseidonServlet(Application application, Configuration configuration, ExecutorService datasourceTPE, ExecutorService filterTPE) {
+    public PoseidonServlet(Application application, Configuration configuration) {
         this.application = application;
         this.configuration = configuration;
-        this.datasourceTPE = datasourceTPE;
-        this.filterTPE = filterTPE;
-
-        application.init(datasourceTPE, filterTPE);
     }
 
     @Override

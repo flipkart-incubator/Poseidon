@@ -75,15 +75,22 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Service
 public class Poseidon {
 
-    private static final Logger logger = getLogger(Poseidon.class);
+    public static final String STARTUP_LOGGER = "PoseidonStartupLogger";
+    private static final Logger logger = getLogger(STARTUP_LOGGER);
 
     private final Configuration configuration;
     private final Application application;
+    private final ExecutorService dataSourceES;
+    private final ExecutorService filterES;
+    private Server server;
 
     @Autowired
     public Poseidon(Configuration configuration, Application application) {
         this.configuration = configuration;
         this.application = application;
+
+        dataSourceES = Executors.newCachedThreadPool();
+        filterES = Executors.newCachedThreadPool();
     }
 
     public static void main(String[] args) {
@@ -94,10 +101,29 @@ public class Poseidon {
         (new Bootstrap()).init(args[0]);
     }
 
-    public void run() {
+    public void stop() {
+        logger.info("*** Poseidon - stopping application... ***");
+        application.stop();
+
+        logger.info("*** Poseidon - stopping executor services... ***");
+        dataSourceES.shutdown();
+        filterES.shutdown();
+
+        if (server != null) {
+            logger.info("*** Poseidon - stopping server... ***");
+            try {
+                server.stop();
+            } catch(Exception e) {
+                logger.error("Exception stopping server", e);
+            }
+        }
+
+        logger.info("*** Poseidon stopped ***");
+    }
+
+    public void start() {
         try {
             JettyConfiguration jettyConfiguration = configuration.getJettyConfiguration();
-            Server server;
             if (jettyConfiguration != null) {
                 // Use a bounded queue over jetty's default unbounded queue
                 // https://wiki.eclipse.org/Jetty/Howto/High_Load#Thread_Pool
@@ -113,13 +139,15 @@ public class Poseidon {
                 server = new Server(configuration.getPort());
             }
             if (!configuration.sendServerVersion()) {
-                disableSendingServerVersion(server);
+                disableSendingServerVersion();
             }
 
             server.setHandler(getHandlers());
+            application.init(dataSourceES, filterES);
             initializeMetricReporters();
 
             server.start();
+            logger.info("*** Poseidon started ***");
         } catch (Exception e) {
             logger.error("Unable to start server.", e);
         }
@@ -247,18 +275,10 @@ public class Poseidon {
     }
 
     private PoseidonServlet getPoseidonServlet() {
-        return new PoseidonServlet(application, configuration, getDataSourceExecutor(), getFilterExecutor());
+        return new PoseidonServlet(application, configuration);
     }
 
-    private ExecutorService getDataSourceExecutor() {
-        return Executors.newCachedThreadPool();
-    }
-
-    private ExecutorService getFilterExecutor() {
-        return Executors.newCachedThreadPool();
-    }
-
-    private void disableSendingServerVersion(Server server) {
+    private void disableSendingServerVersion() {
         for (Connector connector : server.getConnectors()) {
             for (ConnectionFactory connectionFactory : connector.getConnectionFactories()) {
                 if (connectionFactory instanceof HttpConnectionFactory) {
