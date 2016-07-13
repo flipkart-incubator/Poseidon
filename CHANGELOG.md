@@ -1,5 +1,7 @@
-## 4.4.0-SNAPSHOT (Jul 12, 2016)
+## 4.4.0-SNAPSHOT (Jul 13, 2016)
 - DataSource calling DataSource - objects can be used instead of id
+- Clean shutdown
+- Bug Fix - In service clients pom version
 
 ## 4.3.0 (Jul 11, 2016)
 - Included snapshot version fixes
