@@ -33,4 +33,6 @@ public interface Application {
     void handleRequest(PoseidonRequest req, PoseidonResponse resp) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException;
 
     MediaType getDefaultMediaType();
+
+    default void stop() {}
 }
