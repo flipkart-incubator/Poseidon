@@ -97,26 +97,8 @@ public class Generator {
     }
 
     private static void determineVersion(String localPomVersion) {
-        String headPomVersion = getHeadPomVersion();
-        setVersion(headPomVersion != null ? headPomVersion : localPomVersion);
+        setVersion(localPomVersion);
 //        updateVersion();
-    }
-
-    private static String getHeadPomVersion() {
-        String pomVersion = null;
-        try {
-            String pom = GitCommandExecutor.getHeadVersion(moduleParentPath, moduleName + File.separator + "pom.xml");
-            String[] versions = StringUtils.substringsBetween(pom, "<version>", "</version>");
-            if (versions != null && versions.length >= 2) {
-                pomVersion = versions[1];
-                logger.info("Git head pom version is {} for {}", pomVersion, moduleName);
-            }
-        } catch (CommandFailedException e) {
-            logger.error("Git show head:pom.xml failed with exit code {}. Output {}", e.getExitCode(), e.getOutput());
-        } catch (Exception e) {
-            logger.error(e.toString());
-        }
-        return pomVersion;
     }
 
     private static void setVersion(String moduleVersion) {
