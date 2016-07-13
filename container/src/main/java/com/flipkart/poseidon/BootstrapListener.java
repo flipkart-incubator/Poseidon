@@ -30,6 +30,8 @@ import org.trpr.platform.runtime.impl.event.BootstrapProgressMonitor;
 import static com.flipkart.poseidon.Poseidon.STARTUP_LOGGER;
 import static com.flipkart.poseidon.PoseidonContext.getBean;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trpr.platform.runtime.common.RuntimeConstants.BOOTSTRAP_START_STATE;
+import static org.trpr.platform.runtime.common.RuntimeConstants.BOOTSTRAP_STOP_STATE;
 
 @Component
 public class BootstrapListener implements PlatformEventConsumer {
@@ -45,7 +47,7 @@ public class BootstrapListener implements PlatformEventConsumer {
         if (event.getSource() instanceof PlatformEvent) {
             PlatformEvent platformEvent = (PlatformEvent) event.getSource();
             if ("BootstrapMonitoredEvent".equals(platformEvent.getEventType())) {
-                if ("started".equals(platformEvent.getEventStatus())) {
+                if (BOOTSTRAP_START_STATE.equals(platformEvent.getEventStatus())) {
                     registerHystrixPlugins();
                     logger.info("\n************************************" +
                             "\n______ " +
@@ -56,7 +58,7 @@ public class BootstrapListener implements PlatformEventConsumer {
                             "\n\\_|    Now starting Poseidon..." +
                             "\n************************************");
                     startPoseidon();
-                } else if ("stopped".equals(platformEvent.getEventStatus())) {
+                } else if (BOOTSTRAP_STOP_STATE.equals(platformEvent.getEventStatus())) {
                     stopPoseidon();
                 }
             }

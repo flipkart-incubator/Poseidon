@@ -149,7 +149,8 @@ public class Poseidon {
             server.start();
             logger.info("*** Poseidon started ***");
         } catch (Exception e) {
-            logger.error("Unable to start server.", e);
+            logger.error("Unable to start Poseidon.", e);
+            throw new RuntimeException("Unable to start Poseidon", e);
         }
     }
 
