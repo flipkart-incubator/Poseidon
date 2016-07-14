@@ -213,7 +213,7 @@ public class Generator {
         String pojoJson = FileUtils.readFileToString(new File(filePath));
         //javaType should contain FQN of referenced (to-be-generated) class. But as the package is determined
         //at runtime (containing version), we inject the package name here
-        pojoJson = pojoJson.replaceAll("\"javaType\"\\s*:\\s*\"(?!java)", "\"javaType\": \"" + packageName + ".");
+        pojoJson = pojoJson.replaceAll("\"javaType\"\\s*:\\s*\"(?!.*\\.)", "\"javaType\": \"" + packageName + ".");
         String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
 
         PojoGenerator.getInstance().generate(pojoJson, jCodeModel, destinationFolder, className, packageName);
