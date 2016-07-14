@@ -67,7 +67,7 @@ public class TrieTest {
         Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
         Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
         Assert.assertEquals("ada", trie.get(new String[]{"a", "d", "a"}));
-        Assert.assertEquals("nada", trie.get(new String[]{"n", "a", "d", "a"}));
+        Assert.assertEquals("n*", trie.get(new String[]{"n", "a", "d", "a"}));
         Assert.assertEquals("nada", trie.get(new String[]{"s", "a", "d", "a"}));
         Assert.assertEquals("nada", trie.get(new String[]{null, "a", "d", "a"}));
         Assert.assertEquals("prada", trie.get(new String[]{"j", "a", "p", "a"}));
@@ -76,12 +76,12 @@ public class TrieTest {
         Assert.assertEquals("a*", trie.get(new String[]{"a", "anything1"}));
         Assert.assertEquals("a*", trie.get(new String[]{"a", "anything2"}));
         Assert.assertEquals("tikki", trie.get(new String[]{"a"}));
-        Assert.assertNull(trie.get(new String[]{"a", "anything", "a"}));
-        Assert.assertNull(trie.get(new String[]{"b", "anything", "a"}));
-        Assert.assertNull(trie.get(new String[]{"c", "anything", "q"}));
-        Assert.assertNull(trie.get(new String[]{"a", "d", "a", "a"}));
-        Assert.assertNull(trie.get(new String[]{"a", "d", "a", null}));
-        Assert.assertNull(trie.get(new String[]{null, "d", "a", null}));
+        Assert.assertEquals("a*", trie.get(new String[]{"a", "anything", "a"}));
+        Assert.assertEquals("naan", trie.get(new String[]{"b", "anything", "a"}));
+        Assert.assertEquals("tikki", trie.get(new String[]{"c", "anything", "q"}));
+        Assert.assertEquals("a*", trie.get(new String[]{"a", "d", "a", "a", "z"}));
+        Assert.assertEquals("a*", trie.get(new String[]{"a", "d", "a", null}));
+        Assert.assertEquals("tikki", trie.get(new String[]{null, "d", "a", null}));
 
         System.out.println("Tree for placeholderTest1:");
         printPaths(trie);
@@ -163,6 +163,33 @@ public class TrieTest {
         Assert.assertEquals("11", trie.get(new String[]{"v1", "accounts", null, "campaign"}));
 
         System.out.println("Tree for placeholderTest1:");
+        printPaths(trie);
+        System.out.println();
+    }
+
+    @Test
+    public void endMatchTest() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(new String[]{"g", null, "r", null}, "g*r*");
+        trie.add(new String[]{"g", null, "r", null, "p"}, "g*r*p");
+        trie.add(new String[]{"a", null, "q"}, "a*");
+        trie.add(new String[]{"a", "b"}, "ab");
+        trie.add(new String[]{"a", null, "e"}, "a*e");
+        trie.add(new String[]{"g", null}, "g*");
+        trie.add(new String[]{"g", null, "r"}, "g*r");
+
+        Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
+        Assert.assertEquals("a*", trie.get(new String[]{"a", "c", "q"}));
+        Assert.assertEquals("g*", trie.get(new String[]{"g", "c", "q"}));
+        Assert.assertEquals("g*r", trie.get(new String[]{"g", "c", "r"}));
+        Assert.assertEquals("g*r*p", trie.get(new String[]{"g", "c", "r", "x", "p"}));
+        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a"}));
+        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a", "q", "z"}));
+        Assert.assertNull(trie.get(new String[]{"a", "c", "d", "q"}));
+        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything1", "e"}));
+        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
+
+        System.out.println("Tree for placeholderTest2:");
         printPaths(trie);
         System.out.println();
     }

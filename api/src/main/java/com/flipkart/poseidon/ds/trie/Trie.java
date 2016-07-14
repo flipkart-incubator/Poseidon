@@ -139,6 +139,9 @@ public class Trie<K, V> {
             }
 
             if (matchingChild == null) {
+                if (node.matchAny) {
+                    return node.value;
+                }
                 return null;
             }
 
