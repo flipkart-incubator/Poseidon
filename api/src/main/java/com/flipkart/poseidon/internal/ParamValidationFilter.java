@@ -19,6 +19,7 @@ package com.flipkart.poseidon.internal;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.google.common.base.Joiner;
@@ -117,8 +118,19 @@ public class ParamValidationFilter implements Filter {
                 } else if (isPathParam) {
                     int pos = param.getPosition();
                     String[] splitUrl = poseidonRequest.getUrl().split("/");
+                    String[] splitActual = ((String) RequestContext.get(RequestConstants.URI)).split("/");
+
                     if (splitUrl.length > pos) {
-                        value = splitUrl[pos];
+                        if (pos == splitActual.length - 1) {
+                            StringBuilder builder = new StringBuilder();
+                            for (int i = pos; i < splitUrl.length; i++) {
+                                builder.append(splitUrl[i]).append("/");
+                            }
+                            builder.deleteCharAt(builder.length() - 1);
+                            value = builder.toString();
+                        } else {
+                            value = splitUrl[pos];
+                        }
                     } else {
                         throw new BadRequestException("Missing path parameter : " + name);
                     }
