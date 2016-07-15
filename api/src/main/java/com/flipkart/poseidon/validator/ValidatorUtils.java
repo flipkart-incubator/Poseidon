@@ -71,7 +71,7 @@ public class ValidatorUtils {
             builder.append("--------------------------------------------").append("\n");
             builder.append("Errors while validating ").append(entry.getKey()).append("\n");
             builder.append("--------------------------------------------").append("\n");
-            entry.getValue().forEach(builder::append);
+            entry.getValue().forEach(error -> builder.append(error).append("\n"));
             builder.append("\n").append("\n").append("\n");
         }
         return builder.toString();
