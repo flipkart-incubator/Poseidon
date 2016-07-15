@@ -2,6 +2,8 @@
 - DataSource calling DataSource - objects can be used instead of id
 - Clean shutdown
 - Bug Fixes - In service clients pom version, generation for javaType
+- Timestamp injected in Http header to upstream service calls
+- Blocks Validator
 
 ## 4.3.0 (Jul 11, 2016)
 - Included snapshot version fixes
