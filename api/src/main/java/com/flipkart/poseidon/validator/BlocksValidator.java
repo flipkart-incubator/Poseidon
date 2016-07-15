@@ -16,39 +16,37 @@
 
 package com.flipkart.poseidon.validator;
 
-import com.flipkart.poseidon.api.APIManager;
-import com.flipkart.poseidon.pojos.EndpointPOJO;
+import com.flipkart.poseidon.helper.ClassPathHelper;
+import com.google.common.reflect.ClassPath;
+import flipkart.lego.api.entities.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
-import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
-
 /**
- * Created by shrey.garg on 16/06/16.
+ * Created by shrey.garg on 15/07/16.
  */
-public class APIValidator {
-    private static final Logger logger = LoggerFactory.getLogger(APIValidator.class);
-
-    private static final List<EndpointPOJO> pojos = new ArrayList<>();
+public class BlocksValidator {
+    private static final Logger logger = LoggerFactory.getLogger(BlocksValidator.class);
 
     public static void main(String[] args) {
-        Path dir = Paths.get(args[0]);
-        List<String> validConfigs = new ArrayList<>();
         try {
-            APIManager.scanAndAdd(dir, validConfigs);
-            for (String config : validConfigs) {
-                pojos.add(getMapper().readValue(config, EndpointPOJO.class));
-            }
-
+            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
+            System.out.println("Classes in ClassLoader: " + classInfos.size());
             Map<String, List<String>> errors = new HashMap<>();
-            for (EndpointPOJO pojo : pojos) {
-                List<String> pojoErrors = EndpointValidator.validate(pojo);
-                if (!pojoErrors.isEmpty()) {
-                    errors.put(pojo.getHttpMethod() + " " + pojo.getUrl(), pojoErrors);
+            for (ClassPath.ClassInfo classInfo : classInfos) {
+                Class clazz = Class.forName(classInfo.getName());
+                if (Modifier.isAbstract(clazz.getModifiers())) {
+                    continue;
+                }
+
+                if (DataSource.class.isAssignableFrom(clazz)) {
+                    List<String> annotationErrors;
+                    if (!(annotationErrors = AnnotationValidator.validateDataSource(clazz)).isEmpty()) {
+                        errors.put(clazz.getName(), annotationErrors);
+                    }
                 }
             }
 
