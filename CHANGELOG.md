@@ -1,3 +1,6 @@
+## 4.4.0 (Jul 18, 2016)
+- Included snapshot version fixes
+
 ## 4.4.0-SNAPSHOT (Jul 18, 2016)
 - DataSource calling DataSource - objects can be used instead of id
 - Clean shutdown
