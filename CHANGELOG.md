@@ -1,4 +1,4 @@
-## 4.4.0-SNAPSHOT (Jul 15, 2016)
+## 4.4.0-SNAPSHOT (Jul 18, 2016)
 - DataSource calling DataSource - objects can be used instead of id
 - Clean shutdown
 - Bug Fixes - In service clients pom version, generation for javaType
