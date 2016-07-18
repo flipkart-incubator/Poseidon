@@ -248,7 +248,9 @@ public class HttpConnectionPool {
             try {
                 // Inject timestamp in milliseconds just before sending request on wire.
                 // This will help in measuring latencies between client and server.
-                request.addHeader(TIMESTAMP_HEADER, String.valueOf(System.currentTimeMillis()));
+                if (request.getHeaders(TIMESTAMP_HEADER).length == 0) {
+                    request.addHeader(TIMESTAMP_HEADER, String.valueOf(System.currentTimeMillis()));
+                }
                 response = client.execute(request);
             } catch (Exception e) {
                 logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());
