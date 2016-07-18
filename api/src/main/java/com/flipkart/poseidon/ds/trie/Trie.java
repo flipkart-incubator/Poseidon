@@ -17,7 +17,6 @@
 package com.flipkart.poseidon.ds.trie;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,7 +36,7 @@ public class Trie<K, V> {
      * If not then move to curr.rightSibling and repeat from 1st step
      * If no match found and reached the end then add all nodes left as firstChild
      **/
-    public void add(K[] keys, V value) {
+    public void add(List<KeyWrapper<K>> keys, V value) {
         if (root.firstChild == null) {
             addChainAsFirstChild(root, keys, value);
             return;
@@ -45,19 +44,19 @@ public class Trie<K, V> {
 
         TrieNode currentNode = root.firstChild;
         TrieNode currentParent = root;
-        for (int i = 0; i < keys.length; i++) {
-            TrieNode matchingNode = findMatchingNode(currentNode, keys[i]);
+        for (int i = 0; i < keys.size(); i++) {
+            TrieNode matchingNode = findMatchingNode(currentNode, keys.get(i).key);
             if (matchingNode != null) {
                 currentParent = matchingNode;
                 currentNode = matchingNode.firstChild;
-                matchingNode.value = i == keys.length - 1 ? value : matchingNode.value;
+                matchingNode.value = i == keys.size() - 1 ? value : matchingNode.value;
                 continue;
             }
 
             TrieNode newNode = new TrieNode();
-            newNode.key = keys[i];
-            newNode.matchAny = keys[i] == null;
-            newNode.value = i == keys.length - 1 ? value : null;
+            newNode.key = keys.get(i).key;
+            newNode.matchAny = keys.get(i).wildCard;
+            newNode.value = i == keys.size() - 1 ? value : null;
 
             if (currentNode == null) {
                 currentParent.firstChild = newNode;
@@ -72,7 +71,7 @@ public class Trie<K, V> {
                 currentParent.wildChild = newNode;
             }
 
-            addChainAsFirstChild(newNode, Arrays.copyOfRange(keys, i + 1, keys.length), value);
+            addChainAsFirstChild(newNode, keys.subList(i + 1, keys.size()), value);
             return;
         }
     }
@@ -98,13 +97,13 @@ public class Trie<K, V> {
         return correctNode;
     }
 
-    private void addChainAsFirstChild(TrieNode node, K[] keys, V value) {
+    private void addChainAsFirstChild(TrieNode node, List<KeyWrapper<K>> keys, V value) {
         TrieNode currentNode = node;
-        for (int i = 0; i < keys.length; i++) {
+        for (int i = 0; i < keys.size(); i++) {
             TrieNode newNode = new TrieNode();
-            newNode.key = keys[i];
-            newNode.matchAny = keys[i] == null;
-            newNode.value = i == keys.length - 1 ? value : null;
+            newNode.key = keys.get(i).key;
+            newNode.matchAny = keys.get(i).wildCard;
+            newNode.value = i == keys.size() - 1 ? value : null;
 
             currentNode.firstChild = newNode;
             if (newNode.matchAny) {
@@ -139,9 +138,6 @@ public class Trie<K, V> {
             }
 
             if (matchingChild == null) {
-                if (node.matchAny) {
-                    return node.value;
-                }
                 return null;
             }
 

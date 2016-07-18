@@ -19,6 +19,7 @@ package com.flipkart.poseidon.api;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.ds.trie.KeyWrapper;
 import com.flipkart.poseidon.ds.trie.Trie;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.metrics.Metrics;
@@ -31,8 +32,10 @@ import flipkart.lego.api.exceptions.LegoSetException;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.flipkart.poseidon.constants.RequestConstants.ENDPOINT_NAME;
 import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
@@ -52,12 +55,8 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     public void updateBuildables(Map<String, Buildable> buildableMap) {
         for (Map.Entry<String, Buildable> entry : buildableMap.entrySet()) {
             String url = entry.getKey();
-            String[] keys = getKeysForTrie(url);
-            for (int i = 0; i < keys.length; i++) {
-                if (keys[i].startsWith("{") && keys[i].endsWith("}")) {
-                    keys[i] = null;
-                }
-            }
+            List<KeyWrapper<String>> keys = getKeysForTrie(url);
+            resolveKeys(keys);
             trie.add(keys, entry.getValue());
         }
 
@@ -92,7 +91,7 @@ public abstract class APILegoSet extends PoseidonLegoSet {
         PoseidonRequest poseidonRequest = (PoseidonRequest) request;
         String httpMethod = poseidonRequest.getAttribute(RequestConstants.METHOD).toString();
         String completeUrl = ApiHelper.getUrlWithHttpMethod(poseidonRequest.getUrl(), httpMethod);
-        Buildable buildable = trie.get(getKeysForTrie(completeUrl));
+        Buildable buildable = trie.get(getKeysArrayForTrie(completeUrl));
         if (buildable == null) {
             throw new ElementNotFoundException("Buildable not found for given url: " + poseidonRequest.getUrl());
         }
@@ -110,7 +109,33 @@ public abstract class APILegoSet extends PoseidonLegoSet {
         return buildable;
     }
 
-    private String[] getKeysForTrie(String url) {
+    public static List<KeyWrapper<String>> getKeysForTrie(String url) {
+        return getKeysForTrie(getKeysArrayForTrie(url));
+    }
+
+    public static void resolveKeys(List<KeyWrapper<String>> wrappers) {
+        for (KeyWrapper<String> keyWrapper : wrappers) {
+            if (keyWrapper.key.startsWith("{") && keyWrapper.key.endsWith("}")) {
+                keyWrapper.key = null;
+                keyWrapper.wildCard = true;
+            } else if (keyWrapper.key.startsWith("*") && keyWrapper.key.endsWith("*")) {
+                keyWrapper.key = null;
+                keyWrapper.wildPath = true;
+            }
+        }
+    }
+
+    public static List<KeyWrapper<String>> getResolvedKeysForTrie(String[] keys) {
+        List<KeyWrapper<String>> wrappers = Arrays.stream(keys).map(KeyWrapper::new).collect(Collectors.toList());
+        resolveKeys(wrappers);
+        return wrappers;
+    }
+
+    public static List<KeyWrapper<String>> getKeysForTrie(String[] keys) {
+        return Arrays.stream(keys).map(KeyWrapper::new).collect(Collectors.toList());
+    }
+
+    private static String[] getKeysArrayForTrie(String url) {
         if (url.startsWith("/")) {
             url = url.replaceFirst("\\/", "");
         }
