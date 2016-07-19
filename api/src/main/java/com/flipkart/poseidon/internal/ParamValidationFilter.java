@@ -73,6 +73,7 @@ public class ParamValidationFilter implements Filter {
     private Map<String, Object> validateParams(PoseidonRequest poseidonRequest, ParamPOJO[] params, boolean failOnMissingValue) throws BadRequestException {
         Map<String, Object> parsedParams = new HashMap<>(); //Initial params that will be passed to hydra to START processing
         if(params != null) {
+            final List<ParamPOJO> pathParams = new ArrayList<>();
             for (ParamPOJO param : params) {
                 String name = param.getName();
                 String internalName = param.getInternalName();
@@ -116,24 +117,8 @@ public class ParamValidationFilter implements Filter {
                         throw new BadRequestException("Request Body is either missing or invalid for : " + name);
                     }
                 } else if (isPathParam) {
-                    int pos = param.getPosition();
-                    String[] splitUrl = poseidonRequest.getUrl().split("/");
-                    String[] splitActual = ((String) RequestContext.get(RequestConstants.URI)).split("/");
-
-                    if (splitUrl.length > pos) {
-                        if (pos == splitActual.length - 1) {
-                            StringBuilder builder = new StringBuilder();
-                            for (int i = pos; i < splitUrl.length; i++) {
-                                builder.append(splitUrl[i]).append("/");
-                            }
-                            builder.deleteCharAt(builder.length() - 1);
-                            value = builder.toString();
-                        } else {
-                            value = splitUrl[pos];
-                        }
-                    } else {
-                        throw new BadRequestException("Missing path parameter : " + name);
-                    }
+                    param.setGreedyPosition(param.getPosition());
+                    pathParams.add(param);
                 } else if (param.isFile()) {
                     value = poseidonRequest.getAttribute(name);
                     if (failOnMissingValue && value == null) {
@@ -157,14 +142,78 @@ public class ParamValidationFilter implements Filter {
                         value = parseParamValues(name, (String[]) attribute, datatype, multivalue);
                     }
                 }
+
                 if (internalName != null && !internalName.isEmpty()) {
                     parsedParams.put(internalName, value);
                 } else {
                     parsedParams.put(name, value);
                 }
             }
+
+            if (!pathParams.isEmpty()) {
+                pathParams.sort((a, b) -> a.getPosition() - b.getPosition());
+                for (int i = 0; i < pathParams.size(); i++) {
+                    ParamPOJO param = pathParams.get(i);
+                    String name = param.getName();
+                    String internalName = param.getInternalName();
+                    Object value = null;
+
+                    int pos = param.getPosition();
+                    int greedyPos = param.getGreedyPosition();
+                    String[] splitUrl = poseidonRequest.getUrl().split("/");
+                    String[] splitActual = ((String) RequestContext.get(RequestConstants.URI)).split("/");
+
+                    if (pos >= splitUrl.length) {
+                        throw new BadRequestException("Missing path parameter : " + name);
+                    }
+
+                    boolean isGreedyParam = splitActual[pos].length() >= 2 && splitActual[pos].startsWith("*") && splitActual[pos].endsWith("*");
+
+                    if (splitUrl.length == splitActual.length || !isGreedyParam) {
+                        value = splitUrl[greedyPos];
+                    } else if (isGreedyParam) {
+                        int nextPos = greedyPos + 1;
+                        if (pos == splitActual.length - 1) {
+                            nextPos = splitUrl.length;
+                        } else {
+                            for (int j = greedyPos + 1; j < splitUrl.length; j++) {
+                                if (splitActual[pos + 1].equals(splitUrl[j])) {
+                                    nextPos = j;
+                                    break;
+                                }
+                            }
+                        }
+
+                        for (int j = i + 1; j < pathParams.size(); j++) {
+                            ParamPOJO nextParam = pathParams.get(j);
+                            nextParam.setGreedyPosition(nextParam.getGreedyPosition() + (nextPos - greedyPos - 1));
+                        }
+
+                        value = getGreedyPathParam(greedyPos, nextPos, splitUrl);
+                    }
+
+                    if (value == null) {
+                        throw new BadRequestException("Missing path parameter : " + name);
+                    }
+
+                    if (internalName != null && !internalName.isEmpty()) {
+                        parsedParams.put(internalName, value);
+                    } else {
+                        parsedParams.put(name, value);
+                    }
+                }
+            }
         }
         return parsedParams;
+    }
+
+    private String getGreedyPathParam(int start, int end, String[] url) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            builder.append(url[i]).append("/");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
     }
 
     private Object parseParamValues(String name, String[] values, ParamPOJO.DataType datatype, boolean multivalue) throws BadRequestException {

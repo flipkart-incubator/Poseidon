@@ -23,7 +23,9 @@ public class TrieNode<K,V> {
     K key;
     V value;
     boolean matchAny;
+    boolean greedyMatchAny;
     TrieNode<K,V> rightSibling;
     TrieNode<K,V> firstChild;
     TrieNode<K,V> wildChild;
+    TrieNode<K,V> greedyWildChild;
 }

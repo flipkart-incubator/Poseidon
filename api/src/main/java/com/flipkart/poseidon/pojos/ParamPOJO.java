@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.pojos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ParamPOJO {
 
@@ -40,6 +41,8 @@ public class ParamPOJO {
     private boolean header = false;
     private boolean pathparam = false;
     private int position = 0;
+    @JsonIgnore
+    private int greedyPosition = 0;
 
     public String getName() {
         return name;
@@ -80,6 +83,14 @@ public class ParamPOJO {
     public boolean isPathparam() {return pathparam; }
 
     public int getPosition() {return  position; }
+
+    public int getGreedyPosition() {
+        return greedyPosition;
+    }
+
+    public void setGreedyPosition(int greedyPosition) {
+        this.greedyPosition = greedyPosition;
+    }
 
     public String getSeparator() {
         return separator;

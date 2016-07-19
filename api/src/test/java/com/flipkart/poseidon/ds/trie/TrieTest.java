@@ -22,6 +22,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.flipkart.poseidon.api.APILegoSet.getKeysForTrie;
+
 /**
  * Created by mohan.pandian on 20/11/15.
  */
@@ -29,11 +31,11 @@ public class TrieTest {
     @Test
     public void noPlaceholderTest() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"b"}), "b");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"b", "a"}), "ba");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "b"}), "ab");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "c"}), "ac");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "d", "a"}), "ada");
+        trie.add(getKeysForTrie("b"), "b");
+        trie.add(getKeysForTrie("b/a"), "ba");
+        trie.add(getKeysForTrie("a/b"), "ab");
+        trie.add(getKeysForTrie("a/c"), "ac");
+        trie.add(getKeysForTrie("a/d/a"), "ada");
 
         Assert.assertEquals("b", trie.get(new String[]{"b"}));
         Assert.assertEquals("ba", trie.get(new String[]{"b", "a"}));
@@ -49,17 +51,18 @@ public class TrieTest {
     @Test
     public void placeholderTest1() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "{-}"}), "a*");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"n", "{-}"}), "n*");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"{-}", "a", "{-}", "a"}), "prada");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"{-}", "a", "d", "a"}), "nada");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "b"}), "ab");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "c"}), "ac");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "d", "a"}), "ada");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"b", "{-}"}), "naan");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"b"}), "dosa");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"c", "{-}", "a"}), "idli");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"{-}"}), "tikki");
+        trie.add(getKeysForTrie("a/{-}"), "a*");
+        trie.add(getKeysForTrie("n/{-}"), "n*");
+        trie.add(getKeysForTrie("{-}/a/{-}/a"), "prada");
+        trie.add(getKeysForTrie("{-}/a/d/a"), "nada");
+        trie.add(getKeysForTrie("a/b"), "ab");
+        trie.add(getKeysForTrie("**"), "chole");
+        trie.add(getKeysForTrie("a/c"), "ac");
+        trie.add(getKeysForTrie("a/d/a"), "ada");
+        trie.add(getKeysForTrie("b/{-}"), "naan");
+        trie.add(getKeysForTrie("b"), "dosa");
+        trie.add(getKeysForTrie("c/{-}/a"), "idli");
+        trie.add(getKeysForTrie("{-}"), "tikki");
 
         Assert.assertEquals("tikki", trie.get(new String[]{"q"}));
         Assert.assertEquals("dosa", trie.get(new String[]{"b"}));
@@ -77,12 +80,13 @@ public class TrieTest {
         Assert.assertEquals("a*", trie.get(new String[]{"a", "anything1"}));
         Assert.assertEquals("a*", trie.get(new String[]{"a", "anything2"}));
         Assert.assertEquals("tikki", trie.get(new String[]{"a"}));
-        Assert.assertNull(trie.get(new String[]{"a", "anything", "a"}));
-        Assert.assertNull(trie.get(new String[]{"b", "anything", "a"}));
-        Assert.assertNull(trie.get(new String[]{"c", "anything", "q"}));
-        Assert.assertNull(trie.get(new String[]{"a", "d", "a", "a", "z"}));
-        Assert.assertNull(trie.get(new String[]{"a", "d", "a", null}));
-        Assert.assertNull(trie.get(new String[]{null, "d", "a", null}));
+        Assert.assertEquals("chole", trie.get(new String[]{"a", "anything", "a"}));
+        Assert.assertEquals("chole", trie.get(new String[]{"b", "anything", "a"}));
+        Assert.assertEquals("chole", trie.get(new String[]{"c", "anything", "q"}));
+        Assert.assertEquals("chole", trie.get(new String[]{"a", "d", "a", "a", "z"}));
+        Assert.assertEquals("chole", trie.get(new String[]{"a", "d", "a", null}));
+        Assert.assertEquals("chole", trie.get(new String[]{null, "d", "a", null}));
+        Assert.assertEquals("tikki", trie.get(new String[]{"v"}));
 
         System.out.println("Tree for placeholderTest1:");
         printPaths(trie);
@@ -92,9 +96,9 @@ public class TrieTest {
     @Test
     public void placeholderTest2() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "{}"}), "a*");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "b"}), "ab");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "{}", "e"}), "a*e");
+        trie.add(getKeysForTrie("a/{}"), "a*");
+        trie.add(getKeysForTrie("a/b"), "ab");
+        trie.add(getKeysForTrie("a/{}/e"), "a*e");
 
         Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
         Assert.assertEquals("a*", trie.get(new String[]{"a", "c"}));
@@ -109,9 +113,9 @@ public class TrieTest {
     @Test
     public void placeholderTest3() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "b"}), "ab");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "c"}), "ac");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "{}"}), "a*");
+        trie.add(getKeysForTrie("a/b"), "ab");
+        trie.add(getKeysForTrie("a/c"), "ac");
+        trie.add(getKeysForTrie("a/{}"), "a*");
 
         Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
         Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
@@ -124,8 +128,8 @@ public class TrieTest {
     @Test
     public void placeholderTest4() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "b", "d"}), "abd");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"a", "c"}), "ac");
+        trie.add(getKeysForTrie("a/b/d"), "abd");
+        trie.add(getKeysForTrie("a/c"), "ac");
 
         Assert.assertEquals("ac", trie.get(new String[]{"a", "c"}));
         Assert.assertEquals(null, trie.get(new String[]{"a", "b"}));
@@ -139,17 +143,17 @@ public class TrieTest {
     @Test
     public void noNullPointerTest() {
         Trie<String, String> trie = new Trie<>();
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaigns", "{}", "banners"}), "1");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaign", "{}"}), "2");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "login"}), "3");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}"}), "4");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaigns", "all"}), "5");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaigns", "{}"}), "6");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaigns", "{}", "banners", "{}"}), "7");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "uploadDocument"}), "8");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts"}), "9");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "session"}), "10");
-        trie.add(APILegoSet.getResolvedKeysForTrie(new String[]{"v1", "accounts", "{}", "campaign"}), "11");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaigns/{}/banners"), "1");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaign/{}"), "2");
+        trie.add(getKeysForTrie("v1/login"), "3");
+        trie.add(getKeysForTrie("v1/accounts/{}"), "4");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaigns/all"), "5");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaigns/{}"), "6");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaigns/{}/banners/{}"), "7");
+        trie.add(getKeysForTrie("v1/uploadDocument"), "8");
+        trie.add(getKeysForTrie("v1/accounts"), "9");
+        trie.add(getKeysForTrie("v1/accounts/{}/session"), "10");
+        trie.add(getKeysForTrie("v1/accounts/{}/campaign"), "11");
 
         Assert.assertEquals("1", trie.get(new String[]{"v1", "accounts", null, "campaigns", null, "banners"}));
         Assert.assertEquals("2", trie.get(new String[]{"v1", "accounts", null, "campaign", null}));
@@ -167,34 +171,38 @@ public class TrieTest {
         printPaths(trie);
         System.out.println();
     }
-//
-//    @Test
-//    public void endMatchTest() {
-//        Trie<String, String> trie = new Trie<>();
-//        trie.add(new String[]{"g", null, "r", null}, "g*r*");
-//        trie.add(new String[]{"g", null, "r", null, "p"}, "g*r*p");
-//        trie.add(new String[]{"a", null, "q"}, "a*");
-//        trie.add(new String[]{"a", "b"}, "ab");
-//        trie.add(new String[]{"a", null, "e"}, "a*e");
-//        trie.add(new String[]{"g", null}, "g*");
-//        trie.add(new String[]{"g", null, "r"}, "g*r");
-//
-//        Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
-//        Assert.assertEquals("a*", trie.get(new String[]{"a", "c", "q"}));
-//        Assert.assertEquals("g*", trie.get(new String[]{"g", "c", "q"}));
-//        Assert.assertEquals("g*r", trie.get(new String[]{"g", "c", "r"}));
-//        Assert.assertEquals("g*r*p", trie.get(new String[]{"g", "c", "r", "x", "p"}));
-//        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a"}));
-//        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a", "q", "z"}));
-//        Assert.assertNull(trie.get(new String[]{"a", "c", "d", "q"}));
-//        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything1", "e"}));
-//        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
-//
-//        System.out.println("Tree for placeholderTest2:");
-//        printPaths(trie);
-//        System.out.println();
-//    }
-//
+
+    @Test
+    public void endMatchTest() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(getKeysForTrie("{}/**/r/**"), "{}*r*");
+        trie.add(getKeysForTrie("g/**/r/**"), "g*r*");
+        trie.add(getKeysForTrie("g/**/r/**/p"), "g*r*p");
+        trie.add(getKeysForTrie("a/**/q"), "a*");
+        trie.add(getKeysForTrie("a/{}/q"), "a{}");
+        trie.add(getKeysForTrie("a/b"), "ab");
+        trie.add(getKeysForTrie("a/**/e"), "a*e");
+        trie.add(getKeysForTrie("g/**"), "g*");
+        trie.add(getKeysForTrie("g/**/r"), "g*r");
+
+        Assert.assertEquals("ab", trie.get(new String[]{"a", "b"}));
+        Assert.assertEquals("a{}", trie.get(new String[]{"a", "c", "q"}));
+        Assert.assertEquals("g*", trie.get(new String[]{"g", "c", "q"}));
+        Assert.assertEquals("g*r", trie.get(new String[]{"g", "c", "r"}));
+        Assert.assertEquals("g*r", trie.get(new String[]{"g", "c", "q", "i", "r"}));
+        Assert.assertEquals("g*r*p", trie.get(new String[]{"g", "c", "r", "x", "p"}));
+        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a"}));
+        Assert.assertEquals("{}*r*", trie.get(new String[]{"x", "c", "r", "x", "a"}));
+        Assert.assertEquals("g*r*", trie.get(new String[]{"g", "c", "r", "x", "a", "q", "z"}));
+        Assert.assertEquals("a*", trie.get(new String[]{"a", "c", "d", "q"}));
+        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything1", "e"}));
+        Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
+
+        System.out.println("Tree for placeholderTest2:");
+        printPaths(trie);
+        System.out.println();
+    }
+
     private <K, V> void printPaths(Trie<K, V> trie) {
         trie.printAllPaths("/").forEach(list -> {
             list.forEach(System.out::print);

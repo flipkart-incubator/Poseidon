@@ -55,11 +55,8 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     public void updateBuildables(Map<String, Buildable> buildableMap) {
         for (Map.Entry<String, Buildable> entry : buildableMap.entrySet()) {
             String url = entry.getKey();
-            List<KeyWrapper<String>> keys = getKeysForTrie(url);
-            resolveKeys(keys);
-            trie.add(keys, entry.getValue());
+            trie.add(getKeysForTrie(url), entry.getValue());
         }
-
         printPaths();
     }
 
@@ -110,29 +107,19 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     }
 
     public static List<KeyWrapper<String>> getKeysForTrie(String url) {
-        return getKeysForTrie(getKeysArrayForTrie(url));
-    }
+        List<KeyWrapper<String>> wrappers = Arrays.stream(getKeysArrayForTrie(url)).map(KeyWrapper::new).collect(Collectors.toList());
 
-    public static void resolveKeys(List<KeyWrapper<String>> wrappers) {
         for (KeyWrapper<String> keyWrapper : wrappers) {
             if (keyWrapper.key.startsWith("{") && keyWrapper.key.endsWith("}")) {
                 keyWrapper.key = null;
                 keyWrapper.wildCard = true;
             } else if (keyWrapper.key.startsWith("*") && keyWrapper.key.endsWith("*")) {
                 keyWrapper.key = null;
-                keyWrapper.wildPath = true;
+                keyWrapper.greedyWildCard = true;
             }
         }
-    }
 
-    public static List<KeyWrapper<String>> getResolvedKeysForTrie(String[] keys) {
-        List<KeyWrapper<String>> wrappers = Arrays.stream(keys).map(KeyWrapper::new).collect(Collectors.toList());
-        resolveKeys(wrappers);
         return wrappers;
-    }
-
-    public static List<KeyWrapper<String>> getKeysForTrie(String[] keys) {
-        return Arrays.stream(keys).map(KeyWrapper::new).collect(Collectors.toList());
     }
 
     private static String[] getKeysArrayForTrie(String url) {
