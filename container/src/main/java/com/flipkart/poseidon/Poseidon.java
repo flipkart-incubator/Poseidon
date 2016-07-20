@@ -131,7 +131,11 @@ public class Poseidon {
                 QueuedThreadPool threadPool = new QueuedThreadPool(jettyConfiguration.getMaxThreads(),
                         jettyConfiguration.getMinThreads(), jettyConfiguration.getThreadIdleTimeout(), queue);
                 server = new Server(threadPool);
-                ServerConnector connector = new ServerConnector(server, jettyConfiguration.getAcceptors(), jettyConfiguration.getSelectors());
+                ServerConnector connector = new ServerConnector(
+                        server,
+                        jettyConfiguration.getAcceptors(),
+                        jettyConfiguration.getSelectors(),
+                        new HttpConnectionFactory(Optional.of(jettyConfiguration.getHttpConfiguration()).orElseGet(HttpConfiguration::new)));
                 connector.setPort(configuration.getPort());
                 connector.setAcceptQueueSize(jettyConfiguration.getAcceptQueueSize());
                 server.setConnectors(new Connector[] { connector });
