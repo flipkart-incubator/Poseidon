@@ -200,7 +200,7 @@ public class Trie<K, V> {
                             if (i == keys.length - 1) {
                                 value = currentLookUp.value;
                             } else {
-                                value = get(currentLookUp, i, keys);
+                                value = get(currentLookUp, i + 1, keys);
                             }
                             break;
                         }

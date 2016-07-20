@@ -173,7 +173,7 @@ public class TrieTest {
     }
 
     @Test
-    public void endMatchTest() {
+    public void greedyWildcardTest() {
         Trie<String, String> trie = new Trie<>();
         trie.add(getKeysForTrie("{}/**/r/**"), "{}*r*");
         trie.add(getKeysForTrie("g/**/r/**"), "g*r*");
@@ -197,6 +197,20 @@ public class TrieTest {
         Assert.assertEquals("a*", trie.get(new String[]{"a", "c", "d", "q"}));
         Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything1", "e"}));
         Assert.assertEquals("a*e", trie.get(new String[]{"a", "anything2", "e"}));
+
+        System.out.println("Tree for placeholderTest2:");
+        printPaths(trie);
+        System.out.println();
+    }
+
+    @Test
+    public void greedyWildcardTest2() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(getKeysForTrie("3/**/imei/{-}"), "wildImei");
+        trie.add(getKeysForTrie("3/imei/{}"), "imei");
+
+        Assert.assertEquals("imei", trie.get(new String[]{"3", "imei", "358967061697585"}));
+        Assert.assertEquals("wildImei", trie.get(new String[]{"3", "uisa", "dadssaf", "asdsa", "imei", "358967061697585"}));
 
         System.out.println("Tree for placeholderTest2:");
         printPaths(trie);
