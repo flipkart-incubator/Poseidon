@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@
 package com.flipkart.poseidon.ds.trie;
 
 /**
- * Created by mohan.pandian on 20/11/15.
+ * Created by shrey.garg on 18/07/16.
  */
-public class TrieNode<K,V> {
-    K key;
-    V value;
-    boolean matchAny;
-    boolean greedyMatchAny;
-    TrieNode<K,V> rightSibling;
-    TrieNode<K,V> firstChild;
-    TrieNode<K,V> wildChild;
-    TrieNode<K,V> greedyWildChild;
+public class KeyWrapper<K> {
+    public K key;
+    public boolean wildCard = false;
+    public boolean greedyWildCard = false;
+
+    public KeyWrapper(K key) {
+        this.key = key;
+    }
 }

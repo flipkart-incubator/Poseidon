@@ -17,7 +17,6 @@
 package com.flipkart.poseidon.ds.trie;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,7 +36,7 @@ public class Trie<K, V> {
      * If not then move to curr.rightSibling and repeat from 1st step
      * If no match found and reached the end then add all nodes left as firstChild
      **/
-    public void add(K[] keys, V value) {
+    public void add(List<KeyWrapper<K>> keys, V value) {
         if (root.firstChild == null) {
             addChainAsFirstChild(root, keys, value);
             return;
@@ -45,50 +44,81 @@ public class Trie<K, V> {
 
         TrieNode currentNode = root.firstChild;
         TrieNode currentParent = root;
-        for (int i = 0; i < keys.length; i++) {
-            TrieNode matchingNode = findMatchingNode(currentNode, keys[i]);
+        for (int i = 0; i < keys.size(); i++) {
+            TrieNode matchingNode = findMatchingNode(currentNode, keys.get(i));
             if (matchingNode != null) {
                 currentParent = matchingNode;
                 currentNode = matchingNode.firstChild;
-                matchingNode.value = i == keys.length - 1 ? value : matchingNode.value;
+                matchingNode.value = i == keys.size() - 1 ? value : matchingNode.value;
                 continue;
             }
 
             TrieNode newNode = new TrieNode();
-            newNode.key = keys[i];
-            newNode.matchAny = keys[i] == null;
-            newNode.value = i == keys.length - 1 ? value : null;
+            newNode.key = keys.get(i).key;
+            newNode.matchAny = keys.get(i).wildCard;
+            newNode.greedyMatchAny = keys.get(i).greedyWildCard;
+            newNode.value = i == keys.size() - 1 ? value : null;
 
             if (currentNode == null) {
                 currentParent.firstChild = newNode;
-            } else if (newNode.key != null) {
+            } else if (!newNode.matchAny && !newNode.greedyMatchAny) {
                 newNode.rightSibling = currentParent.firstChild;
                 currentParent.firstChild = newNode;
-            } else {
-                while (currentNode.rightSibling != null) {
-                    currentNode = currentNode.rightSibling;
+            } else if (newNode.matchAny) {
+                if (currentNode.greedyMatchAny) {
+                    newNode.rightSibling = currentNode;
+                    currentParent.firstChild = newNode;
+                } else {
+                    while (currentNode.rightSibling != null) {
+                        if (currentNode.rightSibling.greedyMatchAny) {
+                            break;
+                        }
+                        currentNode = currentNode.rightSibling;
+                    }
+
+                    if (currentNode.rightSibling != null && currentNode.rightSibling.greedyMatchAny) {
+                        newNode.rightSibling = currentNode.rightSibling;
+                        currentNode.rightSibling = newNode;
+                    } else {
+                        currentNode.rightSibling = newNode;
+                    }
+
+                    currentParent.wildChild = newNode;
                 }
-                currentNode.rightSibling = newNode;
-                currentParent.wildChild = newNode;
+            } else if (newNode.greedyMatchAny) {
+                if (currentNode.matchAny) {
+                    currentParent.rightSibling = newNode;
+                } else {
+                    while (currentNode.rightSibling != null) {
+                        currentNode = currentNode.rightSibling;
+                    }
+
+                    currentNode.rightSibling = newNode;
+                    currentParent.greedyWildChild = newNode;
+                }
             }
 
-            addChainAsFirstChild(newNode, Arrays.copyOfRange(keys, i + 1, keys.length), value);
+            addChainAsFirstChild(newNode, keys.subList(i + 1, keys.size()), value);
             return;
         }
     }
 
-    private TrieNode findMatchingNode(TrieNode node, K key) {
+    private TrieNode findMatchingNode(TrieNode node, KeyWrapper<K> wrapper) {
         if (node == null) {
             return null;
         }
 
         TrieNode correctNode = null;
-        if ((node.matchAny && key == null) || (!node.matchAny && node.key.equals(key))) {
+        if ((node.matchAny && wrapper.wildCard) ||
+                (node.greedyMatchAny && wrapper.greedyWildCard) ||
+                (!node.matchAny && !node.greedyMatchAny && node.key.equals(wrapper.key))) {
             correctNode = node;
         } else {
             TrieNode current = node.rightSibling;
             while (current != null) {
-                if ((current.matchAny && key == null) || (!current.matchAny && current.key.equals(key))) {
+                if ((current.matchAny && wrapper.wildCard) ||
+                        (current.greedyMatchAny && wrapper.greedyWildCard) ||
+                        (!current.matchAny && !current.greedyMatchAny && current.key.equals(wrapper.key))) {
                     correctNode = current;
                     break;
                 }
@@ -98,17 +128,20 @@ public class Trie<K, V> {
         return correctNode;
     }
 
-    private void addChainAsFirstChild(TrieNode node, K[] keys, V value) {
+    private void addChainAsFirstChild(TrieNode node, List<KeyWrapper<K>> keys, V value) {
         TrieNode currentNode = node;
-        for (int i = 0; i < keys.length; i++) {
+        for (int i = 0; i < keys.size(); i++) {
             TrieNode newNode = new TrieNode();
-            newNode.key = keys[i];
-            newNode.matchAny = keys[i] == null;
-            newNode.value = i == keys.length - 1 ? value : null;
+            newNode.key = keys.get(i).key;
+            newNode.matchAny = keys.get(i).wildCard;
+            newNode.greedyMatchAny = keys.get(i).greedyWildCard;
+            newNode.value = i == keys.size() - 1 ? value : null;
 
             currentNode.firstChild = newNode;
             if (newNode.matchAny) {
                 currentNode.wildChild = newNode;
+            } else if (newNode.greedyMatchAny) {
+                currentNode.greedyWildChild = newNode;
             }
             currentNode = currentNode.firstChild;
         }
@@ -130,9 +163,10 @@ public class Trie<K, V> {
         if (node != null) {
             TrieNode<K, V> matchingChild = node.firstChild;
             TrieNode<K, V> wildChild = node.wildChild;
+            TrieNode<K, V> wildPathChild = node.greedyWildChild;
 
             while (matchingChild != null) {
-                if (matchingChild.matchAny || matchingChild.key.equals(keys[level])) {
+                if (matchingChild.matchAny || matchingChild.greedyMatchAny || matchingChild.key.equals(keys[level])) {
                     break;
                 }
                 matchingChild = matchingChild.rightSibling;
@@ -148,17 +182,54 @@ public class Trie<K, V> {
                 value = get(matchingChild, level + 1, keys);
             }
 
-            if (value == null && !matchingChild.matchAny && wildChild != null) {
+            if (value == null && !matchingChild.matchAny && !matchingChild.greedyMatchAny && wildChild != null) {
                 if (level == keys.length - 1) {
                     value = wildChild.value;
                 } else {
                     value = get(wildChild, level + 1, keys);
                 }
             }
+
+            if (value == null && wildPathChild != null) {
+                if (wildPathChild.firstChild == null) {
+                    value = wildPathChild.value;
+                } else {
+                    for (int i = level + 1; i < keys.length; i++) {
+                        TrieNode<K, V> currentLookUp = findMatch(wildPathChild.firstChild, keys[i]);
+                        if (currentLookUp != null) {
+                            if (i == keys.length - 1) {
+                                value = currentLookUp.value;
+                            } else {
+                                value = get(currentLookUp, i + 1, keys);
+                            }
+                            break;
+                        }
+                    }
+
+                    if (value == null) {
+                        value = wildPathChild.value;
+                    }
+                }
+            }
         }
 
         // Case if node == null, a null value for buildable will be returned
         return value;
+    }
+
+    public TrieNode<K, V> findMatch(TrieNode<K, V> node, K key) {
+        if (node.matchAny || node.greedyMatchAny || node.key.equals(key)) {
+            return node;
+        } else {
+            TrieNode<K, V> current = node.rightSibling;
+            while (current != null) {
+                if (current.matchAny || current.greedyMatchAny || current.key.equals(key)) {
+                    return current;
+                }
+                current = current.rightSibling;
+            }
+            return null;
+        }
     }
 
     public List<List<String>> printAllPaths(String separator) {
@@ -180,7 +251,10 @@ public class Trie<K, V> {
             pathParts.add(node.key.toString());
         }
         if (node.matchAny) {
-            pathParts.add("*");
+            pathParts.add("{}");
+        }
+        if (node.greedyMatchAny) {
+            pathParts.add("**");
         }
         if (node.value != null) {
             paths.add(pathParts);

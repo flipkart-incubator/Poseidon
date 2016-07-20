@@ -84,7 +84,7 @@ public class APIBuildable implements Buildable {
     @Override
     public LinkedHashSet<Filter> getFilters(Request request) throws InternalErrorException {
         LinkedHashSet<Filter> filters = new LinkedHashSet<>();
-        filters.add(new ParamValidationFilter(pojo.getParams(), configuration));
+        filters.add(legoSet.wrapFilter(new ParamValidationFilter(pojo.getParams(), configuration)));
 
         try {
             // Add global filters
