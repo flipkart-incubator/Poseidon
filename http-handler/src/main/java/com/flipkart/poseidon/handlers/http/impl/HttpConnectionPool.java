@@ -60,6 +60,7 @@ public class HttpConnectionPool {
     private static final String CONTENT_ENCODING = "Content-Encoding";
     private static final String ACCEPT_ENCODING = "Accept-Encoding";
     private static final String COMPRESSION_TYPE = "gzip";
+    private static final String TIMESTAMP_HEADER = "X-Timestamp";
 
     /** socket connection timeToLive in seconds */
     private int timeToLiveInSecs = -1;
@@ -245,6 +246,11 @@ public class HttpConnectionPool {
         if (processQueue.tryAcquire()) {
             HttpResponse response;
             try {
+                // Inject timestamp in milliseconds just before sending request on wire.
+                // This will help in measuring latencies between client and server.
+                if (request.getHeaders(TIMESTAMP_HEADER).length == 0) {
+                    request.addHeader(TIMESTAMP_HEADER, String.valueOf(System.currentTimeMillis()));
+                }
                 response = client.execute(request);
             } catch (Exception e) {
                 logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());

@@ -19,10 +19,10 @@ package com.flipkart.poseidon.legoset;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.helper.AnnotationHelper;
 import com.flipkart.poseidon.helper.CallableNameHelper;
+import com.flipkart.poseidon.helper.ClassPathHelper;
 import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -31,10 +31,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -51,13 +48,9 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
     {
         try {
-            ClassPath classpath = ClassPath.from(ClassLoader.getSystemClassLoader());
-            List<String> basePackagesToScan = getPackagesToScan();
-            for (String basePackage : basePackagesToScan) {
-                ImmutableSet<ClassPath.ClassInfo> classInfos = classpath.getTopLevelClassesRecursive(basePackage);
-                for (ClassPath.ClassInfo classInfo : classInfos) {
-                    bucketize(classInfo);
-                }
+            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(ClassLoader.getSystemClassLoader(), getPackagesToScan());
+            for (ClassPath.ClassInfo classInfo : classInfos) {
+                bucketize(classInfo);
             }
         } catch (Exception e) {
             logger.error("Unable to load lego-blocks into their containers", e);
