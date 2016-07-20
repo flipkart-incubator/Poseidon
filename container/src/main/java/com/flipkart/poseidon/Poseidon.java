@@ -135,7 +135,7 @@ public class Poseidon {
                         server,
                         jettyConfiguration.getAcceptors(),
                         jettyConfiguration.getSelectors(),
-                        new HttpConnectionFactory(Optional.of(jettyConfiguration.getHttpConfiguration()).orElseGet(HttpConfiguration::new)));
+                        Optional.of(jettyConfiguration.getHttpConnectionFactory()).orElseGet(HttpConnectionFactory::new));
                 connector.setPort(configuration.getPort());
                 connector.setAcceptQueueSize(jettyConfiguration.getAcceptQueueSize());
                 server.setConnectors(new Connector[] { connector });

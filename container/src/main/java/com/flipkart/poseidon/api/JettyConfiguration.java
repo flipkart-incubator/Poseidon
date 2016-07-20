@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.api;
 
 import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 
 import java.util.List;
 
@@ -79,7 +80,7 @@ public interface JettyConfiguration {
     /*
      * Allows configuration of jetty's connection factory
      */
-    default HttpConfiguration getHttpConfiguration() {
+    default HttpConnectionFactory getHttpConnectionFactory() {
         return null;
     }
 }
