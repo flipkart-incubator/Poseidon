@@ -16,7 +16,6 @@
 
 package com.flipkart.poseidon.api;
 
-import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 
 import java.util.List;
