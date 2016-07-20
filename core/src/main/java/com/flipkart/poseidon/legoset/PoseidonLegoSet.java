@@ -136,7 +136,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
         return wrapFilter(filters.get(id));
     }
 
-    public Filter wrapFilter(Filter filter) {
+    public static Filter wrapFilter(Filter filter) {
         return new ContextInducedFilter(filter);
     }
 

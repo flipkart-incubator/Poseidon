@@ -20,6 +20,9 @@ import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.model.annotations.Description;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.google.common.base.Joiner;
@@ -38,6 +41,9 @@ import java.util.*;
 import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Name("ParamValidationFilter")
+@Version(major = 1, minor = 0, patch = 0)
+@Description("Poseidon filter to validate API parameters")
 public class ParamValidationFilter implements Filter {
 
     private final ParamsPOJO params;
