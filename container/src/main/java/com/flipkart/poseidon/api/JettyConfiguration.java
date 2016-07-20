@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.api;
 
+import org.eclipse.jetty.server.HttpConnectionFactory;
+
 import java.util.List;
 
 /**
@@ -71,6 +73,13 @@ public interface JettyConfiguration {
      * Filters that the application would like to be executed in the jetty thread
      */
     default List<JettyFilterConfiguration> getJettyFilterConfigurations() {
+        return null;
+    }
+
+    /*
+     * Allows configuration of jetty's connection factory
+     */
+    default HttpConnectionFactory getHttpConnectionFactory() {
         return null;
     }
 }
