@@ -60,6 +60,7 @@ public class APILoader {
                 if (buildables.containsKey(pojo.getUrl())) {
                     logger.error("******* More than one Buildable defined for api: \"" + pojo.getUrl()+"\", all except first occurrences will be ignored. *******");
                 } else {
+                    pojo.setUrl(ApiHelper.getFormattedUrl(pojo.getUrl()));
                     APIBuildable apiBuildable = new APIBuildable(legoSet, pojo, configuration, getCalls(pojo.getTasks()));
 
                     String completeUrl;
