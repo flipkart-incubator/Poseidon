@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.pojos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.flipkart.poseidon.utils.ApiHelper;
 import org.springframework.http.HttpMethod;
 
 import java.util.Map;
@@ -44,7 +45,7 @@ public class EndpointPOJO {
     }
 
     public void setUrl(String url) {
-        this.url = url;
+        this.url = ApiHelper.getFormattedUrl(url);
     }
 
     public HttpMethod getHttpMethod() {

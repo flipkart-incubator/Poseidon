@@ -56,19 +56,18 @@ public class APILoader {
         Map<String, Buildable> buildables = new HashMap<>();
         for (EndpointPOJO pojo : pojos) {
             try {
+                // Construct the complete key for the buildable
+                String completeUrl;
+                if (pojo.getHttpMethod() == null) {
+                    throw new UnsupportedOperationException("HttpMethod cannot be null");
+                }
+
+                completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
                 // check if already a buildable  exists for a given api/uri
-                if (buildables.containsKey(pojo.getUrl())) {
+                if (buildables.containsKey(completeUrl)) {
                     logger.error("******* More than one Buildable defined for api: \"" + pojo.getUrl()+"\", all except first occurrences will be ignored. *******");
                 } else {
-                    pojo.setUrl(ApiHelper.getFormattedUrl(pojo.getUrl()));
                     APIBuildable apiBuildable = new APIBuildable(legoSet, pojo, configuration, getCalls(pojo.getTasks()));
-
-                    String completeUrl;
-                    if (pojo.getHttpMethod() != null) {
-                        completeUrl = ApiHelper.getUrlWithHttpMethod(pojo.getUrl(), pojo.getHttpMethod().toString());
-                    } else {
-                        throw new UnsupportedOperationException("HttpMethod cannot be null");
-                    }
                     buildables.put(completeUrl, apiBuildable);
                 }
             } catch (Throwable error) {

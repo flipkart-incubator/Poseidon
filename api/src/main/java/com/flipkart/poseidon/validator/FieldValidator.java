@@ -65,6 +65,14 @@ public class FieldValidator {
                     }
                 }
             }
+
+            if (!value.startsWith("/")) {
+                errors.add("Invalid Url. Start the url with a \'/\'");
+            }
+
+            if (value.endsWith("/")) {
+                errors.add("Invalid Url. Do not end the url with a '/'");
+            }
         }
 
         return errors;

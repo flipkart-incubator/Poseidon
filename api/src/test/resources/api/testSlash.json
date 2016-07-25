@@ -1,5 +1,5 @@
 {
-  "url": "shop/test",
+  "url": "shop/test///",
   "httpMethod": "POST",
   "timeout": 5000,
   "name": "test",

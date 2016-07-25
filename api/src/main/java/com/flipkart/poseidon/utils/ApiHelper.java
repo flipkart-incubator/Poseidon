@@ -32,11 +32,18 @@ public class ApiHelper {
     }
 
     public static String getFormattedUrl(String url) {
-        if (url.startsWith("/")) {
+        if (url.startsWith("/") && !url.endsWith("/")) {
             return url;
         }
         // add a slash in front of the url, if absent
-        return String.format("/%s", url );
+        String partiallyFormattedUrl = String.format("/%s", url );
+
+        if (!url.endsWith("/")) {
+            return partiallyFormattedUrl;
+        }
+
+        partiallyFormattedUrl = partiallyFormattedUrl.replaceAll("[/]{2,}", "/");
+        return partiallyFormattedUrl.substring(0, partiallyFormattedUrl.length() - 1);
     }
 
 }
