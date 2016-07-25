@@ -1,5 +1,6 @@
-## 4.5.0-SNAPSHOT (Jul 20, 2016)
+## 4.5.0-SNAPSHOT (Jul 25, 2016)
 - Greedy wildcards in API urls 
+- Bug fix in API routing
 
 ## 4.4.0 (Jul 18, 2016)
 - Included snapshot version fixes
