@@ -217,6 +217,25 @@ public class TrieTest {
         System.out.println();
     }
 
+    @Test
+    public void greedyWildcardTest3() {
+        Trie<String, String> trie = new Trie<>();
+        trie.add(getKeysForTrie("/1/pop/time"), "3rt");
+        trie.add(getKeysForTrie("/1/pop/home"), "3rh");
+        trie.add(getKeysForTrie("/1/pop/f"), "3rf");
+        trie.add(getKeysForTrie("/1/pop/f/{}"), "3rf{}");
+        trie.add(getKeysForTrie("/1/pop/clp"), "3rc");
+        trie.add(getKeysForTrie("/1/pop/clp/**"), "3rc**");
+        trie.add(getKeysForTrie("/1/pop/fly"), "3rfl");
+        trie.add(getKeysForTrie("/1/pop/all"), "3ra");
+
+        Assert.assertEquals("3rc**", trie.get(new String[]{"1", "pop", "clp", "uyasdh", "qbeiu2i", "he12jiosm"}));
+
+        System.out.println("Tree for greedyWildcardTest2:");
+        printPaths(trie);
+        System.out.println();
+    }
+
     private <K, V> void printPaths(Trie<K, V> trie) {
         trie.printAllPaths("/").forEach(list -> {
             list.forEach(System.out::print);

@@ -61,6 +61,11 @@ public class Trie<K, V> {
 
             if (currentNode == null) {
                 currentParent.firstChild = newNode;
+                if (newNode.matchAny) {
+                    currentParent.wildChild = newNode;
+                } else if (newNode.greedyMatchAny) {
+                    currentParent.greedyWildChild = newNode;
+                }
             } else if (!newNode.matchAny && !newNode.greedyMatchAny) {
                 newNode.rightSibling = currentParent.firstChild;
                 currentParent.firstChild = newNode;
