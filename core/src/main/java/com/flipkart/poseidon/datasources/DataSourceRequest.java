@@ -23,7 +23,19 @@ import java.util.Map;
 
 public class DataSourceRequest implements Request {
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes;
+
+    public DataSourceRequest() {
+        attributes = new HashMap<>();
+    }
+
+    /**
+     * Constructor to Clone Existing DataSourceRequest
+     */
+    public DataSourceRequest(DataSourceRequest dataSourceRequest) {
+
+        attributes = new HashMap<>(dataSourceRequest.getAttributeMap());
+    }
 
     @Override
     public void setAttribute(String key, Object value) {
