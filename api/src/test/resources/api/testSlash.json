@@ -1,0 +1,28 @@
+{
+  "url": "shop/test///",
+  "httpMethod": "POST",
+  "timeout": 5000,
+  "name": "test",
+  "params": {
+    "required": [
+      {
+        "name": "abc",
+        "datatype": "string"
+      },
+      {
+        "name": "xyz",
+        "datatype": "string"
+      }
+    ]
+  },
+  "tasks": {
+    "testTask": {
+      "name": "TestTaskDS_1.0.0",
+      "context": {
+        "abc": "{{$abc}}",
+        "xyz": "{{$xyz}}"
+      }
+    }
+  },
+  "response": "{{$testTask}}"
+}

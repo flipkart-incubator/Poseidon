@@ -30,4 +30,20 @@ public class ApiHelper {
         // remove the extra slashes passed in the url
         return String.format("%s/%s", httpMethod, url ).replaceAll("[/]{2,}", "/");
     }
+
+    public static String getFormattedUrl(String url) {
+        if (url.startsWith("/") && !url.endsWith("/")) {
+            return url;
+        }
+        // add a slash in front of the url, if absent
+        String partiallyFormattedUrl = String.format("/%s", url );
+
+        if (!url.endsWith("/")) {
+            return partiallyFormattedUrl;
+        }
+
+        partiallyFormattedUrl = partiallyFormattedUrl.replaceAll("[/]{2,}", "/");
+        return partiallyFormattedUrl.substring(0, partiallyFormattedUrl.length() - 1);
+    }
+
 }
