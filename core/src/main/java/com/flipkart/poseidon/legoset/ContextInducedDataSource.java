@@ -24,6 +24,7 @@ import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.Request;
+import org.slf4j.MDC;
 
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class ContextInducedDataSource implements DataSource {
     private final Map<String, Object> parentContext;
     private final Map<String, Object> parentServiceContext;
     private final HystrixRequestContext parentThreadState;
+    private final Map<String, String> mdcContext;
     private final ServerSpan serverSpan;
 
     public ContextInducedDataSource(DataSource dataSource, Request request) {
@@ -50,6 +52,7 @@ public class ContextInducedDataSource implements DataSource {
         parentContext = RequestContext.getContextMap();
         parentServiceContext = ServiceContext.getContextMap();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
+        mdcContext = MDC.getCopyOfContextMap();
         serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
     }
 
@@ -58,24 +61,36 @@ public class ContextInducedDataSource implements DataSource {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
         boolean success = false;
         try {
-            RequestContext.initialize(parentContext);
-            ServiceContext.initialize(parentServiceContext);
-            HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
-            // Parent thread span info is passed onto Datasource thread using Brave's ThreadLocal implementation
-            if (serverSpan != null && serverSpan.getSpan() != null) {
-                Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
-            }
-            startTrace(dataSource, request);
+            initAllContext();
             DataType dataType = dataSource.call();
             success = true;
             return dataType;
         } finally {
-            endTrace(dataSource, success);
-            RequestContext.shutDown();
-            ServiceContext.shutDown();
-            HystrixRequestContext.setContextOnCurrentThread(existingState);
-            Brave.getServerSpanThreadBinder().setCurrentSpan(null);
+            shutdownAllContext(existingState, success);
         }
+    }
+
+    private void initAllContext() {
+        RequestContext.initialize(parentContext);
+        ServiceContext.initialize(parentServiceContext);
+        HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
+        if (mdcContext != null) {
+            MDC.setContextMap(mdcContext);
+        }
+        // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
+        if (serverSpan != null && serverSpan.getSpan() != null) {
+            Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
+        }
+        startTrace(dataSource, request);
+    }
+
+    private void shutdownAllContext(HystrixRequestContext existingState, boolean success) {
+        endTrace(dataSource, success);
+        RequestContext.shutDown();
+        ServiceContext.shutDown();
+        HystrixRequestContext.setContextOnCurrentThread(existingState);
+        MDC.clear();
+        Brave.getServerSpanThreadBinder().setCurrentSpan(null);
     }
 
     @Override

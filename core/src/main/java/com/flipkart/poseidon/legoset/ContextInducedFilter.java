@@ -27,6 +27,7 @@ import flipkart.lego.api.entities.Response;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
+import org.slf4j.MDC;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ public class ContextInducedFilter implements Filter {
     private final Map<String, Object> parentContext;
     private final Map<String, Object> parentServiceContext;
     private final HystrixRequestContext parentThreadState;
+    private final Map<String, String> mdcContext;
     private final ServerSpan serverSpan;
 
     public ContextInducedFilter(Filter filter) {
@@ -51,6 +53,7 @@ public class ContextInducedFilter implements Filter {
         parentContext = RequestContext.getContextMap();
         parentServiceContext = ServiceContext.getContextMap();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
+        mdcContext = MDC.getCopyOfContextMap();
         serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
     }
 
@@ -59,23 +62,11 @@ public class ContextInducedFilter implements Filter {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
         boolean success = false;
         try {
-            RequestContext.initialize(parentContext);
-            ServiceContext.initialize(parentServiceContext);
-            HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
-            // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
-            if (serverSpan != null && serverSpan.getSpan() != null) {
-                Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
-            }
-            // We don't want to trace requests in filter traces
-            startTrace(filter);
+            initAllContext();
             filter.filterRequest(request, response);
             success = true;
         } finally {
-            endTrace(filter, success);
-            RequestContext.shutDown();
-            ServiceContext.shutDown();
-            HystrixRequestContext.setContextOnCurrentThread(existingState);
-            Brave.getServerSpanThreadBinder().setCurrentSpan(null);
+            shutdownAllContext(existingState, success);
         }
     }
 
@@ -84,24 +75,36 @@ public class ContextInducedFilter implements Filter {
         HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
         boolean success = false;
         try {
-            RequestContext.initialize(parentContext);
-            ServiceContext.initialize(parentServiceContext);
-            HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
-            // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
-            if (serverSpan != null && serverSpan.getSpan() != null) {
-                Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
-            }
-            // We don't want to trace responses in filter traces
-            startTrace(filter);
+            initAllContext();
             filter.filterResponse(request, response);
             success = true;
         } finally {
-            endTrace(filter, success);
-            RequestContext.shutDown();
-            ServiceContext.shutDown();
-            HystrixRequestContext.setContextOnCurrentThread(existingState);
-            Brave.getServerSpanThreadBinder().setCurrentSpan(null);
+            shutdownAllContext(existingState, success);
         }
+    }
+
+    private void initAllContext() {
+        RequestContext.initialize(parentContext);
+        ServiceContext.initialize(parentServiceContext);
+        HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
+        if (mdcContext != null) {
+            MDC.setContextMap(mdcContext);
+        }
+        // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
+        if (serverSpan != null && serverSpan.getSpan() != null) {
+            Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
+        }
+        // We don't want to trace responses in filter traces
+        startTrace(filter);
+    }
+
+    private void shutdownAllContext(HystrixRequestContext existingState, boolean success) {
+        endTrace(filter, success);
+        RequestContext.shutDown();
+        ServiceContext.shutDown();
+        HystrixRequestContext.setContextOnCurrentThread(existingState);
+        MDC.clear();
+        Brave.getServerSpanThreadBinder().setCurrentSpan(null);
     }
 
     @Override
