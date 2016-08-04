@@ -16,81 +16,37 @@
 
 package com.flipkart.poseidon.legoset;
 
-import com.flipkart.poseidon.core.RequestContext;
-import com.flipkart.poseidon.serviceclients.ServiceContext;
-import com.github.kristofa.brave.Brave;
-import com.github.kristofa.brave.ServerSpan;
-import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.Request;
-import org.slf4j.MDC;
 
 import java.util.List;
-import java.util.Map;
-
-import static com.flipkart.poseidon.tracing.TraceHelper.endTrace;
-import static com.flipkart.poseidon.tracing.TraceHelper.startTrace;
 
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
  * into DataSource threads from Jetty threads
  */
-public class ContextInducedDataSource implements DataSource {
+public class ContextInducedDataSource extends ContextInducedBlock implements DataSource {
 
     private final DataSource dataSource;
     private final Request request;
-    private final Map<String, Object> parentContext;
-    private final Map<String, Object> parentServiceContext;
-    private final HystrixRequestContext parentThreadState;
-    private final Map<String, String> mdcContext;
-    private final ServerSpan serverSpan;
 
     public ContextInducedDataSource(DataSource dataSource, Request request) {
+        super(dataSource);
         this.dataSource = dataSource;
         this.request = request;
-        parentContext = RequestContext.getContextMap();
-        parentServiceContext = ServiceContext.getContextMap();
-        parentThreadState = HystrixRequestContext.getContextForCurrentThread();
-        mdcContext = MDC.getCopyOfContextMap();
-        serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
     }
 
     @Override
     public DataType call() throws Exception {
-        HystrixRequestContext existingState = HystrixRequestContext.getContextForCurrentThread();
-        boolean success = false;
         try {
-            initAllContext();
+            initAllContext(request);
             DataType dataType = dataSource.call();
             success = true;
             return dataType;
         } finally {
-            shutdownAllContext(existingState, success);
+            shutdownAllContext();
         }
-    }
-
-    private void initAllContext() {
-        RequestContext.initialize(parentContext);
-        ServiceContext.initialize(parentServiceContext);
-        HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
-        if (mdcContext != null) {
-            MDC.setContextMap(mdcContext);
-        }
-        // Parent thread span info is passed onto filter thread using Brave's ThreadLocal implementation
-        if (serverSpan != null && serverSpan.getSpan() != null) {
-            Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
-        }
-        startTrace(dataSource, request);
-    }
-
-    private void shutdownAllContext(HystrixRequestContext existingState, boolean success) {
-        endTrace(dataSource, success);
-        RequestContext.shutDown();
-        ServiceContext.shutDown();
-        HystrixRequestContext.setContextOnCurrentThread(existingState);
-        MDC.clear();
-        Brave.getServerSpanThreadBinder().setCurrentSpan(null);
     }
 
     @Override
