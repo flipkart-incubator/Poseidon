@@ -16,22 +16,33 @@
 
 package com.flipkart.poseidon.filters;
 
+import com.flipkart.poseidon.api.Configuration;
+import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.google.common.collect.ImmutableMap;
 import com.netflix.hystrix.HystrixRequestLog;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
-import static com.flipkart.poseidon.constants.RequestConstants.HEADERS;
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class HystrixContextFilter implements Filter {
     private static final Logger logger = getLogger(HystrixContextFilter.class);
+    private final Configuration configuration;
+
+    public HystrixContextFilter(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -40,18 +51,52 @@ public class HystrixContextFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HystrixRequestContext hystrixRequestContext = HystrixRequestContext.initializeContext();
-        RequestContext.initialize();
-        ServiceContext.initialize();
+        initAllContext(request);
         try {
             chain.doFilter(request, response);
         } finally {
             // Log all the failed Hystrix commands before shutting down context
             logFailedHystrixCommands(request);
-
-            RequestContext.shutDown();
-            ServiceContext.shutDown();
-            hystrixRequestContext.shutdown();
+            shutdownAllContext(hystrixRequestContext);
         }
+    }
+
+    private void initAllContext(ServletRequest request) {
+        RequestContext.initialize();
+        ServiceContext.initialize();
+        if (request instanceof HttpServletRequest) {
+            setContext((HttpServletRequest) request);
+        }
+    }
+
+    private void setContext(HttpServletRequest httpServletRequest) {
+        RequestContext.set(METHOD, httpServletRequest.getMethod());
+        RequestContext.set(SOURCE_ADDRESS, httpServletRequest.getRemoteAddr());
+
+        if (configuration.getHeadersConfiguration() != null && configuration.getHeadersConfiguration().getGlobalHeaders() != null) {
+            Map<String, String> headers = new HashMap<>();
+            for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getGlobalHeaders()) {
+                String value = httpServletRequest.getHeader(headerConfiguration.getName());
+                if (value == null) {
+                    value = headerConfiguration.getDefaultValue();
+                }
+                if (value != null) {
+                    headers.put(headerConfiguration.getName(), value);
+                }
+            }
+
+            ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
+            ServiceContext.set(ServiceClientConstants.HEADERS, immutableHeaders);
+            RequestContext.set(HEADERS, immutableHeaders);
+            MDC.setContextMap(immutableHeaders);
+        }
+    }
+
+    private void shutdownAllContext(HystrixRequestContext hystrixRequestContext) {
+        RequestContext.shutDown();
+        ServiceContext.shutDown();
+        hystrixRequestContext.shutdown();
+        MDC.clear();
     }
 
     @Override
