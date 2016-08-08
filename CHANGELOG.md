@@ -1,3 +1,7 @@
+## 4.5.0 (Aug 8, 2016)
+- Included snapshot version fixes
+- MDC context passing
+
 ## 4.5.0-SNAPSHOT (Jul 28, 2016)
 - Greedy wildcards in API urls 
 - Bug fix in API routing
