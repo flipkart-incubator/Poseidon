@@ -17,12 +17,12 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 4.5.0             | Aug 08 2016      |    Greedy wildcards in API urls, MDC context passing, bug fixes
 | Version 4.4.0             | Jul 18 2016      |    Clean shutdown, lego blocks validator, bug fixes 
 | Version 4.3.0             | Jul 11 2016      |    Phantom 2.0.1, hystrix metrics and logs, API validator, bug fixes
 | Version 4.2.0             | Jun 07 2016      |    Datasources and filters can participate in Distributed Tracing, bug fix
 | Version 4.1.0             | May 27 2016      |    Phantom 2.0.0, OAuth task handler, configurable object mapper
 | Version 4.0.0             | May 18 2016      |    Lego 2.0.0, service clients runtime and generation separated, headers configuration 
-| Version 3.1.1             | Apr 06 2016      |    [Snapshot fixes](https://github.com/flipkart-incubator/Poseidon/blob/master/CHANGELOG.md#311-snapshot-mar-20-2016), API - endPoint JMX metrics (latency and request rate)
 
 ## Changelog
 
