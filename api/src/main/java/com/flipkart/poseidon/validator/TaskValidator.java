@@ -40,7 +40,12 @@ public class TaskValidator {
             }
             Map<String, Object> context = Optional.ofNullable(task.getContext()).orElse(new HashMap<>());
             for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
-                String fullContextParam = stripBraces((String) contextEntry.getValue());
+                Object contextEntryValue = contextEntry.getValue();
+                // Could be literals like boolean true/false
+                if (!(contextEntryValue instanceof String)) {
+                    continue;
+                }
+                String fullContextParam = stripBraces((String) contextEntryValue);
                 boolean isOptional = fullContextParam.charAt(0) == '#';
                 if (isOptional) {
                     fullContextParam = fullContextParam.substring(1);
@@ -60,7 +65,7 @@ public class TaskValidator {
                     if (params != null) {
                         if (params.getRequired() != null) {
                             for (ParamPOJO param : params.getRequired()) {
-                                if (contextParam.equals(param.getName())) {
+                                if (contextParam.equals(param.getName()) || contextParam.equals(param.getInternalName())) {
                                     located = true;
                                     if (isOptional) {
                                         errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is not optional");
@@ -71,7 +76,7 @@ public class TaskValidator {
 
                         if (params.getOptional() != null) {
                             for (ParamPOJO param : params.getOptional()) {
-                                if (contextParam.equals(param.getName())) {
+                                if (contextParam.equals(param.getName()) || contextParam.equals(param.getInternalName())) {
                                     located = true;
                                     if (!isOptional && param.getDefaultValue() == null) {
                                         errors.add("Param: " + braced(param.getName()) + " used in Task: " + braced(taskName) + " is optional. Add a \'#\'");
