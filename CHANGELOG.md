@@ -1,3 +1,6 @@
+## 4.5.1-SNAPSHOT (Aug 9, 2016)
+- Bug Fixes - In API validator 
+
 ## 4.5.0 (Aug 8, 2016)
 - Included snapshot version fixes
 - MDC context passing
