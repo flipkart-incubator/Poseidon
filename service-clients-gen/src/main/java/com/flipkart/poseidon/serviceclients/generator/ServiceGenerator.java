@@ -309,7 +309,9 @@ public class ServiceGenerator {
                 }
                 String paramName = Optional.ofNullable(parameter.getName()).orElse(arg);
                 if (!parameter.getOptional()) {
-                    if (parameter.getType().equals("String")) {
+                    if (parameter.isMultiValue()) {
+                        invocation.arg(JExpr.invoke("getMultiValueParamURI").arg(paramName).arg(JExpr.ref(argRef)));
+                    } else if (parameter.getType().equals("String")) {
                         invocation.arg(JExpr.lit(paramName + "=").plus(JExpr.invoke("encodeUrl").arg(JExpr.ref(argRef))));
                     } else if (parameter.getType().endsWith("[]")) {
                         JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(argRef));
@@ -321,7 +323,11 @@ public class ServiceGenerator {
                         invocation.arg(JExpr.lit(paramName + "=" ).plus(JExpr.ref(argRef)));
                     }
                 } else {
-                    invocation.arg(JExpr.invoke("getOptURI").arg(paramName).arg(JExpr.ref(argRef)));
+                    if (parameter.isMultiValue()) {
+                        invocation.arg(JExpr.invoke("getMultiValueParamURI").arg(paramName).arg(JExpr.ref(argRef)));
+                    } else {
+                        invocation.arg(JExpr.invoke("getOptURI").arg(paramName).arg(JExpr.ref(argRef)));
+                    }
                 }
             }
             block.assign(JExpr.ref("uri"), JExpr.ref("uri").plus(JExpr.invoke("getQueryURI").arg(invocation)));

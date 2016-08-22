@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.serviceclients.idl.pojo;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,10 +29,14 @@ public class Parameter {
      * This is used where the query parameter needs to have a different name than the method parameter.
      */
     private String name;
+    private boolean multiValue = false;
     private Boolean optional = false;
     private String[] description;
 
     public String getType() {
+        if (multiValue) {
+            return List.class.getName() + "<" + type + ">";
+        }
         return type;
     }
 
@@ -45,6 +50,14 @@ public class Parameter {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isMultiValue() {
+        return multiValue;
+    }
+
+    public void setMultiValue(boolean multiValue) {
+        this.multiValue = multiValue;
     }
 
     public Boolean getOptional() {
@@ -74,6 +87,12 @@ public class Parameter {
 
         Parameter parameter = (Parameter) object;
         if (!Objects.equals(type, parameter.getType())) {
+            return false;
+        }
+        if (!Objects.equals(name, parameter.getName())) {
+            return false;
+        }
+        if (!Objects.equals(multiValue, parameter.isMultiValue())) {
             return false;
         }
         if (!Objects.equals(optional, parameter.getOptional())) {

@@ -181,6 +181,35 @@ public abstract class AbstractServiceClient implements ServiceClient {
         return queryURI.toString();
     }
 
+    /*
+     * Multivalue params are repeated in query section of URI under same param name
+     * Ex: key=value1&key=value2&key=value3
+     */
+    protected <T> String getMultiValueParamURI(String paramName, List<T> paramValues) {
+        StringBuilder queryURI = new StringBuilder();
+        if (paramValues != null && !paramValues.isEmpty()) {
+            boolean first = true;
+            for (T paramValue: paramValues) {
+                if (paramValue == null) {
+                    continue;
+                }
+
+                if (first) {
+                    first = false;
+                } else {
+                    queryURI.append("&");
+                }
+                queryURI.append(paramName).append("=");
+                if (paramValue instanceof String) {
+                    queryURI.append(encodeUrl((String) paramValue));
+                } else {
+                    queryURI.append(paramValue);
+                }
+            }
+        }
+        return queryURI.toString();
+    }
+
     public JavaType getJavaType(TypeReference typeReference) {
         return objectMapper.getTypeFactory().constructType(typeReference);
     }

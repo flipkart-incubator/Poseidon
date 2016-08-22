@@ -66,6 +66,9 @@
             "optional": {
               "type": "boolean"
             },
+            "multiValue": {
+              "type": "boolean"
+            },
             "description": {
               "$ref": "#/definitions/stringArray"
             }
