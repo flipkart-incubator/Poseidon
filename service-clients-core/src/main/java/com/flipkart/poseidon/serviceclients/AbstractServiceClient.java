@@ -105,10 +105,13 @@ public abstract class AbstractServiceClient implements ServiceClient {
         byte[] payload = null;
         if (requestObject != null) {
             try {
-                if (requestObject instanceof String)
+                if (requestObject instanceof String) {
                     payload = ((String) requestObject).getBytes();
-                else
+                } else if (requestObject instanceof byte[]) {
+                    payload = (byte[]) requestObject;
+                } else {
                     payload = getObjectMapper().writeValueAsBytes(requestObject);
+                }
             } catch (Exception e) {
                 logger.error("Error serializing request object", e);
                 throw new IOException("Request object serialization error", e);
