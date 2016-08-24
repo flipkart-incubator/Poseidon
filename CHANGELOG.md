@@ -1,6 +1,7 @@
 ## 4.5.1-SNAPSHOT (Aug 22, 2016)
 - Bug Fixes - In API validator
-- Support for multivalue query parameter in Service Clients 
+- Support for multivalue query parameter in Service Clients
+- Support to send binary data in Service Clients
 
 ## 4.5.0 (Aug 8, 2016)
 - Included snapshot version fixes
