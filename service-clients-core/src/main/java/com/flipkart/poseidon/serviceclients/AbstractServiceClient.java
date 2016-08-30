@@ -41,7 +41,7 @@ import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADER
 
 /**
  * Created by mohan.pandian on 24/02/15.
- *
+ * <p>
  * Generated service client implementations will extend this abstract class
  */
 public abstract class AbstractServiceClient implements ServiceClient {
@@ -60,7 +60,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
     }
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(JavaType javaType, String uri, String httpMethod,
-                                  Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
+                                                                                Map<String, String> headersMap, Object requestObject, String commandName) throws IOException {
         return execute(new ServiceExecutePropertiesBuilder().setJavaType(javaType).setUri(uri).setHttpMethod(httpMethod).setHeadersMap(headersMap).setRequestObject(requestObject).setCommandName(commandName).setRequestCachingEnabled(false).build());
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         JavaType javaType = properties.getJavaType();
         JavaType errorType = properties.getErrorType();
 
-        if(commandName == null || commandName.isEmpty()) {
+        if (commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
         }
         logger.info("Executing {} with {} {}", commandName, httpMethod, uri);
@@ -163,6 +163,18 @@ public abstract class AbstractServiceClient implements ServiceClient {
     protected String getOptURI(String paramName, Object paramValue) {
         if (paramValue == null || paramValue instanceof String && paramValue.toString().isEmpty()) {
             return "";
+        } else if (paramValue instanceof List) {
+            StringBuilder builder = new StringBuilder();
+            String delimiter = "";
+            List<String> paramValueList = (List<String>) paramValue;
+            for (String param : paramValueList) {
+                builder.append(delimiter);
+                builder.append(paramName);
+                builder.append("=");
+                builder.append(param);
+                delimiter = "&";
+            }
+            return builder.toString();
         } else {
             return paramName + "=" + paramValue;
         }
@@ -171,9 +183,9 @@ public abstract class AbstractServiceClient implements ServiceClient {
     protected String getQueryURI(List<String> params) {
         StringBuilder queryURI = new StringBuilder();
         Boolean first = true;
-        for(String param: params) {
-            if(param == null || param.isEmpty()) continue;
-            if(first) {
+        for (String param : params) {
+            if (param == null || param.isEmpty()) continue;
+            if (first) {
                 queryURI.append("?");
                 first = false;
             } else {
@@ -241,7 +253,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     @Override
     public String getId() throws UnsupportedOperationException {
-       return getName() + "_" + Joiner.on(".").join(getVersion());
+        return getName() + "_" + Joiner.on(".").join(getVersion());
     }
 
     protected ObjectMapper getObjectMapper() {
