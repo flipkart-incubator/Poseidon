@@ -84,11 +84,11 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                     if (e.getMessage().contains("No content to map due to end-of-input")) {
                         return new ServiceResponse<T>((T) null, headers);
                     } else {
-                        logger.error("Error de-serializing response object", e);
+                        logger.error("Error de-serializing response object exception: {}", e.getMessage());
                         throw new IOException("Response object de-serialization error", e);
                     }
                 } catch (Exception e) {
-                    logger.error("Error de-serializing response object", e);
+                    logger.error("Error de-serializing response object exception: {}", e.getMessage());
                     throw new IOException("Response object de-serialization error", e);
                 }
             }
@@ -101,9 +101,9 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                         errorResponse = objectMapper.readValue(serviceResponse, errorType);
                     }
                 } catch (Exception e) {
-                    logger.warn("Error while de-serializing non 200 response to given errorType", e);
+                    logger.warn("Error while de-serializing non 200 response to given errorType statusCode:{} exception: {}", statusCodeString, e.getMessage());
                 }
-                logger.warn("Non 200 response {}", serviceResponse);
+                logger.warn("Non 200 response statusCode:{} response: {}", statusCodeString, serviceResponse);
                 Class<? extends ServiceClientException> exceptionClass;
                 if (exceptions.containsKey(statusCodeString))
                     exceptionClass = exceptions.get(statusCodeString);
@@ -113,7 +113,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 return new ServiceResponse<T>(exceptionClass.getConstructor(String.class, Object.class).newInstance(serviceResponse, errorResponse), headers);
 
             } catch (Exception e) {
-                logger.error("Error de-serializing non 200 response", e);
+                logger.error("Error de-serializing non 200 response statusCode:{} exception: {} ", statusCodeString, e.getMessage());
                 throw new IOException("Non 200 response de-serialization error", e);
             }
         }
