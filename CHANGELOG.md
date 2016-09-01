@@ -1,3 +1,6 @@
+## 5.0.0-SNAPSHOT (Sep 2, 2016)
+- Log4j2 over logback for both service and access logs 
+
 ## 4.5.1-SNAPSHOT (Aug 24, 2016)
 - Bug Fixes - In API validator
 - Support for multivalue query parameter in Service Clients

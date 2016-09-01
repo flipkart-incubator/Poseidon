@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.flipkart.poseidon.Poseidon.STARTUP_LOGGER;
 import static com.flipkart.poseidon.constants.RequestConstants.ENDPOINT_NAME;
 import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
 import static com.flipkart.poseidon.constants.RequestConstants.URI;
@@ -61,26 +62,27 @@ public abstract class APILegoSet extends PoseidonLegoSet {
     }
 
     private void printPaths() {
-        logger.info("Registered URLs: ");
         List<List<String>> paths = trie.printAllPaths("/");
-        System.out.println("==========================================================================================");
-        System.out.println();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Registered URLs: \n");
+        builder.append("==========================================================================================\n");
+        builder.append("\n");
         paths.forEach(list -> {
-            equalizeAndPrintHttpMethod(list.get(0));
-            list.subList(1, list.size()).forEach(System.out::print);
-            System.out.println();
+            equalizeAndPrintHttpMethod(list.get(0), builder);
+            list.subList(1, list.size()).forEach(builder::append);
+            builder.append("\n");
         });
-        System.out.println();
-        System.out.println("==========================================================================================");
-        System.out.println();
+        builder.append("\n");
+        builder.append("==========================================================================================\n");
+        STARTUP_LOGGER.info(builder.toString());
     }
 
-    private void equalizeAndPrintHttpMethod(String method) {
+    private void equalizeAndPrintHttpMethod(String method, StringBuilder builder) {
         int diff = MAX_METHOD_LENGTH - method.length();
         for (int i = 0; i < diff; i++) {
             method = method + " ";
         }
-        System.out.print(method + "\t\t\t\t");
+        builder.append(method + "\t\t\t\t");
     }
 
     @Override

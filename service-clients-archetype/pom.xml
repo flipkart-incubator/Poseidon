@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Service Clients Archetype</name>
+    <name>Poseidon Service Clients Archetype</name>
     <description>Mvn archetype used to create a new service client</description>
 
     <parent>
