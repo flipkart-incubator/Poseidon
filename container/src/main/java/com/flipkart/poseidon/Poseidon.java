@@ -16,7 +16,6 @@
 
 package com.flipkart.poseidon;
 
-import ch.qos.logback.access.jetty.RequestLogImpl;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
@@ -41,6 +40,7 @@ import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
+import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.*;
@@ -75,8 +75,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Service
 public class Poseidon {
 
-    public static final String STARTUP_LOGGER = "PoseidonStartupLogger";
-    private static final Logger logger = getLogger(STARTUP_LOGGER);
+    public static final Logger STARTUP_LOGGER = getLogger("PoseidonStartupLogger");
 
     private final Configuration configuration;
     private final Application application;
@@ -102,23 +101,23 @@ public class Poseidon {
     }
 
     public void stop() {
-        logger.info("*** Poseidon - stopping application... ***");
+        STARTUP_LOGGER.info("*** Poseidon - stopping application... ***");
         application.stop();
 
-        logger.info("*** Poseidon - stopping executor services... ***");
+        STARTUP_LOGGER.info("*** Poseidon - stopping executor services... ***");
         dataSourceES.shutdown();
         filterES.shutdown();
 
         if (server != null) {
-            logger.info("*** Poseidon - stopping server... ***");
+            STARTUP_LOGGER.info("*** Poseidon - stopping server... ***");
             try {
                 server.stop();
             } catch(Exception e) {
-                logger.error("Exception stopping server", e);
+                STARTUP_LOGGER.error("Exception stopping server", e);
             }
         }
 
-        logger.info("*** Poseidon stopped ***");
+        STARTUP_LOGGER.info("*** Poseidon stopped ***");
     }
 
     public void start() {
@@ -151,9 +150,9 @@ public class Poseidon {
             initializeMetricReporters();
 
             server.start();
-            logger.info("*** Poseidon started ***");
+            STARTUP_LOGGER.info("*** Poseidon started ***");
         } catch (Exception e) {
-            logger.error("Unable to start Poseidon.", e);
+            STARTUP_LOGGER.error("Unable to start Poseidon.", e);
             throw new RuntimeException("Unable to start Poseidon", e);
         }
     }
@@ -168,9 +167,8 @@ public class Poseidon {
     }
 
     private Handler getRequestLogHandler(Handler handler) {
-        RequestLogImpl requestLog = new RequestLogImpl();
-        requestLog.setFileName(configuration.getLogbackAccessPath());
-
+        RequestLog requestLog = new Log4JAccessLog(configuration.getAccessLogConfigFilePath(),
+                () -> configuration.isAccessLogEnabled());
         RequestLogHandler requestLogHandler = new RequestLogHandler();
         requestLogHandler.setRequestLog(requestLog);
         requestLogHandler.setHandler(handler);
@@ -208,7 +206,7 @@ public class Poseidon {
                 return isAnyRuleActive ? Optional.of(rewriteHandler) : Optional.empty();
             }
         } catch (IOException e) {
-            logger.error("Unable to read Rewrite Rules", e);
+            STARTUP_LOGGER.error("Unable to read Rewrite Rules", e);
         }
         return Optional.empty();
     }

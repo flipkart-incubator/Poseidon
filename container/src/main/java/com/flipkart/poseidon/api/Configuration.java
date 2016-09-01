@@ -21,32 +21,34 @@ import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 
 public interface Configuration {
 
-    public int getPort();
+    int getPort();
 
-    public boolean sendServerVersion();
+    boolean sendServerVersion();
 
-    public String getRewriteFilePath();
+    String getRewriteFilePath();
 
-    public String getLogbackAccessPath();
+    String getAccessLogConfigFilePath();
 
-    public String getRotationStatusFilePath();
+    boolean isAccessLogEnabled();
 
-    public String getApiFilesPath();
+    String getRotationStatusFilePath();
 
-    public String[] getFilterIds();
+    String getApiFilesPath();
 
-    public String getAppName();
+    String[] getFilterIds();
 
-    public TracingConfiguration getTracingConfiguration();
+    String getAppName();
+
+    TracingConfiguration getTracingConfiguration();
 
     /*
      * Return null to use default values at framework
      */
-    public JettyConfiguration getJettyConfiguration();
+    JettyConfiguration getJettyConfiguration();
 
-    public ExceptionMapper getExceptionMapper();
+    ExceptionMapper getExceptionMapper();
 
-    public Headers getHeadersConfiguration();
+    Headers getHeadersConfiguration();
 
     default ObjectMapper getObjectMapper() {
         return ObjectMapperHelper.getMapper();

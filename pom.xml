@@ -22,6 +22,7 @@
         <module>service-clients-core</module>
         <module>service-clients-gen</module>
         <module>service-clients-archetype</module>
+        <module>log4j-access</module>
     </modules>
 
     <scm>
@@ -69,9 +70,11 @@
         <hystrix.version>1.4.0-RC5</hystrix.version>
         <jackson.version>2.5.2</jackson.version>
         <jetty.version>9.2.10.v20150310</jetty.version>
-        <logback.version>1.1.3</logback.version>
         <phantom.version>2.0.1</phantom.version>
         <brave.version>2.2.1</brave.version>
+        <slf4j.api.version>1.7.9</slf4j.api.version>
+        <log4j.version>2.6.2</log4j.version>
+        <disruptor.version>3.3.4</disruptor.version>
     </properties>
 
 
@@ -149,6 +152,10 @@
                     <exclusion>
                         <artifactId>slf4j-log4j12</artifactId>
                         <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -279,22 +286,32 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.9</version>
+                <version>${slf4j.api.version}</version>
             </dependency>
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-core</artifactId>
-                <version>${logback.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-access</artifactId>
-                <version>${logback.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-jcl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>${disruptor.version}</version>
             </dependency>
             <!-- Logging -->
 

@@ -19,7 +19,6 @@ package com.flipkart.poseidon;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.netflix.hystrix.contrib.codahalemetricspublisher.HystrixCodaHaleMetricsPublisher;
 import com.netflix.hystrix.strategy.HystrixPlugins;
-import org.slf4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 import org.trpr.platform.core.impl.event.PlatformApplicationEvent;
@@ -29,14 +28,11 @@ import org.trpr.platform.runtime.impl.event.BootstrapProgressMonitor;
 
 import static com.flipkart.poseidon.Poseidon.STARTUP_LOGGER;
 import static com.flipkart.poseidon.PoseidonContext.getBean;
-import static org.slf4j.LoggerFactory.getLogger;
 import static org.trpr.platform.runtime.common.RuntimeConstants.BOOTSTRAP_START_STATE;
 import static org.trpr.platform.runtime.common.RuntimeConstants.BOOTSTRAP_STOP_STATE;
 
 @Component
 public class BootstrapListener implements PlatformEventConsumer {
-
-    private static final Logger logger = getLogger(STARTUP_LOGGER);
 
     public void setBootstrapProgressMonitor(BootstrapProgressMonitor bootstrapProgressMonitor) {
         bootstrapProgressMonitor.addBootstrapEventListener(this);
@@ -49,7 +45,7 @@ public class BootstrapListener implements PlatformEventConsumer {
             if ("BootstrapMonitoredEvent".equals(platformEvent.getEventType())) {
                 if (BOOTSTRAP_START_STATE.equals(platformEvent.getEventStatus())) {
                     registerHystrixPlugins();
-                    logger.info("\n************************************" +
+                    STARTUP_LOGGER.info("\n************************************" +
                             "\n______ " +
                             "\n| ___ \\" +
                             "\n| |_/ /" +
@@ -67,10 +63,10 @@ public class BootstrapListener implements PlatformEventConsumer {
 
     private void registerHystrixPlugins() {
         // Register hystrix codahale metrics publisher plugin
-        logger.info("Registering hystrix jmx metrics plugin");
+        STARTUP_LOGGER.info("Registering hystrix jmx metrics plugin");
         HystrixCodaHaleMetricsPublisher publisher = new HystrixCodaHaleMetricsPublisher(Metrics.getRegistry());
         HystrixPlugins.getInstance().registerMetricsPublisher(publisher);
-        logger.info("Registered hystrix jmx metrics plugin");
+        STARTUP_LOGGER.info("Registered hystrix jmx metrics plugin");
     }
 
     private void startPoseidon() {
