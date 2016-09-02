@@ -152,7 +152,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertThat(response.getException().getErrorResponse(), instanceOf(mockErrorType.getRawClass()));
-        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
+        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -182,7 +182,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
+        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -212,8 +212,8 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response {}", errorString);
-        Mockito.verify(mockLogger, Mockito.times(1)).warn(anyString(), any(Object.class));
+        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger, Mockito.times(2)).warn(anyString(), anyString(), any(Object.class));
     }
 
     /**
@@ -237,7 +237,8 @@ public class ServiceResponseDecoderTest {
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
-        Mockito.verify(mockLogger).warn("Non 200 response {}", "error");
+        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}","500", "error");
+
     }
 
     /**
