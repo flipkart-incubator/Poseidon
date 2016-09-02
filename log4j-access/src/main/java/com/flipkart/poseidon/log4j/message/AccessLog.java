@@ -74,6 +74,7 @@ public class AccessLog extends AbstractAccessLog {
         builder.append(ensureValue(request.getMethod()))
                 .append(' ')
                 .append(ensureValue(request.getRequestURI()))
+                .append(request.getQueryString() != null ? "?" + request.getQueryString() : "")
                 .append(' ')
                 .append(ensureValue(request.getProtocol()));
         requestLine = builder.toString();

@@ -51,6 +51,7 @@ public class PatternConverterTest {
     // Constants
     private static final String METHOD = "GET";
     private static final String URI = "/a/b/c";
+    private static final String QUERY = "k1=v2&k2=v2";
     private static final String PROTOCOL = "HTTP/1.1";
     private static final String REMOTE_HOST = "12.34.56.78";
     private static final int STATUS = 200;
@@ -92,6 +93,7 @@ public class PatternConverterTest {
         mockResponse = mock(Response.class);
         when(mockRequest.getMethod()).thenReturn(METHOD);
         when(mockRequest.getRequestURI()).thenReturn(URI);
+        when(mockRequest.getQueryString()).thenReturn(QUERY);
         when(mockRequest.getProtocol()).thenReturn(PROTOCOL);
         when(mockRequest.getRemoteHost()).thenReturn(REMOTE_HOST);
         when(mockResponse.getStatus()).thenReturn(STATUS);
@@ -130,7 +132,7 @@ public class PatternConverterTest {
         testPattern(elapsedTimeConverter, ELAPSED_TIME);
         testPattern(remoteHostConverter, REMOTE_HOST);
         testPattern(requestHeaderNAConverter, NA);
-        testPattern(requestLineConverter, METHOD + ' ' + URI + ' ' + PROTOCOL);
+        testPattern(requestLineConverter, METHOD + ' ' + URI + '?' + QUERY + ' ' + PROTOCOL);
         testPattern(statusCodePatternConverter, STATUS);
 
         // Special converter functionality
