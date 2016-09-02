@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.log4j.pattern;
+package com.flipkart.poseidon.log4j;
 
-import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import com.flipkart.poseidon.log4j.message.AccessLog;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Logger;
