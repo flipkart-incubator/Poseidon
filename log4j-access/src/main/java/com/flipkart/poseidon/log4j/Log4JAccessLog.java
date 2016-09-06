@@ -43,6 +43,10 @@ public class Log4JAccessLog extends AbstractLifeCycle implements RequestLog {
     private LoggerContext loggerContext;
     private Logger logger;
 
+    public Log4JAccessLog(String accessConfigFilePath) {
+        this(accessConfigFilePath, () -> true);
+    }
+
     public Log4JAccessLog(String accessConfigFilePath, Supplier<Boolean> isEnabledSupplier) {
         this.accessConfigFilePath = accessConfigFilePath;
         this.isEnabledSupplier = isEnabledSupplier;
