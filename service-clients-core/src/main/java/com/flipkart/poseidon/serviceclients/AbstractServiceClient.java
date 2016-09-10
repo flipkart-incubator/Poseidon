@@ -38,6 +38,10 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_HEADERS;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_METHOD;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_URI;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.X_CACHE_REQUEST;
 
 /**
  * Created by mohan.pandian on 24/02/15.
@@ -85,17 +89,17 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
         logger.info("Executing {} with {} {}", commandName, httpMethod, uri);
 
-        Map<String, String> params = new HashMap<>();
-        params.put("uri", uri);
-        params.put("method", httpMethod);
+        Map<String, Object> params = new HashMap<>();
+        params.put(HTTP_URI, uri);
+        params.put(HTTP_METHOD, httpMethod);
         if (requestCachingEnabled) {
-            params.put("X-Cache-Request", "true");
+            params.put(X_CACHE_REQUEST, "true");
         }
 
         Map<String, String> injectedHeadersMap = injectHeaders(headersMap);
         if (!injectedHeadersMap.isEmpty()) {
             try {
-                params.put("headers", getObjectMapper().writeValueAsString(injectedHeadersMap));
+                params.put(HTTP_HEADERS, injectedHeadersMap);
             } catch (Exception e) {
                 logger.error("Error serializing headers", e);
                 throw new IOException("Headers serialization error", e);
