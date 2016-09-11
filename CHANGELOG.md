@@ -1,8 +1,9 @@
-## 4.5.1-SNAPSHOT (Sep 2, 2016)
+## 4.5.1-SNAPSHOT (Sep 11, 2016)
 - Bug Fixes - In API validator
 - Support for multivalue query parameter in Service Clients
 - Support to send binary data in Service Clients
 - Service response failures will have status code logged
+- Upgrade to logback 1.1.5 from 1.1.3
 
 ## 4.5.0 (Aug 8, 2016)
 - Included snapshot version fixes
