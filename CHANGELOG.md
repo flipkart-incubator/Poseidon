@@ -1,3 +1,6 @@
+## 4.5.1 (Sep 12, 2016)
+- Included snapshot version fixes
+
 ## 4.5.1-SNAPSHOT (Sep 11, 2016)
 - Bug Fixes - In API validator
 - Support for multivalue query parameter in Service Clients
