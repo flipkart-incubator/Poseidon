@@ -1,5 +1,6 @@
-## 5.0.0-SNAPSHOT (Sep 2, 2016)
+## 5.0.0-SNAPSHOT (Sep 12, 2016)
 - Log4j2 over logback for both service and access logs 
+- Avoided serialization and deserialization between service clients and task handlers
 
 ## 4.5.1-SNAPSHOT (Sep 2, 2016)
 - Bug Fixes - In API validator
