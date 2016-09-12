@@ -40,6 +40,12 @@ import java.util.Map;
 
 import static com.google.common.hash.Hashing.murmur3_32;
 
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_HEADERS;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_METHOD;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_URI;
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.X_CACHE_REQUEST;
+
+
 public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandler {
 
     /** Log instance of this class */
@@ -123,19 +129,19 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     @Override
     public <T, S> TaskResult<T> execute(TaskContext taskContext, String command,
                                      TaskRequestWrapper<S> taskRequestWrapper,Decoder<T> decoder) throws RuntimeException {
-        Map<String,String> params = taskRequestWrapper.getParams();
+        Map<String, Object> params = taskRequestWrapper.getParams();
         byte[] data = (byte[]) taskRequestWrapper.getData();
 
         Map<String,String> requestHeaders = getRequestHeaders(params);
 
         try {
-            HttpRequestBase request = this.pool.createHttpRequest(params.get("uri"), data, requestHeaders, params.get("method"));
+            HttpRequestBase request = this.pool.createHttpRequest((String) params.get(HTTP_URI), data, requestHeaders, (String) params.get(HTTP_METHOD));
             HttpResponse httpResponse =  this.pool.execute(request);
 
             return  new TaskResult<T>(true, null, ((HttpResponseDecoder<T>) decoder).decode(httpResponse));
         }
         catch (Exception e) {
-            handleException(e, params.get("uri"), params.get("method"));
+            handleException(e, (String) params.get(HTTP_URI), (String) params.get(HTTP_METHOD));
         }
         return null;
     }
@@ -153,19 +159,19 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
      * @return
      */
     @Override
-    public <T, S> TaskResult<T> execute(TaskContext taskContext, String command, Map<String, String> params, S data) {
+    public <T, S> TaskResult<T> execute(TaskContext taskContext, String command, Map<String, Object> params, S data) {
 
         Map<String,String> requestHeaders = getRequestHeaders(params);
 
-        if(params.get("executeAsync") != null && Boolean.parseBoolean(params.get("executeAsync"))){
+        if(params.get("executeAsync") != null && Boolean.parseBoolean((String) params.get("executeAsync"))){
             return processAsyncHttpRequest(taskContext,command,params,(byte[]) data);
         }
         TaskResult result;
         try {
-            result  = handleHttpResponse(makeRequest(params.get("method"),params.get("uri"), (byte[]) data, requestHeaders));
+            result  = handleHttpResponse(makeRequest((String) params.get(HTTP_METHOD), (String) params.get(HTTP_URI), (byte[]) data, requestHeaders));
         }
         catch (Exception e) {
-            result =  handleException(e, params.get("uri"), params.get("method"));
+            result =  handleException(e, (String) params.get(HTTP_URI), (String) params.get(HTTP_METHOD));
         }
         return result;
     }
@@ -176,20 +182,20 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
             return null;
         }
 
-        boolean hasURI = requestParams.containsKey("uri");
-        boolean isGet = "GET".equalsIgnoreCase(requestParams.get("method"));
-        boolean askedTobeCached = "true".equalsIgnoreCase(requestParams.get("X-Cache-Request"));
+        boolean hasURI = requestParams.containsKey(HTTP_URI);
+        boolean isGet = "GET".equalsIgnoreCase(requestParams.get(HTTP_METHOD));
+        boolean askedTobeCached = "true".equalsIgnoreCase(requestParams.get(X_CACHE_REQUEST));
         if (!hasURI || (!isGet && !askedTobeCached)) {
             return null;
         }
 
-        String cacheKey = requestParams.get("uri") + (data != null ? new String((byte[]) data) : "");
+        String cacheKey = requestParams.get(HTTP_URI) + (data != null ? new String((byte[]) data) : "");
         return murmur3_32().hashString(cacheKey, Charsets.UTF_16LE).toString();
     }
 
     /** interface method implementation */
     @Override
-    public <T, S> TaskResult<T> getFallBack(TaskContext taskContext, String command, Map<String, String> params, S data) {
+    public <T, S> TaskResult<T> getFallBack(TaskContext taskContext, String command, Map<String, Object> params, S data) {
         return null;
     }
 
@@ -203,19 +209,21 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
      *
      * @param params
      */
-    protected Map<String,String> getRequestHeaders(Map<String,String> params) {
-        Map<String,String> requestHeaders = new HashMap<String, String>();
+    protected Map<String,String> getRequestHeaders(Map<String,Object> params) {
+        Map<String,String> requestHeaders = new HashMap<>();
 
         if (params != null ) {
             if(params.containsKey("requestID")) {
-                requestHeaders.put("X-Request-ID",params.get("requestID"));
+                requestHeaders.put("X-Request-ID", (String) params.get("requestID"));
             }
-            if(params.containsKey("headers")) {
-                try{
-                    Map<String,String> customHeaders = objectMapper.readValue(params.get("headers"), Map.class);
-                    requestHeaders.putAll(customHeaders);
-                } catch (Exception e) {
-                    logger.info("Error while parsing custom header" + e.getMessage());
+            if(params.containsKey(HTTP_HEADERS)) {
+                Map<String, Object> customHeaders = (Map<String, Object>) params.get(HTTP_HEADERS);
+                if (customHeaders != null) {
+                    for (Map.Entry<String, Object> entry: customHeaders.entrySet()) {
+                        if (entry.getKey() != null && entry.getValue() != null) {
+                            requestHeaders.put(entry.getKey(), entry.getValue().toString());
+                        }
+                    }
                 }
             }
         }
@@ -246,7 +254,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
      * @param data
      * @return
      */
-    protected  TaskResult processAsyncHttpRequest(TaskContext taskContext,String command, Map<String,String> params, byte[] data){
+    protected  TaskResult processAsyncHttpRequest(TaskContext taskContext,String command, Map<String,Object> params, byte[] data){
         HttpResponse response = null;
         try{
             if(!enableAsyncExecution){
@@ -259,7 +267,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
                 return handleHttpResponse(getHttpResponseData(response));
             }
         } catch (Exception e){
-            handleException(e,params.get("uri"),params.get("method"));
+            handleException(e, (String) params.get(HTTP_URI), (String) params.get(HTTP_METHOD));
         }
         return new TaskResult(false,null,null);
     }

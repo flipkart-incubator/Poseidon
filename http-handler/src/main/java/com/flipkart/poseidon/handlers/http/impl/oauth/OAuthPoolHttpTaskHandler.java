@@ -54,7 +54,7 @@ public class OAuthPoolHttpTaskHandler extends SinglePoolHttpTaskHandler {
      * @param params
      */
     @Override
-    protected Map<String, String> getRequestHeaders(Map<String, String> params) {
+    protected Map<String, String> getRequestHeaders(Map<String, Object> params) {
         Map<String, String> requestHeaders = super.getRequestHeaders(params);
         requestHeaders.put("Authorization", "Bearer " + oAuthTokenGenerator.getAccessToken());
         return requestHeaders;
