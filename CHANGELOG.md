@@ -1,3 +1,6 @@
+## 4.6.0-SNAPSHOT (Sep 30, 2016)
+- Upgrade to Hystrix 1.5.0 from 1.4.0-RC5
+
 ## 4.5.1 (Sep 12, 2016)
 - Included snapshot version fixes
 
