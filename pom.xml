@@ -68,6 +68,7 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <spring.version>4.2.0.RELEASE</spring.version>
         <hystrix.version>1.5.0</hystrix.version>
+        <hystrix.metrics.plugin.version>1.4.0-RC5</hystrix.metrics.plugin.version>
         <jackson.version>2.5.2</jackson.version>
         <jetty.version>9.2.10.v20150310</jetty.version>
         <phantom.version>3.0.0-SNAPSHOT</phantom.version>
@@ -233,14 +234,23 @@
                 <artifactId>hystrix-metrics-event-stream</artifactId>
                 <version>${hystrix.version}</version>
             </dependency>
+            <!--
+           Codehale metrics plugin 1.5.0 is using PoolName as prefix for metrics.
+           Ex: Instead of existing HystrixCommand.<cmdName>, it becomes <poolName>.<cmdName>
+           This is a backward incompatible change, hence we are not using 1.5.0
+           -->
             <dependency>
                 <groupId>com.netflix.hystrix</groupId>
                 <artifactId>hystrix-codahale-metrics-publisher</artifactId>
-                <version>${hystrix.version}</version>
+                <version>${hystrix.metrics.plugin.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.codahale.metrics</groupId>
                         <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.netflix.hystrix</groupId>
+                        <artifactId>hystrix-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

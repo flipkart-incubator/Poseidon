@@ -2,6 +2,9 @@
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
 
+## 4.6.0 (Sep 30, 2016)
+- Included snapshot version fixes
+
 ## 4.6.0-SNAPSHOT (Sep 30, 2016)
 - Upgrade to Hystrix 1.5.0 from 1.4.0-RC5
 
