@@ -106,9 +106,15 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-servlets</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-jetty9</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-metrics-event-stream</artifactId>
         </dependency>
 
         <dependency>
