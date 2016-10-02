@@ -133,6 +133,10 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         byte[] data = (byte[]) taskRequestWrapper.getData();
 
         Map<String,String> requestHeaders = getRequestHeaders(params);
+        // Ingest phantom provided headers like zipkin etc
+        if (taskRequestWrapper.getHeaders().isPresent()) {
+            taskRequestWrapper.getHeaders().get().stream().forEach(entry -> requestHeaders.put(entry.getKey(), entry.getValue()));
+        }
 
         try {
             HttpRequestBase request = this.pool.createHttpRequest((String) params.get(HTTP_URI), data, requestHeaders, (String) params.get(HTTP_METHOD));
