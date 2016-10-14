@@ -1,7 +1,8 @@
-## 5.0.0-SNAPSHOT (Oct 2, 2016)
+## 5.0.0-SNAPSHOT (Oct 14, 2016)
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
 - Zipkin headers ingestion to HTTP upstreams
+- Upgrade to Phantom 3.0.0
 
 ## 4.6.0 (Sep 30, 2016)
 - Included snapshot version fixes
