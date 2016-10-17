@@ -21,10 +21,12 @@ import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
 import flipkart.lego.concurrency.api.Promise;
 import flipkart.lego.concurrency.api.PromiseListener;
 import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 /**
@@ -127,6 +129,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 return serviceResponse.getDataList().get(0);
             }
         } catch (ExecutionException exception) {
+            checkAndThrowServiceClientException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -155,6 +158,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 return serviceResponse.getDataList().get(0);
             }
         } catch (ExecutionException exception) {
+            checkAndThrowServiceClientException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -174,6 +178,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             ServiceResponse<DomainObject> response = (ServiceResponse<DomainObject>) taskResult.getData();
             return response.getHeaders();
         } catch (ExecutionException exception) {
+            checkAndThrowServiceClientException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -187,7 +192,6 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         throw new UnsupportedOperationException("Adding listeners is not supported");
     }
 
-
     public void addFutureForTask(Future<TaskResult> future) {
         futureList.add(future);
     }
@@ -198,5 +202,19 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
 
     public List<Future<TaskResult>> getFutureList() {
         return futureList;
+    }
+
+    /**
+     * If root cause of ExecutionException is ServiceClientException, just throw it.
+     * Ex: ServiceResponseDecoder throwing ServiceClientException for 5xx responses.
+     *
+     * @param exception
+     * @throws PromiseBrokenException
+     */
+    private void checkAndThrowServiceClientException(ExecutionException exception) throws ServiceClientException {
+        Throwable generatedException = Optional.ofNullable(ExceptionUtils.getRootCause(exception)).orElse(exception);
+        if (generatedException instanceof ServiceClientException) {
+            throw (ServiceClientException) generatedException;
+        }
     }
 }

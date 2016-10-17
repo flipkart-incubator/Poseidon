@@ -122,8 +122,9 @@ public class HystrixContextFilter implements Filter {
         HystrixRequestLog.getCurrentRequest().getAllExecutedCommands().stream().filter(
                 command -> command.isResponseTimedOut() || command.isFailedExecution() || command.isResponseShortCircuited() || command.isResponseRejected()
         ).forEach(
-                command -> logger.error("URL: {}. Global headers: {}. Command: {}. Events: {}. Exception: ",
-                        url, globalHeaders, command.getCommandKey().name(), command.getExecutionEvents(), command.getFailedExecutionException())
+                command -> logger.error("URL: {}. Global headers: {}. Command: {}. Events: {}. Exception: {}",
+                        url, globalHeaders, command.getCommandKey().name(), command.getExecutionEvents(),
+                        command.getFailedExecutionException() == null ? "" : command.getFailedExecutionException().getMessage())
         );
     }
 }
