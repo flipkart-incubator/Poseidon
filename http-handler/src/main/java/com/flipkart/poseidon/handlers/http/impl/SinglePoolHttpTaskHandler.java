@@ -200,7 +200,25 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     /** interface method implementation */
     @Override
     public <T, S> TaskResult<T> getFallBack(TaskContext taskContext, String command, Map<String, Object> params, S data) {
-        return null;
+        throw new UnsupportedOperationException("No fallback available.");
+    }
+
+    /**
+     * No fallback for execution failures. Throw an exception here so that hystrix propagates it up to the caller.
+     * If we just return null, hystrix will mark fallback success and return null result to caller but we want failure in execute() to bubble up.
+     *
+     * @param taskContext
+     * @param command
+     * @param taskRequestWrapper
+     * @param decoder
+     * @param <T>
+     * @param <S>
+     * @return
+     * @throws RuntimeException
+     */
+    @Override
+    public <T, S> TaskResult<T> getFallBack(TaskContext taskContext, String command, TaskRequestWrapper<S> taskRequestWrapper, Decoder<T> decoder) throws RuntimeException {
+        throw new UnsupportedOperationException("No fallback available.");
     }
 
     /** interface method implementation */

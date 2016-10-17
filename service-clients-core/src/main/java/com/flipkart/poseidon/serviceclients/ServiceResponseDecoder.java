@@ -93,28 +93,32 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 }
             }
         } else {
-            try {
-                String serviceResponse = StringUtils.convertStreamToString(httpResponse.getEntity().getContent());
-                Object errorResponse = null;
+            String serviceResponse = StringUtils.convertStreamToString(httpResponse.getEntity().getContent());
+            Object errorResponse = null;
+            if (errorType != null) {
                 try {
-                    if (errorType != null) {
-                        errorResponse = objectMapper.readValue(serviceResponse, errorType);
-                    }
+                    errorResponse = objectMapper.readValue(serviceResponse, errorType);
                 } catch (Exception e) {
                     logger.warn("Error while de-serializing non 200 response to given errorType statusCode:{} exception: {}", statusCodeString, e.getMessage());
                 }
-                logger.warn("Non 200 response statusCode:{} response: {}", statusCodeString, serviceResponse);
-                Class<? extends ServiceClientException> exceptionClass;
-                if (exceptions.containsKey(statusCodeString))
-                    exceptionClass = exceptions.get(statusCodeString);
-                else
-                    exceptionClass = exceptions.get("default");
+            }
+            Class<? extends ServiceClientException> exceptionClass;
+            if (exceptions.containsKey(statusCodeString)) {
+                exceptionClass = exceptions.get(statusCodeString);
+            } else {
+                exceptionClass = exceptions.get("default");
+            }
 
-                return new ServiceResponse<T>(exceptionClass.getConstructor(String.class, Object.class).newInstance(serviceResponse, errorResponse), headers);
-
-            } catch (Exception e) {
-                logger.error("Error de-serializing non 200 response statusCode:{} exception: {} ", statusCodeString, e.getMessage());
-                throw new IOException("Non 200 response de-serialization error", e);
+            String exceptionMessage = statusCodeString + " " + serviceResponse;
+            ServiceClientException serviceClientException = exceptionClass.getConstructor(String.class, Object.class).newInstance(exceptionMessage, errorResponse);
+            if (statusCode >= 500 && statusCode <= 599) {
+                // 5xx errors have to be treated as hystrix command failures. Hence throw service client exception.
+                logger.error("Non 200 response statusCode: {} response: {}", statusCodeString, serviceResponse);
+                throw serviceClientException;
+            } else {
+                // Rest of non 2xx don't have to be treated as hystrix command failures (ex: validation failure resulting in 400)
+                logger.debug("Non 200 response statusCode: {} response: {}", statusCodeString, serviceResponse);
+                return new ServiceResponse<T>(serviceClientException, headers);
             }
         }
     }
