@@ -2,7 +2,7 @@
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
 - Zipkin headers ingestion to HTTP upstreams
-- Upgrade to Phantom 3.0.0
+- Upgrade to Phantom 3.0.1
 - 5xx from HTTP upstreams will be treated as Hystrix command failures
 
 ## 4.6.0 (Sep 30, 2016)
