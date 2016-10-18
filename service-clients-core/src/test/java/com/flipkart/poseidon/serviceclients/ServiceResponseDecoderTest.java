@@ -24,14 +24,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -152,7 +148,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertThat(response.getException().getErrorResponse(), instanceOf(mockErrorType.getRawClass()));
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -182,7 +178,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -212,8 +208,8 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
-        Mockito.verify(mockLogger, Mockito.times(2)).warn(anyString(), anyString(), any(Object.class));
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger, Mockito.times(2)).debug(anyString(), anyString(), any(Object.class));
     }
 
     /**
@@ -237,7 +233,7 @@ public class ServiceResponseDecoderTest {
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}","500", "error");
+        Mockito.verify(mockLogger).warn("5XX response statusCode:{} response: {}","500", "error");
 
     }
 
@@ -261,9 +257,9 @@ public class ServiceResponseDecoderTest {
         exceptions.put("default", ServiceClientException.class);
 
         exception.expect(IOException.class);
-        exception.expectMessage(equalTo("Non 200 response de-serialization error"));
+        exception.expectMessage(equalTo("5XX response de-serialization error"));
         ServiceResponse response = decoder.decode(mockHttpResponse);
-        Mockito.verify(mockLogger).error("Error de-serializing non 200 response");
+        Mockito.verify(mockLogger).error("Error de-serializing 5XX response");
 
     }
 
