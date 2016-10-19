@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -44,9 +43,7 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.*;
@@ -152,7 +149,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertThat(response.getException().getErrorResponse(), instanceOf(mockErrorType.getRawClass()));
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -182,7 +179,7 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
     }
 
     /**
@@ -212,8 +209,8 @@ public class ServiceResponseDecoderTest {
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
         assertEquals(response.getException().getErrorResponse(), null);
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}", "404", errorString);
-        Mockito.verify(mockLogger, Mockito.times(2)).warn(anyString(), anyString(), any(Object.class));
+        Mockito.verify(mockLogger).debug("Non 200 response statusCode:{} response: {}", "404", errorString);
+        Mockito.verify(mockLogger).warn(anyString(), anyString(), any(Object.class));
     }
 
     /**
@@ -237,33 +234,7 @@ public class ServiceResponseDecoderTest {
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
-        Mockito.verify(mockLogger).warn("Non 200 response statusCode:{} response: {}","500", "error");
-
-    }
-
-    /**
-     *  Service returned un known status line(not in expected statusLines) and decode fails
-     * @throws Exception
-     */
-    @Test
-    public void testDecodeHttpResponseDefaultResponseDecodeFail() throws Exception {
-        HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        HttpEntity mockEntity = mock(HttpEntity.class);
-        InputStream stream = mock(InputStream.class);
-
-        when(mockStatusLine.getStatusCode()).thenReturn(500);
-        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
-        when(mockEntity.getContent()).thenReturn(stream);
-        mockStatic(StringUtils.class);
-        when(StringUtils.convertStreamToString(stream)).thenThrow(IOException.class);
-        exceptions.put("default", ServiceClientException.class);
-
-        exception.expect(IOException.class);
-        exception.expectMessage(equalTo("Non 200 response de-serialization error"));
-        ServiceResponse response = decoder.decode(mockHttpResponse);
-        Mockito.verify(mockLogger).error("Error de-serializing non 200 response");
+        Mockito.verify(mockLogger).error("Non 200 response statusCode:{} response: {}","500", "error");
 
     }
 
