@@ -1,3 +1,6 @@
+## 4.6.1-SNAPSHOT (Oct 19, 2016)
+- 5xx from HTTP upstreams will be logged as errors and 4xx, 3xx as debug logs 
+
 ## 4.6.0 (Sep 30, 2016)
 - Included snapshot version fixes
 
