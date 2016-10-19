@@ -112,14 +112,12 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
             String exceptionMessage = statusCodeString + " " + serviceResponse;
             ServiceClientException serviceClientException = exceptionClass.getConstructor(String.class, Object.class).newInstance(exceptionMessage, errorResponse);
             if (statusCode >= 500 && statusCode <= 599) {
-                // 5xx errors have to be treated as hystrix command failures. Hence throw service client exception.
                 logger.error("Non 200 response statusCode:{} response: {}", statusCodeString, serviceResponse);
-                throw serviceClientException;
             } else {
-                // Rest of non 2xx don't have to be treated as hystrix command failures (ex: validation failure resulting in 400)
                 logger.debug("Non 200 response statusCode:{} response: {}", statusCodeString, serviceResponse);
-                return new ServiceResponse<T>(serviceClientException, headers);
             }
+            return new ServiceResponse<T>(serviceClientException, headers);
+
         }
     }
 

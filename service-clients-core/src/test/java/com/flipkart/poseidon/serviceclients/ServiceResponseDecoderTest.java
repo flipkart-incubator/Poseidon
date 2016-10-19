@@ -232,12 +232,8 @@ public class ServiceResponseDecoderTest {
         when(StringUtils.convertStreamToString(stream)).thenReturn("error");
         exceptions.put("default", ServiceClientException.class);
 
-        try {
-            ServiceResponse response = decoder.decode(mockHttpResponse);
-            fail("Decoder should throw exception for 5xx status, but didn't!");
-        } catch(Exception e) {
-            assertThat(e, instanceOf(ServiceClientException.class));
-        }
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertThat(response.getException(), instanceOf(ServiceClientException.class));
         Mockito.verify(mockLogger).error("Non 200 response statusCode:{} response: {}","500", "error");
 
     }
