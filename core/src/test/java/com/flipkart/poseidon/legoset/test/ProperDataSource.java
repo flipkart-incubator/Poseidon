@@ -16,10 +16,10 @@
 
 package com.flipkart.poseidon.legoset.test;
 
-import com.flipkart.poseidon.model.annotations.Name;
-import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.legoset.PoseidonLegoSetTest;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
@@ -37,10 +37,5 @@ public class ProperDataSource extends AbstractDataSource {
     @Override
     public DataType call() throws Exception {
         return null;
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return "OldIdForProperDataSource";
     }
 }

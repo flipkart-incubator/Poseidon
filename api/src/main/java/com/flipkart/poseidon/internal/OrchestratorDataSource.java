@@ -67,14 +67,4 @@ public class OrchestratorDataSource extends AbstractDataSource {
         }
         throw new Exception("Unsupported response type");
     }
-
-    @Override
-    public String getShortDescription() {
-        return "Internal DataSource that acts as an Orchestrator for Hydra based dispatcher-composer tasks.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
 }

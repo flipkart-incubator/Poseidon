@@ -16,9 +16,6 @@
 
 package com.flipkart.poseidon.mappers;
 
-import flipkart.lego.api.helpers.Describable;
-import flipkart.lego.api.helpers.Identifiable;
-
 import java.util.Map;
 
 /**
@@ -28,6 +25,6 @@ import java.util.Map;
  * Mapped beans are accessible through {@link com.flipkart.poseidon.core.PoseidonResponse}
  * <code>getMappedBeans()</code> in {@link flipkart.lego.api.entities.Filter} <code>filterResponse()</code>
  */
-public interface Mapper extends Identifiable, Describable {
+public interface Mapper {
     Object map(Map<String, Object> map);
 }

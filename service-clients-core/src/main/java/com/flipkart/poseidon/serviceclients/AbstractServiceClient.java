@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
-import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
 import org.slf4j.Logger;
@@ -37,11 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.*;
 import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_HEADERS;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_METHOD;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_URI;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.X_CACHE_REQUEST;
 
 /**
  * Created by mohan.pandian on 24/02/15.
@@ -241,11 +237,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
     @Override
     public void shutDown() throws LegoServiceException {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-       return getName() + "_" + Joiner.on(".").join(getVersion());
     }
 
     protected ObjectMapper getObjectMapper() {

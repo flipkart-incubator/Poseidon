@@ -24,7 +24,11 @@
         </dependency>
         <dependency>
             <groupId>com.flipkart.lego</groupId>
-            <artifactId>lego</artifactId>
+            <artifactId>model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.flipkart.lego</groupId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

@@ -17,18 +17,13 @@
 package com.flipkart.poseidon.datasources;
 
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-
-import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 public abstract class AbstractDataSource<T extends DataType> implements DataSource {
 
@@ -51,41 +46,12 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     }
 
     protected Future<DataType> execute(String dsId, Request request) throws Exception {
-        if (getId().equals(dsId)) {
-            throw new IllegalArgumentException("Recursive calling of datasource is not allowed");
-        }
-
         DataSource dataSource = this.legoset.getDataSource(dsId, request);
         return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
     @Override
     public abstract T call() throws Exception;
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return canonicalName(getClass().getSimpleName(), "DataSource", "DS");
-    }
-
-    @Override
-    public List<Integer> getVersion() throws UnsupportedOperationException {
-        return Lists.newArrayList(1, 0, 0);
-    }
-
-    @Override
-    public String getShortDescription() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    public String getDescription() {
-        return this.getClass().getName();
-    }
 
     protected Request getRequest() {
         return request;

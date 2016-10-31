@@ -99,12 +99,13 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             EndpointPOJO pojo = ((APIBuildable) buildable).getPojo();
             RequestContext.set(URI, pojo.getUrl());
             RequestContext.set(ENDPOINT_NAME, pojo.getName());
+
+            String name = pojo.getName();
+            if (name != null && !name.isEmpty()) {
+                poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer("poseidon.api." + name + "." + httpMethod).time());
+            }
         }
 
-        String name = buildable.getName();
-        if (name != null && !name.isEmpty()) {
-            poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer("poseidon.api." + name + "." + httpMethod).time());
-        }
         return buildable;
     }
 

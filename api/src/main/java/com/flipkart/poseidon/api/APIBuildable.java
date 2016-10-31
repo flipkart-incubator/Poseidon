@@ -24,7 +24,6 @@ import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
-import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
@@ -122,20 +121,5 @@ public class APIBuildable implements Buildable {
 
     public EndpointPOJO getPojo() {
         return pojo;
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return pojo.getName();
-    }
-
-    @Override
-    public List<Integer> getVersion() {
-        return Arrays.asList(1, 0);
     }
 }

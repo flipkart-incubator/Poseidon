@@ -23,8 +23,6 @@ import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
 
-import java.util.List;
-
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
  * into DataSource threads from Jetty threads
@@ -63,21 +61,6 @@ public class ContextInducedFilter extends ContextInducedBlock implements Filter 
     }
 
     @Override
-    public String getId() throws UnsupportedOperationException {
-        return filter.getId();
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return filter.getName();
-    }
-
-    @Override
-    public List<Integer> getVersion() throws UnsupportedOperationException {
-        return filter.getVersion();
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o != null && o instanceof ContextInducedFilter && o.hashCode() == hashCode();
     }
@@ -85,15 +68,5 @@ public class ContextInducedFilter extends ContextInducedBlock implements Filter 
     @Override
     public int hashCode() {
         return filter.hashCode();
-    }
-
-    @Override
-    public String getShortDescription() {
-        return filter.getShortDescription();
-    }
-
-    @Override
-    public String getDescription() {
-        return filter.getDescription();
     }
 }

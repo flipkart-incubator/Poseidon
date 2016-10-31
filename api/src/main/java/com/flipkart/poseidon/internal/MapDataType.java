@@ -30,13 +30,4 @@ public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
         super(map);
     }
 
-    @Override
-    public String getShortDescription() {
-        return "A HashMap based DataType, used just to honor the datasource contract.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
 }

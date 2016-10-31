@@ -284,29 +284,4 @@ public class ParamValidationFilter implements Filter {
     private List<String> getStringValues(String[] values) {
         return Arrays.asList(values);
     }
-
-    @Override
-    public String getShortDescription() {
-        return "Internal parameter filter to validate and extract the mentioned parameters from the request.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return canonicalName(getClass().getSimpleName(), "Filter", "Filter");
-    }
-
-    @Override
-    public List<Integer> getVersion() throws UnsupportedOperationException {
-        return Arrays.asList(1, 0, 0);
-    }
 }

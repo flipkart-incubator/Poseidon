@@ -23,8 +23,8 @@ import com.flipkart.poseidon.core.RequestContext;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ClientTracer;
 import com.github.kristofa.brave.TraceFilter;
+import flipkart.lego.api.entities.Block;
 import flipkart.lego.api.entities.Request;
-import flipkart.lego.api.helpers.Identifiable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +59,7 @@ public class TraceHelper {
         return SPAN_COLLECTOR;
     }
 
-    public static void startTrace(Identifiable block) {
+    public static void startTrace(Block block) {
         startTrace(block, null);
     }
 
@@ -68,7 +68,7 @@ public class TraceHelper {
         return (enableTracing != null && enableTracing);
     }
 
-    public static void startTrace(Identifiable block, Request request) {
+    public static void startTrace(Block block, Request request) {
         if (!isTracingEnabledRequest() || !trace(block)) {
             return;
         }
@@ -83,7 +83,7 @@ public class TraceHelper {
         clientTracer.setClientSent();
     }
 
-    public static void endTrace(Identifiable block, boolean success) {
+    public static void endTrace(Block block, boolean success) {
         if (!isTracingEnabledRequest() || !trace(block)) {
             return;
         }

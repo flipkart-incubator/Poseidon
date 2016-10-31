@@ -30,13 +30,4 @@ public class ListDataType<T> extends ArrayList<T> implements DataType {
         super(collection);
     }
 
-    @Override
-    public String getShortDescription() {
-        return "A ArrayList based DataType, used just to honor the datasource contract.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
 }
