@@ -15,11 +15,5 @@
 
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.flipkart.lego</groupId>
-            <artifactId>model</artifactId>
-        </dependency>
-    </dependencies>
+    
 </project>
