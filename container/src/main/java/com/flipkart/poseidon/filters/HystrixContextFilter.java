@@ -19,6 +19,8 @@ package com.flipkart.poseidon.filters;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +31,7 @@ import org.slf4j.MDC;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,9 +58,18 @@ public class HystrixContextFilter implements Filter {
         try {
             chain.doFilter(request, response);
         } finally {
+            ingestResponseBasedMetrics(response);
             // Log all the failed Hystrix commands before shutting down context
             logFailedHystrixCommands(request);
             shutdownAllContext(hystrixRequestContext);
+        }
+    }
+
+    private void ingestResponseBasedMetrics(ServletResponse response) {
+        // Ingest API response status codes for HttpServletResponse
+        if (response instanceof HttpServletResponse && !StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
+            String status = (((HttpServletResponse) response).getStatus() / 100) + "XX";
+            Metrics.getRegistry().counter("poseidon.api." + RequestContext.get(ENDPOINT_NAME) + "." + status).inc();
         }
     }
 

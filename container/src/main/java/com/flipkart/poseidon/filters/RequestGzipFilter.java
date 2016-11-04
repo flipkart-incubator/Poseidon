@@ -81,6 +81,21 @@ public class RequestGzipFilter implements Filter {
             final ByteArrayInputStream sourceStream = new ByteArrayInputStream(bytes);
             return new ServletInputStream() {
 
+                @Override
+                public boolean isFinished() {
+                    return false;
+                }
+
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setReadListener(ReadListener readListener) {
+
+                }
+
                 public int read() throws IOException {
                     return sourceStream.read();
                 }
