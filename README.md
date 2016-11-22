@@ -36,6 +36,10 @@ A sample application will be available soon.
 
 [Flipkart](http://www.flipkart.com)
 
+## Continuous Integration
+
+ Uses https://travis-ci.org/ to run tests for pushes and pull requests
+
 ## Getting help
 For discussion, help regarding usage, or receiving important announcements, subscribe to the [Poseidon users mailing list](https://groups.google.com/a/flipkart.com/forum/#!forum/poseidon-users)
 
