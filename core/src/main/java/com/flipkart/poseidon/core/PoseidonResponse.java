@@ -23,12 +23,14 @@ import javax.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PoseidonResponse implements Response {
 
     private final ConcurrentHashMap<String, String> attributes = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> headers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<String>> multiValueHeaders = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Cookie> cookies = new ConcurrentHashMap<>();
     private final List<Object> mappedBeans = new ArrayList<>();
     private Object response;
@@ -62,7 +64,7 @@ public class PoseidonResponse implements Response {
     }
 
     public void addAttribute(String key, String value) {
-        attributes.putIfAbsent(key, value);
+        attributes.put(key, value);
     }
 
     public void removeAttribute(String key) {
@@ -78,7 +80,7 @@ public class PoseidonResponse implements Response {
     }
 
     public void addHeader(String key, String value) {
-        headers.putIfAbsent(key, value);
+        headers.put(key, value);
     }
 
     public void removeHeader(String key) {
@@ -93,8 +95,41 @@ public class PoseidonResponse implements Response {
         return headers;
     }
 
+    public void addMultiValueHeader(String key, String value) {
+        if (value == null) {
+            return;
+        }
+
+        List<String> values = Optional.ofNullable(multiValueHeaders.get(key)).orElseGet(ArrayList::new);
+        values.add(value);
+        multiValueHeaders.put(key, values);
+    }
+
+    public void removeMultiValueHeader(String key) {
+        multiValueHeaders.remove(key);
+    }
+
+    public void removeMultiValueHeaderValue(String key, String value) {
+        Optional<List<String>> optionalValues = Optional.ofNullable(multiValueHeaders.get(key));
+        if (!optionalValues.isPresent()) {
+            return;
+        }
+
+        optionalValues.get().remove(value);
+
+        multiValueHeaders.put(key, optionalValues.get());
+    }
+
+    public List<String> getMultiValueHeaderValues(String key) {
+        return multiValueHeaders.get(key);
+    }
+
+    public ConcurrentHashMap<String, List<String>> getMultiValueHeaders() {
+        return multiValueHeaders;
+    }
+
     public void addCookie(String key, Cookie value) {
-        cookies.putIfAbsent(key, value);
+        cookies.put(key, value);
     }
 
     public void removeCookie(String key) {
