@@ -116,8 +116,6 @@ public class PoseidonResponse implements Response {
         }
 
         optionalValues.get().remove(value);
-
-        multiValueHeaders.put(key, optionalValues.get());
     }
 
     public List<String> getMultiValueHeaderValues(String key) {
