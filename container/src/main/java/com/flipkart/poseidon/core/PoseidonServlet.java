@@ -109,7 +109,7 @@ public class PoseidonServlet extends HttpServlet {
                 while ((line = reader.readLine()) != null)
                     requestBuffer.append(line);
             } catch (Exception e) {
-                logger.warn("301: Couldn't read body" + e.getMessage());
+                logger.debug("301: Couldn't read body" + e.getMessage());
             }
             request.setAttribute(BODY, requestBuffer.toString());
         }
