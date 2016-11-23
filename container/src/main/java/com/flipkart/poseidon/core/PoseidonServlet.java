@@ -195,6 +195,11 @@ public class PoseidonServlet extends HttpServlet {
         for (String key : headers.keySet()) {
             httpResponse.setHeader(key, headers.get(key));
         }
+
+        Map<String, List<String>> multiValueHeaders = response.getMultiValueHeaders();
+        for (String key : multiValueHeaders.keySet()) {
+            Optional.ofNullable(multiValueHeaders.get(key)).ifPresent(values -> values.forEach(value -> httpResponse.addHeader(key, value)));
+        }
     }
 
     private void setCookies(PoseidonResponse response, HttpServletResponse httpResponse) {
