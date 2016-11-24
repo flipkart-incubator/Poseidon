@@ -109,7 +109,7 @@ public class PoseidonServlet extends HttpServlet {
                 while ((line = reader.readLine()) != null)
                     requestBuffer.append(line);
             } catch (Exception e) {
-                logger.warn("301: Couldn't read body" + e.getMessage());
+                logger.debug("301: Couldn't read body" + e.getMessage());
             }
             request.setAttribute(BODY, requestBuffer.toString());
         }
@@ -194,6 +194,11 @@ public class PoseidonServlet extends HttpServlet {
         Map<String, String> headers = response.getHeaders();
         for (String key : headers.keySet()) {
             httpResponse.setHeader(key, headers.get(key));
+        }
+
+        Map<String, List<String>> multiValueHeaders = response.getMultiValueHeaders();
+        for (String key : multiValueHeaders.keySet()) {
+            Optional.ofNullable(multiValueHeaders.get(key)).ifPresent(values -> values.forEach(value -> httpResponse.addHeader(key, value)));
         }
     }
 
