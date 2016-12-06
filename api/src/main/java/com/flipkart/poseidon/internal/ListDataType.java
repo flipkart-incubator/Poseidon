@@ -16,15 +16,15 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.DataType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 public class ListDataType<T> extends ArrayList<T> implements DataType {
+
+    public ListDataType() {
+    }
 
     public ListDataType(Collection<? extends T> collection) {
         super(collection);
