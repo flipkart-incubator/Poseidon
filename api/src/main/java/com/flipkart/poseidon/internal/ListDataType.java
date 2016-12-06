@@ -16,14 +16,17 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.google.common.base.Joiner;
+import com.flipkart.poseidon.model.annotations.Description;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
+@Name("ListDataType")
+@Version(major = 1, minor = 0, patch = 0)
+@Description("DataType wrapper for Lists")
 public class ListDataType<T> extends ArrayList<T> implements DataType {
 
     public ListDataType(Collection<? extends T> collection) {
