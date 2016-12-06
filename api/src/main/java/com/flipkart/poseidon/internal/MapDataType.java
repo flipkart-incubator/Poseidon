@@ -16,15 +16,15 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.google.common.base.Joiner;
 import flipkart.lego.api.entities.DataType;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
+
+    public MapDataType() {
+    }
 
     public MapDataType(Map<? extends K, ? extends V> map) {
         super(map);
