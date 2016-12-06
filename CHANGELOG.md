@@ -1,14 +1,16 @@
-## 5.0.0-SNAPSHOT (Nov 4, 2016)
+## 5.0.0-SNAPSHOT (Nov 22, 2016)
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
 - Zipkin headers ingestion to HTTP upstreams
-- Upgrade to Phantom 3.0.1
 - 5xx from HTTP upstreams will be treated as Hystrix command failures
 - Upgrade to servlet-api 3.1.0
 - API - endPoint JMX metrics (status code)
+- Upgrade to Phantom 3.2.0-SNAPSHOT for customizable core and max pool size in task handlers
+- Upgrade to Hystrix 1.5.8
 
-## 4.6.1-SNAPSHOT (Oct 19, 2016)
+## 4.6.1-SNAPSHOT (Nov 23, 2016)
 - 5xx from HTTP upstreams will be logged as errors and 4xx, 3xx as debug logs 
+- Support for multi-value response headers
 
 ## 4.6.0 (Sep 30, 2016)
 - Included snapshot version fixes
