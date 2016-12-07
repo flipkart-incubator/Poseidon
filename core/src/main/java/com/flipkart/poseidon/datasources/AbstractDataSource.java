@@ -51,7 +51,7 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     }
 
     protected DataType executeSync(AbstractDataSource dataSource) throws Exception {
-        return this.execute(dataSource).get();
+        return dataSource.call();
     }
 
     protected Future<DataType> execute(String dsId, Request request) throws Exception {
