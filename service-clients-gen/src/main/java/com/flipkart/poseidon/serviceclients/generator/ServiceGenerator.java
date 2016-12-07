@@ -18,6 +18,9 @@ package com.flipkart.poseidon.serviceclients.generator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flipkart.poseidon.model.annotations.Description;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
 import com.flipkart.poseidon.serviceclients.ServiceExecutePropertiesBuilder;
@@ -122,21 +125,31 @@ public class ServiceGenerator {
         annotationUse.param("comments", "EDIT THIS IF YOU ARE ****");
     }
 
+    private void addNameAnnotations(JDefinedClass jDefinedClass, String name) {
+        JAnnotationUse nameAnnotation = jDefinedClass.annotate(Name.class);
+        nameAnnotation.param("value", name);
+    }
+
+    private void addDescriptionAnnotations(JDefinedClass jDefinedClass, String shortDescription, String verboseDescription) {
+        JAnnotationUse descriptionAnnotation = jDefinedClass.annotate(Description.class);
+        descriptionAnnotation.param("value", shortDescription);
+        descriptionAnnotation.param("verbose", verboseDescription);
+    }
+
+    private void addVersionAnnotations(JDefinedClass jDefinedClass, int major, int minor, int patch) {
+        JAnnotationUse versionAnnotation = jDefinedClass.annotate(Version.class);
+        versionAnnotation.param("major", major);
+        versionAnnotation.param("minor", minor);
+        versionAnnotation.param("patch", patch);
+    }
+
     private void addExtends(JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
         jDefinedClass._extends(jCodeModel.ref(ServiceClient.class));
     }
 
     private void addInterfaceFields(ServiceIDL serviceIdl, JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
-        int fieldModifier = JMod.PUBLIC | JMod.STATIC | JMod.FINAL;
-        JFieldVar versionField = jDefinedClass.field(fieldModifier, jCodeModel.ref(List.class).narrow(Integer.class), "VERSION");
-        JInvocation invocation = jCodeModel.ref(Arrays.class).staticInvoke("asList");
-        invocation.arg(JExpr.lit(serviceIdl.getVersion().getMajor()));
-        invocation.arg(JExpr.lit(serviceIdl.getVersion().getMinor()));
-        invocation.arg(JExpr.lit(serviceIdl.getVersion().getPatch()));
-        versionField.init(invocation);
-
         if (serviceIdl.getService().getObjectMapperClass() != null) {
-            fieldModifier = JMod.PUBLIC | JMod.FINAL;
+            int fieldModifier = JMod.PUBLIC | JMod.FINAL;
             JClass objectMapper = jCodeModel.ref(serviceIdl.getService().getObjectMapperClass());
             jDefinedClass.field(fieldModifier, objectMapper, "customObjectMapper", JExpr._new(objectMapper));
         }
@@ -450,30 +463,13 @@ public class ServiceGenerator {
         }
         addSimpleMethod(jCodeModel, jDefinedClass, "getCommandName", commandName);
 
-        String serviceName = canonicalName(getInterfaceName(serviceIdl), "ServiceClient", "SC");
-        addSimpleMethod(jCodeModel, jDefinedClass, "getName", serviceName, "UnsupportedOperationException");
-
-        JType methodReturnType = jCodeModel.ref(List.class).narrow(Integer.class);
-        JMethod method = jDefinedClass.method(JMod.PUBLIC, methodReturnType, "getVersion");
-        method.annotate(jCodeModel.ref("Override"));
-        method.javadoc().addReturn().append(methodReturnType);
-        method._throws(jCodeModel.directClass("UnsupportedOperationException"));
-        method.body()._return(JExpr.ref("VERSION"));
-
         if (serviceIdl.getService().getObjectMapperClass() != null) {
-            methodReturnType = jCodeModel.ref(ObjectMapper.class);
-            method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
+            JType methodReturnType = jCodeModel.ref(ObjectMapper.class);
+            JMethod method = jDefinedClass.method(JMod.PROTECTED, methodReturnType, "getObjectMapper");
             method.annotate(jCodeModel.ref("Override"));
             method.javadoc().addReturn().append(methodReturnType);
             method.body()._return(JExpr.ref("customObjectMapper").invoke("getObjectMapper"));
         }
-
-        String[] description = serviceIdl.getService().getDescription();
-        String shortDescription = description.length > 0 ? description[0] : getInterfaceName(serviceIdl);
-        addSimpleMethod(jCodeModel, jDefinedClass, "getShortDescription", shortDescription);
-
-        String fullDescription = description.length > 0 ? String.join(" ", description) : getInterfaceName(serviceIdl);
-        addSimpleMethod(jCodeModel, jDefinedClass, "getDescription", fullDescription);
     }
 
     public void generateInterface(ServiceIDL serviceIdl, JCodeModel jCodeModel, String destinationFolder) throws Exception {
@@ -507,6 +503,21 @@ public class ServiceGenerator {
 
         addImplMethods(serviceIdl, jCodeModel, serviceImpl);
 
+        addMetaAnnotations(serviceIdl, jCodeModel, serviceImpl);
+
         jCodeModel.build(new File(destinationFolder), (PrintStream) null);
+    }
+
+    private void addMetaAnnotations(ServiceIDL serviceIdl, JCodeModel jCodeModel, JDefinedClass serviceImpl) {
+        String serviceName = canonicalName(getInterfaceName(serviceIdl), "ServiceClient", "SC");
+        addNameAnnotations(serviceImpl, serviceName);
+
+        addVersionAnnotations(serviceImpl, serviceIdl.getVersion().getMajor(), serviceIdl.getVersion().getMinor(), serviceIdl.getVersion().getPatch());
+
+        String[] description = serviceIdl.getService().getDescription();
+        String shortDescription = description.length > 0 ? description[0] : getInterfaceName(serviceIdl);
+        String fullDescription = description.length > 0 ? String.join(" ", description) : getInterfaceName(serviceIdl);
+
+        addDescriptionAnnotations(serviceImpl, shortDescription, fullDescription);
     }
 }
