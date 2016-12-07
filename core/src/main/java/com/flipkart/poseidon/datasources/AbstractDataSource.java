@@ -50,6 +50,10 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
+    protected <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
+        return dataSource.call();
+    }
+
     @Override
     public abstract T call() throws Exception;
 

@@ -29,6 +29,10 @@ import java.util.Collection;
 @Description("DataType wrapper for Lists")
 public class ListDataType<T> extends ArrayList<T> implements DataType {
 
+    public ListDataType() {
+        super();
+    }
+
     public ListDataType(Collection<? extends T> collection) {
         super(collection);
     }
