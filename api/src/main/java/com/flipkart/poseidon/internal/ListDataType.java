@@ -24,6 +24,7 @@ import java.util.Collection;
 public class ListDataType<T> extends ArrayList<T> implements DataType {
 
     public ListDataType() {
+        super();
     }
 
     public ListDataType(Collection<? extends T> collection) {
