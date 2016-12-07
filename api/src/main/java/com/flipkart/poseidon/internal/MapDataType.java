@@ -29,6 +29,10 @@ import java.util.Map;
 @Description("DataType wrapper for Maps")
 public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
 
+    public MapDataType() {
+        super();
+    }
+
     public MapDataType(Map<? extends K, ? extends V> map) {
         super(map);
     }
