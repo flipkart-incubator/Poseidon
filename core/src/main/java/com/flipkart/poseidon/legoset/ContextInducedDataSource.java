@@ -20,28 +20,26 @@ import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.Request;
 
-import java.util.List;
-
 /*
  * Induces all request contexts (like contexts used by Hystrix, Brave's DT, our own RequestContext)
  * into DataSource threads from Jetty threads
  */
-public class ContextInducedDataSource extends ContextInducedBlock implements DataSource {
+public class ContextInducedDataSource<T extends DataType> extends ContextInducedBlock implements DataSource<T> {
 
-    private final DataSource dataSource;
+    private final DataSource<T> dataSource;
     private final Request request;
 
-    public ContextInducedDataSource(DataSource dataSource, Request request) {
+    public ContextInducedDataSource(DataSource<T> dataSource, Request request) {
         super(dataSource);
         this.dataSource = dataSource;
         this.request = request;
     }
 
     @Override
-    public DataType call() throws Exception {
+    public T call() throws Exception {
         try {
             initAllContext(request);
-            DataType dataType = dataSource.call();
+            T dataType = dataSource.call();
             success = true;
             return dataType;
         } finally {

@@ -25,7 +25,7 @@ import flipkart.lego.api.entities.Request;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public abstract class AbstractDataSource<T extends DataType> implements DataSource {
+public abstract class AbstractDataSource<T extends DataType> implements DataSource<T> {
 
     protected final PoseidonLegoSet legoset;
     protected final Request request;
@@ -35,23 +35,23 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         this.request = request;
     }
 
-    protected Future<DataType> execute(String dsId, Map<String, Object> requestMap) throws Exception {
+    protected <Q extends DataType> Future<Q> execute(String dsId, Map<String, Object> requestMap) throws Exception {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
         dataSourceRequest.setAttributes(requestMap);
         return execute(dsId, dataSourceRequest);
     }
 
-    protected Future<DataType> execute(AbstractDataSource dataSource) throws Exception {
+    protected <Q extends DataType> Future<Q> execute(AbstractDataSource<Q> dataSource) throws Exception {
         return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
     }
 
-    protected DataType executeSync(AbstractDataSource dataSource) throws Exception {
-        return dataSource.call();
+    protected <Q extends DataType> Future<Q> execute(String dsId, Request request) throws Exception {
+        DataSource<Q> dataSource = this.legoset.getDataSource(dsId, request);
+        return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
-    protected Future<DataType> execute(String dsId, Request request) throws Exception {
-        DataSource dataSource = this.legoset.getDataSource(dsId, request);
-        return this.legoset.getDataSourceExecutor().submit(dataSource);
+    protected <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
+        return dataSource.call();
     }
 
     @Override

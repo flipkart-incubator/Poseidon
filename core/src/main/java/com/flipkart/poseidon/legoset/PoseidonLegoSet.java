@@ -40,7 +40,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public abstract class PoseidonLegoSet implements LegoSet {
 
     private static final Logger logger = getLogger(PoseidonLegoSet.class);
-    private static Map<String, Constructor<DataSource>> dataSources = new HashMap<>();
+    private static Map<String, Constructor<DataSource<? extends DataType>>> dataSources = new HashMap<>();
     private static Map<String, ServiceClient> serviceClients = new HashMap<>();
     private static Map<String, Filter> filters = new HashMap<>();
     private static Map<String, Mapper> mappers = new HashMap<>();
@@ -63,7 +63,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
             Class klass = Class.forName(aClass.getName());
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
-                    Constructor<DataSource> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
+                    Constructor<DataSource<? extends DataType>> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
                     Optional<String> id = getBlockId(klass);
                     if (!id.isPresent()) {
                         throw new MissingInformationException();
@@ -104,21 +104,21 @@ public abstract class PoseidonLegoSet implements LegoSet {
         return Modifier.isAbstract(klass.getModifiers());
     }
 
-    public DataSource getDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
+    public <T extends DataType> DataSource<T> getDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
         if (!dataSources.containsKey(id)) {
             throw new ElementNotFoundException("Unable to find DataSource for provided id = " + id);
         }
 
         try {
-            DataSource dataSource = dataSources.get(id).newInstance(this, request);
-            return wrapDataSource(dataSource, request);
+            DataSource<? extends DataType> dataSource = dataSources.get(id).newInstance(this, request);
+            return wrapDataSource((DataSource<T>) dataSource, request);
         } catch (Exception e) {
             throw new LegoSetException("Unable to instantiate DataSource for provided id = " + id, e);
         }
     }
 
-    public DataSource wrapDataSource(DataSource dataSource, Request request) {
-        return new ContextInducedDataSource(dataSource, request);
+    public <T extends DataType> DataSource<T> wrapDataSource(DataSource<T> dataSource, Request request) {
+        return new ContextInducedDataSource<>(dataSource, request);
     }
 
     public ServiceClient getServiceClient(String id) throws ElementNotFoundException {
