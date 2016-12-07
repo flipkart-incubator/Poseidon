@@ -7,6 +7,9 @@
 - API - endPoint JMX metrics (status code)
 - Upgrade to Phantom 3.2.0-SNAPSHOT for customizable core and max pool size in task handlers
 - Upgrade to Hystrix 1.5.8
+- Upgrade to Lego 3.0.0
+- Using annotations like Name, Version over interfaces like Identifiable, Versioned
+- Removed AbstractDataType
 
 ## 4.6.1-SNAPSHOT (Dec 7, 2016)
 - 5xx from HTTP upstreams will be logged as errors and 4xx, 3xx as debug logs 
