@@ -16,11 +16,17 @@
 
 package com.flipkart.poseidon.internal;
 
+import com.flipkart.poseidon.model.annotations.Description;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Name("ListDataType")
+@Version(major = 1, minor = 0, patch = 0)
+@Description("DataType wrapper for Lists")
 public class ListDataType<T> extends ArrayList<T> implements DataType {
 
     public ListDataType() {
@@ -31,13 +37,4 @@ public class ListDataType<T> extends ArrayList<T> implements DataType {
         super(collection);
     }
 
-    @Override
-    public String getShortDescription() {
-        return "A ArrayList based DataType, used just to honor the datasource contract.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
 }

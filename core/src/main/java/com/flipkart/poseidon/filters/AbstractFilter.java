@@ -17,14 +17,8 @@
 package com.flipkart.poseidon.filters;
 
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import flipkart.lego.api.entities.Filter;
 import flipkart.lego.api.entities.LegoSet;
-
-import java.util.List;
-
-import static com.flipkart.poseidon.helper.CallableNameHelper.canonicalName;
 
 /**
  * AbstractFilter is a {@link Filter} with default implementations for
@@ -35,30 +29,5 @@ public abstract class AbstractFilter implements Filter {
 
     public AbstractFilter(LegoSet legoSet) {
         this.legoSet = (PoseidonLegoSet) legoSet;
-    }
-
-    @Override
-    public String getId() throws UnsupportedOperationException {
-        return getName() + "_" + Joiner.on(".").join(getVersion());
-    }
-
-    @Override
-    public String getName() throws UnsupportedOperationException {
-        return canonicalName(getClass().getSimpleName(), "Filter", "Filter");
-    }
-
-    @Override
-    public List<Integer> getVersion() throws UnsupportedOperationException {
-        return Lists.newArrayList(1, 0, 0);
-    }
-
-    @Override
-    public String getShortDescription() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    public String getDescription() {
-        return this.getClass().getName();
     }
 }

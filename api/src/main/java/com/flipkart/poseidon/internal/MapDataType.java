@@ -16,11 +16,17 @@
 
 package com.flipkart.poseidon.internal;
 
+import com.flipkart.poseidon.model.annotations.Description;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Name("MapDataType")
+@Version(major = 1, minor = 0, patch = 0)
+@Description("DataType wrapper for Maps")
 public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
 
     public MapDataType() {
@@ -31,13 +37,4 @@ public class MapDataType<K, V> extends HashMap<K, V> implements DataType {
         super(map);
     }
 
-    @Override
-    public String getShortDescription() {
-        return "A HashMap based DataType, used just to honor the datasource contract.";
-    }
-
-    @Override
-    public String getDescription() {
-        return getShortDescription();
-    }
 }

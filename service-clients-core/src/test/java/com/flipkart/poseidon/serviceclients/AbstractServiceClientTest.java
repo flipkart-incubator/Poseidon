@@ -50,24 +50,5 @@ public class AbstractServiceClientTest {
             return null;
         }
 
-        @Override
-        public String getShortDescription() {
-            return null;
-        }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
-
-        @Override
-        public String getName() throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public List<Integer> getVersion() {
-            return null;
-        }
     }
 }

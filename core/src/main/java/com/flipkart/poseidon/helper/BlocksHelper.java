@@ -18,7 +18,7 @@ package com.flipkart.poseidon.helper;
 
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Trace;
-import flipkart.lego.api.helpers.Identifiable;
+import flipkart.lego.api.entities.Block;
 
 /**
  * Contains helpers methods like to get name of lego blocks like
@@ -27,15 +27,12 @@ import flipkart.lego.api.helpers.Identifiable;
  * Created by mohan.pandian on 31/05/16.
  */
 public class BlocksHelper {
-    public static String getName(Identifiable block) {
+    public static String getName(Block block) {
         Name name = block.getClass().getDeclaredAnnotation(Name.class);
-        if (name != null) {
-            return name.value();
-        }
-        return block.getName();
+        return name.value();
     }
 
-    public static boolean trace(Identifiable block) {
+    public static boolean trace(Block block) {
         Trace trace = block.getClass().getDeclaredAnnotation(Trace.class);
         if (trace != null) {
             return trace.value();

@@ -21,8 +21,8 @@ import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
+import flipkart.lego.api.entities.Block;
 import flipkart.lego.api.entities.Request;
-import flipkart.lego.api.helpers.Identifiable;
 import org.slf4j.MDC;
 
 import java.util.Map;
@@ -39,7 +39,7 @@ import static com.flipkart.poseidon.tracing.TraceHelper.startTrace;
  */
 public abstract class ContextInducedBlock {
     /* Either data source or filter */
-    private final Identifiable identifiable;
+    private final Block block;
 
     /* Poseidon's request context from parent thread */
     private final Map<String, Object> parentContext;
@@ -63,8 +63,8 @@ public abstract class ContextInducedBlock {
     protected boolean success = false;
 
     /* Stores parent's contexts */
-    protected ContextInducedBlock(Identifiable identifiable) {
-        this.identifiable = identifiable;
+    protected ContextInducedBlock(Block block) {
+        this.block = block;
         parentContext = RequestContext.getContextMap();
         parentServiceContext = ServiceContext.getContextMap();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
@@ -85,12 +85,12 @@ public abstract class ContextInducedBlock {
         if (serverSpan != null && serverSpan.getSpan() != null) {
             Brave.getServerSpanThreadBinder().setCurrentSpan(serverSpan);
         }
-        startTrace(identifiable, request);
+        startTrace(block, request);
     }
 
     /* Clears DS/filter contexts */
     protected void shutdownAllContext() {
-        endTrace(identifiable, success);
+        endTrace(block, success);
         RequestContext.shutDown();
         ServiceContext.shutDown();
         HystrixRequestContext.setContextOnCurrentThread(existingState);

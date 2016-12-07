@@ -23,6 +23,7 @@ import com.flipkart.poseidon.helper.ClassPathHelper;
 import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
+import com.flipkart.poseidon.model.exception.MissingInformationException;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -65,14 +66,14 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     Constructor<DataSource> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
                     Optional<String> id = getBlockId(klass);
                     if (!id.isPresent()) {
-                        id = Optional.of(constructor.newInstance(this, null).getId());
+                        throw new MissingInformationException();
                     }
                     dataSources.put(id.get(), constructor);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
                     Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     ServiceClient serviceClient = constructor.newInstance();
-                    serviceClients.put(getBlockId(klass).orElseGet(serviceClient::getId), serviceClient);
+                    serviceClients.put(getBlockId(klass).orElseThrow(MissingInformationException::new), serviceClient);
                 } else if (Filter.class.isAssignableFrom(klass)) {
                     Filter filter;
                     try {
@@ -81,10 +82,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     } catch (NoSuchMethodException e) {
                         filter = (Filter) klass.newInstance();
                     }
-                    filters.put(getBlockId(klass).orElseGet(filter::getId), filter);
+                    filters.put(getBlockId(klass).orElseThrow(MissingInformationException::new), filter);
                 } else if (Mapper.class.isAssignableFrom(klass)) {
                     Mapper mapper = (Mapper) klass.newInstance();
-                    mappers.put(getBlockId(klass).orElseGet(mapper::getId), mapper);
+                    mappers.put(getBlockId(klass).orElseThrow(MissingInformationException::new), mapper);
                 }
             }
         } catch (Throwable t) {
