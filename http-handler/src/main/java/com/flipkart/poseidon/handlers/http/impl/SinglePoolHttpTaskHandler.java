@@ -72,7 +72,6 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     public int port = 80;
     public int connectionTimeout = 1000;
     public int operationTimeout = 1000;
-    public int maxConnections = 10;
     public int queueSize = 0;
     private int timeToLiveInSecs= -1;
     public boolean isSecure = false;
@@ -112,7 +111,16 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
             throw new Exception("Invalid pool name specified");
         }
 
-        // create the pool object       
+        // Calculate the maxConnections from poolSize params.
+        int maxConnections = 10;
+        if(getConcurrentPoolSizeParams() != null && !getConcurrentPoolSizeParams().isEmpty()) {
+            maxConnections = 0;
+            for(Integer poolSize: getConcurrentPoolSizeParams().values()) {
+                maxConnections += poolSize;
+            }
+        }
+
+        // create the pool object
         pool = new HttpConnectionPool(poolName,host,port,isSecure,connectionTimeout,operationTimeout + extraExecutionTime,
                 maxConnections,queueSize, timeToLiveInSecs);
 
@@ -416,14 +424,6 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
 
     public void setOperationTimeout(int operationTimeout) {
         this.operationTimeout = operationTimeout;
-    }
-
-    public int getMaxConnections() {
-        return maxConnections;
-    }
-
-    public void setMaxConnections(int maxConnections) {
-        this.maxConnections = maxConnections;
     }
 
     public int getQueueSize() {
