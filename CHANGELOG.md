@@ -1,4 +1,4 @@
-## 5.0.0-SNAPSHOT (Dec 7, 2016)
+## 5.0.0-SNAPSHOT (Dec 20, 2016)
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
 - Zipkin headers ingestion to HTTP upstreams
@@ -10,6 +10,7 @@
 - Upgrade to Lego 3.0.0
 - Using annotations like Name, Version over interfaces like Identifiable, Versioned
 - Removed AbstractDataType
+- Max connections in SinglePoolHttpTaskHandler is inferred from concurrency automatically
 
 ## 4.6.1-SNAPSHOT (Dec 7, 2016)
 - 5xx from HTTP upstreams will be logged as errors and 4xx, 3xx as debug logs 
