@@ -72,7 +72,6 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     public int port = 80;
     public int connectionTimeout = 1000;
     public int operationTimeout = 1000;
-    public int maxConnections = 10;
     public int queueSize = 0;
     private int timeToLiveInSecs= -1;
     public boolean isSecure = false;
@@ -112,7 +111,16 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
             throw new Exception("Invalid pool name specified");
         }
 
-        // create the pool object       
+        // Calculate the maxConnections from poolSize params.
+        int maxConnections = getMaxConnectionsFromPoolParams(getCommandPoolSizeParams()); // 1st try to get it from command level poolParams.
+        if (maxConnections == 0) {
+            maxConnections = getMaxConnectionsFromPoolParams(getConcurrentPoolSizeParams());
+        }
+        if (maxConnections == 0) {
+            maxConnections = 10; // default as per TaskHandlerExecutorRepository.DEFAULT_THREAD_POOL_SIZE
+        }
+
+        // create the pool object
         pool = new HttpConnectionPool(poolName,host,port,isSecure,connectionTimeout,operationTimeout + extraExecutionTime,
                 maxConnections,queueSize, timeToLiveInSecs);
 
@@ -418,14 +426,6 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         this.operationTimeout = operationTimeout;
     }
 
-    public int getMaxConnections() {
-        return maxConnections;
-    }
-
-    public void setMaxConnections(int maxConnections) {
-        this.maxConnections = maxConnections;
-    }
-
     public int getQueueSize() {
         return queueSize;
     }
@@ -496,5 +496,15 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
 
     public void setRequestCachingEnabled(boolean requestCachingEnabled) {
         this.requestCachingEnabled = requestCachingEnabled;
+    }
+
+    private int getMaxConnectionsFromPoolParams(Map<String, Integer> poolSizeParams) {
+        int maxConnections = 0;
+        if (poolSizeParams != null && !poolSizeParams.isEmpty()) {
+            for (Integer poolSize : poolSizeParams.values()) {
+                maxConnections += poolSize;
+            }
+        }
+        return maxConnections;
     }
 }
