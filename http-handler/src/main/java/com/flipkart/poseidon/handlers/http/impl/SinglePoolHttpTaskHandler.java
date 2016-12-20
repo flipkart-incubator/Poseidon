@@ -112,7 +112,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         }
 
         // Calculate the maxConnections from poolSize params.
-        int maxConnections = 10;
+        int maxConnections = 10; // default as per TaskHandlerExecutorRepository.DEFAULT_THREAD_POOL_SIZE
         if(getConcurrentPoolSizeParams() != null && !getConcurrentPoolSizeParams().isEmpty()) {
             maxConnections = 0;
             for(Integer poolSize: getConcurrentPoolSizeParams().values()) {
