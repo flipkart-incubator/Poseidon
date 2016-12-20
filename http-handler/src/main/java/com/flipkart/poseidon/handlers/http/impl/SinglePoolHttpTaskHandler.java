@@ -112,12 +112,12 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         }
 
         // Calculate the maxConnections from poolSize params.
-        int maxConnections = 10; // default as per TaskHandlerExecutorRepository.DEFAULT_THREAD_POOL_SIZE
-        if(getConcurrentPoolSizeParams() != null && !getConcurrentPoolSizeParams().isEmpty()) {
-            maxConnections = 0;
-            for(Integer poolSize: getConcurrentPoolSizeParams().values()) {
-                maxConnections += poolSize;
-            }
+        int maxConnections = getMaxConnectionsFromPoolParams(getCommandPoolSizeParams()); // 1st try to get it from command level poolParams.
+        if (maxConnections == 0) {
+            maxConnections = getMaxConnectionsFromPoolParams(getConcurrentPoolSizeParams());
+        }
+        if (maxConnections == 0) {
+            maxConnections = 10; // default as per TaskHandlerExecutorRepository.DEFAULT_THREAD_POOL_SIZE
         }
 
         // create the pool object
@@ -496,5 +496,15 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
 
     public void setRequestCachingEnabled(boolean requestCachingEnabled) {
         this.requestCachingEnabled = requestCachingEnabled;
+    }
+
+    private int getMaxConnectionsFromPoolParams(Map<String, Integer> poolSizeParams) {
+        int maxConnections = 0;
+        if (poolSizeParams != null && !poolSizeParams.isEmpty()) {
+            for (Integer poolSize : poolSizeParams.values()) {
+                maxConnections += poolSize;
+            }
+        }
+        return maxConnections;
     }
 }
