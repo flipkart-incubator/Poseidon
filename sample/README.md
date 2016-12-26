@@ -13,9 +13,13 @@ Poseidon Sample helps as a reference to build new applications using Poseidon.
 ## To run from IDE
 
 Main class: com.flipkart.poseidon.Poseidon
+
 VM options: -Dcom.sun.management.jmxremote.port=3335 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dlog4j.configurationFile=src/main/resources/external/log4j.xml -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
+
 Program arguments: src/main/resources/external/bootstrap.xml
+
 Working directory: <path_to_poseidon_repo>/sample
+
 Classpath: sample (module)
 
 ## What it does

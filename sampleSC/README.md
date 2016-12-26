@@ -4,9 +4,9 @@ Poseidon Sample Service Client
 Poseidon Sample Service Client helps as a reference to build new HTTP service clients using Poseidon. It defines the contracts of a dummy online [REST API Service](http://jsonplaceholder.typicode.com) in JSON based IDL files. Poseidon behind the screen generates the implementations and abstracts out
 
 + Phantom/hystrix for circuit breaking, isolation
-+ RPC mechanism (JSON over HTTP)
++ RPC mechanism (JSON over HTTP), serialization and de-serialization
 + Connection pooling
-+ Validations, passing generic headers etc
++ Validations, passing generic headers like zipkin etc
 
 ### Models
 
