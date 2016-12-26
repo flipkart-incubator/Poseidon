@@ -33,7 +33,7 @@ Internally it makes parallel calls to online REST API to get [user details](http
 It demonstrates the following capabilities of Poseidon
 + Power of [Phantom](https://github.com/flipkart/phantom). It comes with a phantom [dashboard](http://localhost:8989/admin/dashboard)
 ![Phantom DB](docs/PhantomDB.png?raw=true)
-+ Distributed Tracing
++ Distributed Tracing. Please setup [zipkin](http://zipkin.io/pages/quickstart) and update [tracing configuration](src/main/resources/web.xml) to see generated traces.
 ![DT](docs/DT.png?raw=true)
 ![DT Details](docs/DTDetails.png?raw=true)
 + Scatter-Gather capability built using [Lego](https://github.com/flipkart-incubator/Lego)
@@ -53,11 +53,47 @@ Start reading the code from
 
 ### Bootstrapping
 
-WIP
+Poseidon takes a [bootstrap.xml](src/main/resources/external/bootstrap.xml) file to bootstrap [phantom handlers](src/main/resources/external/spring-proxy-handler-config.xml) using trooper.
+
+Once the handlers are initialized, poseidon sets up a spring application context using [web.xml](src/main/resources/web.xml) where the dependencies are defined and injected to Poseidon.
+
+Poseidon picks up the API definition files defined [here](src/main/resources/apis/userPosts.json) and prints the registered API URLs.
+```
+************************************
+______ 
+| ___ \
+| |_/ /
+|  __/ 
+| |    Handlers Initialized.
+\_|    Now starting Poseidon...
+************************************
+2016-12-26 14:12:42,855 INFO PoseidonStartupLogger: Registered URLs: 
+==========================================================================================
+
+GET    				/v1/userPosts
+
+==========================================================================================
+2016-12-26 14:12:42,928 INFO PoseidonStartupLogger: *** Poseidon started ***
+*************************************************************************
+ Trooper __
+      __/  \         Runtime Nature : SERVER
+   __/  \__/         Component Container(s) : [com.flipkart.phantom.runtime.impl.spring.ServiceProxyComponentContainer] 
+  /  \__/  \         Startup Time : 3,790 ms
+  \__/  \__/         Host Name: BLRVS-Mohan.local
+     \__/
+*************************************************************************
+2016-12-26 14:12:42,929 INFO org.trpr.platform.runtime.impl.bootstrap.spring.Bootstrap: ** Trooper Bootstrap complete **
+```
 
 #### Runtime
 
-WIP
+When a [API request](http://localhost:21000/v1/userPosts?userId=1) is received, Poseidon's jetty servlet executes the call graph defined as tasks in [API file](src/main/resources/apis/userPosts.json) using hydra with parallelism whereever possible.
+
+Hydra tasks are nothing but [DataSources](https://github.com/flipkart-incubator/Poseidon/wiki/Data-Sources) that return DataTypes.
+
+DataSources make service clients call and fetches the required data from upstreams.
+
+Final response is composed by hydra using the definition in [API file](src/main/resources/apis/userPosts.json)
 
 ## More Details
 
