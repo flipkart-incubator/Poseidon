@@ -1,0 +1,22 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "properties": {
+    "street": {
+      "type": "string",
+      "description": "Street name"
+    },
+    "suite": {
+      "type": "string",
+      "description": "Suite number"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name"
+    },
+    "zipcode": {
+      "type": "string",
+      "description": "Zip code"
+    }
+  }
+}

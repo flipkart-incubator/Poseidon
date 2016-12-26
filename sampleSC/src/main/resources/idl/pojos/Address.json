@@ -1,0 +1,15 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "extends" : {
+    "type": "object",
+    "javaType": "BaseAddress"
+  },
+  "properties": {
+    "geo": {
+      "type": "object",
+      "javaType": "Geo",
+      "description": "Geo object reference"
+    }
+  }
+}

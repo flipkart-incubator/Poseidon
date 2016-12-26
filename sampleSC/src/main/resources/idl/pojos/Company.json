@@ -1,0 +1,18 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "catchPhrase": {
+      "type": "string",
+      "description": "Company phrase"
+    },
+    "bs": {
+      "type": "string",
+      "description": "Company vision"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="sampleLegoSet" class="com.flipkart.poseidon.sample.api.SampleLegoSet"/>
+
+    <bean id="sampleTracingConfiguration" class="com.flipkart.poseidon.sample.api.config.SampleTracingConfiguration">
+        <property name="collectorHost" value="localhost"/>
+        <property name="port" value="9410"/>
+        <property name="enableTracing" value="true"/>
+        <property name="sampleRateMap">
+            <map>
+                <entry key="*" value="100"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="sampleJettyConfiguration" class="com.flipkart.poseidon.sample.api.config.SampleJettyConfiguration">
+        <property name="acceptors" value="-1"/>
+        <property name="selectors" value="-1"/>
+        <property name="acceptQueueSize" value="-1"/>
+        <property name="taskQueueSize" value="100"/>
+        <property name="minThreads" value="20"/>
+        <property name="maxThreads" value="50"/>
+        <property name="threadIdleTimeout" value="60000"/>
+    </bean>
+
+    <bean id="sampleHeaders" class="com.flipkart.poseidon.sample.api.config.SampleHeaders"/>
+
+    <bean id="sampleConfiguration" class="com.flipkart.poseidon.sample.api.config.SampleConfiguration">
+        <property name="port" value="21000"/>
+        <property name="accessLogConfigFilePath" value="src/main/resources/external/log4j-access.xml"/>
+        <property name="apiFilesPath" value="src/main/resources/apis"/>
+        <property name="jettyConfiguration" ref="sampleJettyConfiguration"/>
+        <property name="tracingConfiguration" ref="sampleTracingConfiguration"/>
+        <property name="headers" ref="sampleHeaders"/>
+        <property name="isAccessLogEnabled" value="true"/>
+    </bean>
+
+    <bean id="apiManager" class="com.flipkart.poseidon.api.APIManager">
+        <constructor-arg name="legoSet" ref="sampleLegoSet"/>
+        <constructor-arg name="configuration" ref="sampleConfiguration"/>
+    </bean>
+
+    <bean id="sampleApplication" class="com.flipkart.poseidon.sample.api.SampleApplication">
+        <constructor-arg name="apiManager" ref="apiManager"/>
+        <constructor-arg name="legoSet" ref="sampleLegoSet"/>
+    </bean>
+
+    <bean id="poseidonContext" class="com.flipkart.poseidon.PoseidonContext"/>
+
+    <bean id="poseidon" class="com.flipkart.poseidon.Poseidon">
+        <constructor-arg name="configuration" ref="sampleConfiguration"/>
+        <constructor-arg name="application" ref="sampleApplication"/>
+    </bean>
+</beans>

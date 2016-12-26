@@ -1,0 +1,41 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "description": "User POJO. Ex: http://jsonplaceholder.typicode.com/users/1/",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "User unique ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "User full name"
+    },
+    "username": {
+      "type": "string",
+      "description": "User name"
+    },
+    "email": {
+      "type": "string",
+      "description": "User email ID"
+    },
+    "address": {
+      "type": "object",
+      "javaType": "Address",
+      "description": "Address object reference"
+    },
+    "phone": {
+      "type": "string",
+      "description": "User phone number"
+    },
+    "website": {
+      "type": "string",
+      "description": "User website URL"
+    },
+    "company": {
+      "type": "object",
+      "javaType": "Company",
+      "description": "Company object reference"
+    }
+  }
+}

@@ -23,6 +23,8 @@
         <module>service-clients-gen</module>
         <module>service-clients-archetype</module>
         <module>log4j-access</module>
+        <module>sample</module>
+        <module>sampleSC</module>
     </modules>
 
     <scm>

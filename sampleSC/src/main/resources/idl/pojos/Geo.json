@@ -1,0 +1,14 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "properties": {
+    "lat": {
+      "type": "string",
+      "description": "Latitude co-ordinate"
+    },
+    "lng": {
+      "type": "string",
+      "description": "Longitude co-ordinate"
+    }
+  }
+}

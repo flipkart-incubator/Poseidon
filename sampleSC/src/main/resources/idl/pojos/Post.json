@@ -1,0 +1,22 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "properties": {
+    "userId": {
+      "type": "integer",
+      "description": "User id"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Post unique id"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of post"
+    },
+    "body": {
+      "type": "string",
+      "description": "Body of post"
+    }
+  }
+}

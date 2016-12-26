@@ -1,0 +1,9 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "description": "User POJO. Ex: http://jsonplaceholder.typicode.com/users/1/",
+  "extends" : {
+    "type": "object",
+    "javaType": "java.util.ArrayList<User>"
+  }
+}
