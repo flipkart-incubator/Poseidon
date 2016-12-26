@@ -49,7 +49,7 @@ Start reading the code from
  2. [DataSources](src/main/java/com/flipkart/poseidon/sample/datasources)
  3. [DataTypes](src/main/java/com/flipkart/poseidon/sample/datatypes/)
  4. [Filters](src/main/java/com/flipkart/poseidon/sample/api/filters/BotFilter.java)
- 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/sample/sampleSC#poseidon-sample-service-client).
+ 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client).
 
 ### Bootstrapping
 
@@ -87,13 +87,13 @@ GET    				/v1/userPosts
 
 #### Runtime
 
-When a [API request](http://localhost:21000/v1/userPosts?userId=1) is received, Poseidon's jetty servlet executes the call graph defined as tasks in [API file](https://github.com/flipkart-incubator/Poseidon/blob/sample/sample/src/main/resources/apis/userPosts.json#L14) using hydra with parallelism whereever possible.
+When a [API request](http://localhost:21000/v1/userPosts?userId=1) is received, Poseidon's jetty servlet executes the call graph defined as tasks in [API file](https://github.com/flipkart-incubator/Poseidon/blob/master/sample/src/main/resources/apis/userPosts.json#L14) using hydra with parallelism whereever possible.
 
 Hydra tasks are nothing but [DataSources](https://github.com/flipkart-incubator/Poseidon/wiki/Data-Sources) that return DataTypes.
 
 DataSources make service clients call and fetches the required data from upstreams.
 
-Final response is composed by hydra using the definition in [API file](https://github.com/flipkart-incubator/Poseidon/blob/sample/sample/src/main/resources/apis/userPosts.json#L29)
+Final response is composed by hydra using the definition in [API file](https://github.com/flipkart-incubator/Poseidon/blob/master/sample/src/main/resources/apis/userPosts.json#L29)
 
 ## More Details
 
