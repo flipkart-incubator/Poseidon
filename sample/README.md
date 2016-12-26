@@ -87,13 +87,13 @@ GET    				/v1/userPosts
 
 #### Runtime
 
-When a [API request](http://localhost:21000/v1/userPosts?userId=1) is received, Poseidon's jetty servlet executes the call graph defined as tasks in [API file](src/main/resources/apis/userPosts.json) using hydra with parallelism whereever possible.
+When a [API request](http://localhost:21000/v1/userPosts?userId=1) is received, Poseidon's jetty servlet executes the call graph defined as tasks in [API file](https://github.com/flipkart-incubator/Poseidon/blob/sample/sample/src/main/resources/apis/userPosts.json#L14) using hydra with parallelism whereever possible.
 
 Hydra tasks are nothing but [DataSources](https://github.com/flipkart-incubator/Poseidon/wiki/Data-Sources) that return DataTypes.
 
 DataSources make service clients call and fetches the required data from upstreams.
 
-Final response is composed by hydra using the definition in [API file](src/main/resources/apis/userPosts.json)
+Final response is composed by hydra using the definition in [API file](https://github.com/flipkart-incubator/Poseidon/blob/sample/sample/src/main/resources/apis/userPosts.json#L29)
 
 ## More Details
 
