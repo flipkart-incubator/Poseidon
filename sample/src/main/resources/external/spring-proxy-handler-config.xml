@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean class="com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler">
+        <property name="poolName" value="sampleService"/>
+        <property name="host" value="jsonplaceholder.typicode.com"/>
+        <property name="port" value="80"/>
+        <property name="connectionTimeout" value="5000"/>
+        <property name="operationTimeout" value="5000"/>
+        <property name="timeToLiveInSecs" value="60"/>
+        <property name="concurrentPoolSizeParams">
+            <map>
+                <entry key="sampleServiceHttpRequest" value="5"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>

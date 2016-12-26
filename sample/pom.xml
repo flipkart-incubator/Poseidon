@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Poseidon Sample</name>
+    <description>Poseidon sample application to aggregate APIs from a HTTP upstream</description>
+
+    <parent>
+        <artifactId>poseidon</artifactId>
+        <groupId>com.flipkart.poseidon</groupId>
+        <version>5.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>sample</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <sampleSC.version>1.0.0-SNAPSHOT</sampleSC.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.flipkart.poseidon</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.flipkart.poseidon</groupId>
+            <artifactId>sampleSC</artifactId>
+            <version>${sampleSC.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <prependGroupId>true</prependGroupId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

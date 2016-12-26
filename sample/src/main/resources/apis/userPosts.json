@@ -1,0 +1,33 @@
+{
+  "url": "/v1/userPosts",
+  "httpMethod": "GET",
+  "timeout": 10000,
+  "name": "userPosts",
+  "params": {
+    "required": [
+      {
+        "name": "userId",
+        "datatype": "string"
+      }
+    ]
+  },
+  "tasks": {
+    "userDT": {
+      "name": "UserDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    },
+    "postsDT": {
+      "name": "PostsDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    }
+  },
+  "filters": ["BotFilter_1.0.0"],
+  "response": {
+    "user": "{{$userDT}}",
+    "posts": "{{#$postsDT.posts}}"
+  }
+}

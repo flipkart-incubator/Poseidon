@@ -30,7 +30,7 @@ Changelog can be viewed in [CHANGELOG.md](https://github.com/flipkart-incubator/
 
 ## Getting Started
 
-A sample application will be available soon.
+A sample application is available [here](sample/README.md).
 
 ## Users
 
