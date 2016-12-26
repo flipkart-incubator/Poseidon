@@ -30,7 +30,7 @@ Changelog can be viewed in [CHANGELOG.md](https://github.com/flipkart-incubator/
 
 ## Getting Started
 
-A sample application is available [here](sample/README.md).
+A sample application is available [here](https://github.com/flipkart-incubator/Poseidon/tree/sample/sample#poseidon-sample).
 
 ## Users
 
