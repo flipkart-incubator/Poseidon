@@ -17,12 +17,12 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 5.0.0             | Jan 02 2017      |    Log4j2 over logback, performance improvements, Hystrix 1.5.8
 | Version 4.6.0             | Sep 30 2016      |    Hystrix 1.5.0
 | Version 4.5.1             | Sep 12 2016      |    Logback 1.1.5, multivalue query parameter, binary data in Service Clients, bug fixes
 | Version 4.5.0             | Aug 08 2016      |    Greedy wildcards in API urls, MDC context passing, bug fixes
 | Version 4.4.0             | Jul 18 2016      |    Clean shutdown, lego blocks validator, bug fixes 
 | Version 4.3.0             | Jul 11 2016      |    Phantom 2.0.1, hystrix metrics and logs, API validator, bug fixes
-| Version 4.2.0             | Jun 07 2016      |    Datasources and filters can participate in Distributed Tracing, bug fix
 
 ## Changelog
 

@@ -1,3 +1,7 @@
+## 5.0.0 (Jan 2, 2017)
+- Included snapshot version fixes
+- Sample application
+
 ## 5.0.0-SNAPSHOT (Dec 22, 2016)
 - Log4j2 over logback for both service and access logs 
 - Avoided serialization and deserialization between service clients and task handlers
