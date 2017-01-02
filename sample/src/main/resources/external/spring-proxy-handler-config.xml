@@ -5,7 +5,7 @@
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <bean class="com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler">
-        <property name="poolName" value="sampleService"/>
+        <property name="poolName" value="userService"/>
         <property name="host" value="jsonplaceholder.typicode.com"/>
         <property name="port" value="80"/>
         <property name="connectionTimeout" value="5000"/>
@@ -13,7 +13,21 @@
         <property name="timeToLiveInSecs" value="60"/>
         <property name="concurrentPoolSizeParams">
             <map>
-                <entry key="sampleServiceHttpRequest" value="5"/>
+                <entry key="userServiceHttpRequest" value="5"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean class="com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler">
+        <property name="poolName" value="postsService"/>
+        <property name="host" value="jsonplaceholder.typicode.com"/>
+        <property name="port" value="80"/>
+        <property name="connectionTimeout" value="5000"/>
+        <property name="operationTimeout" value="5000"/>
+        <property name="timeToLiveInSecs" value="60"/>
+        <property name="concurrentPoolSizeParams">
+            <map>
+                <entry key="postsServiceHttpRequest" value="5"/>
             </map>
         </property>
     </bean>

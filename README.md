@@ -36,6 +36,8 @@ A sample application is available [here](https://github.com/flipkart-incubator/P
 
 [Flipkart](http://www.flipkart.com)
 
+[HealthFace.in](http://healthface.in)
+
 ## Continuous Integration
 
  Uses https://travis-ci.org/ to run tests for pushes and pull requests

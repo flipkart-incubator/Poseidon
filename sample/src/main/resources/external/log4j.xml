@@ -1,29 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="60" status="warn">
-    <Properties>
-        <Property name="logFolder">/var/log/flipkart/sample</Property>
-    </Properties>
-
     <Appenders>
-        <RollingRandomAccessFile name="FILE" fileName="${logFolder}/exceptions.log"
-                                 filePattern="${logFolder}/exceptions.log.%i.gz"
-                                 immediateFlush="false">
+        <Console name="CONSOLE">
             <PatternLayout pattern="%date %level %logger{10}: %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="100 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy max="2"/>
-        </RollingRandomAccessFile>
-
-        <RollingRandomAccessFile name="STARTUP" fileName="${logFolder}/startup.log"
-                                 filePattern="${logFolder}/startup.log.%i.gz"
-                                 immediateFlush="false">
-            <PatternLayout pattern="%date %level %logger{10}: %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="100 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy max="2"/>
-        </RollingRandomAccessFile>
+        </Console>
     </Appenders>
 
     <Loggers>
@@ -41,11 +21,11 @@
 
         <!-- To get startup and shutdown logs from Poseidon -->
         <Logger name="PoseidonStartupLogger" level="INFO" additivity="false">
-            <AppenderRef ref="STARTUP"/>
+            <AppenderRef ref="CONSOLE"/>
         </Logger>
 
         <ROOT level="INFO" includeLocation="false">
-            <AppenderRef ref="FILE"/>
+            <AppenderRef ref="CONSOLE"/>
         </ROOT>
     </Loggers>
 </Configuration>
