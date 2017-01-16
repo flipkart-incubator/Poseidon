@@ -1,0 +1,35 @@
+{
+  "url": "/v1/arithmetic/{operation}",
+  "httpMethod": "GET",
+  "timeout": 10000,
+  "name": "arithmetic",
+  "params": {
+    "required": [
+      {
+        "name": "num1",
+        "datatype": "number"
+      },
+      {
+        "name": "num2",
+        "datatype": "number"
+      },
+      {
+        "name": "operation",
+        "datatype": "string",
+        "pathparam": true,
+        "position": 3
+      }
+    ]
+  },
+  "tasks": {
+    "arithmeticResultDT": {
+      "name": "ArithmeticDS_1.0.0",
+      "context": {
+        "num1": "{{$num1}}",
+        "num2": "{{$num2}}",
+        "operation": "{{$operation}}"
+      }
+    }
+  },
+  "response": "{{$arithmeticResultDT}}"
+}

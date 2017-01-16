@@ -32,4 +32,10 @@
         </property>
     </bean>
 
+    <!--
+    Comes from phantom's sample-task-proxy which just performs
+    arithmetic operations and returns the result
+    -->
+    <bean class="com.flipkart.phantom.sample.handler.ArithmeticTaskHandler"/>
+
 </beans>

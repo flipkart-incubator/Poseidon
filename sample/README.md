@@ -8,7 +8,8 @@ Poseidon Sample helps as a reference to build new applications using Poseidon.
 1. Build and install sample using maven
 ```mvn clean install```
 2. Start sample application using ```sudo ./run.sh```
-3. Access the [API](http://localhost:21000/v1/userPosts?userId=1)![API Response](docs/APIResponse.png)
+3. Access the [API](http://localhost:21000/v1/userPosts?userId=1) that internally aggregates data from a dummy http upstream service.![API Response](docs/APIResponse.png)
+4. Access another simple [API](http://localhost:21000/v1/arithmetic/add?num1=10&num2=5) that just provides arithmetic operations.![API Response](docs/SimpleAPIResponse.png)
 
 ## To run from IDE
 
