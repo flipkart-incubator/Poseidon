@@ -33,6 +33,12 @@
             <artifactId>sampleSC</artifactId>
             <version>${sampleSC.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.flipkart.phantom</groupId>
+            <artifactId>sample-task-proxy</artifactId>
+            <version>${phantom.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

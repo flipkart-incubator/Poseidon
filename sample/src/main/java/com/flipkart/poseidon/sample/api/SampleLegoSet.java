@@ -26,7 +26,8 @@ public class SampleLegoSet extends APILegoSet {
     public List<String> getPackagesToScan() {
         return Arrays.asList(
                 "com.flipkart.poseidon.sample.datasources",
-                "com.flipkart.poseidon.serviceclients",
+                "com.flipkart.poseidon.serviceclients", // for generated service clients
+                "com.flipkart.poseidon.sample.serviceclients", // for handwritten service clients like ArithmeticServiceClient
                 "com.flipkart.poseidon.sample.api.filters");
     }
 }
