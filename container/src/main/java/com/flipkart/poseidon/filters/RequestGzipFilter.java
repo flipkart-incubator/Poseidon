@@ -42,7 +42,7 @@ public class RequestGzipFilter implements Filter {
         HttpServletResponse servletResponse = (HttpServletResponse) response;
         boolean isGzipped = servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING) != null
                 && servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING).contains("gzip");
-        boolean requestTypeSupported = HttpMethod.POST.asString().equals(servletRequest.getMethod()) || HttpMethod.PUT.asString().equals(servletRequest.getMethod());
+        boolean requestTypeSupported = HttpMethod.POST.asString().equals(servletRequest.getMethod()) || HttpMethod.PUT.asString().equals(servletRequest.getMethod()) || "PATCH".equals(servletRequest.getMethod());
         if (isGzipped && !requestTypeSupported) {
             throw new IllegalStateException(new StringBuilder()
                     .append(servletRequest.getMethod())
