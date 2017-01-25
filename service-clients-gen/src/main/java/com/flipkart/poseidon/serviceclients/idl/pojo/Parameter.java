@@ -32,6 +32,7 @@ public class Parameter {
     private boolean multiValue = false;
     private Boolean optional = false;
     private String[] description;
+    private Boolean encode = true;
 
     public String getType() {
         if (multiValue) {
@@ -76,6 +77,14 @@ public class Parameter {
         this.description = description;
     }
 
+    public Boolean getEncode() {
+        return encode;
+    }
+
+    public void setEncode(Boolean encode) {
+        this.encode = encode;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || !(object instanceof Parameter)) {
@@ -90,6 +99,9 @@ public class Parameter {
             return false;
         }
         if (!Objects.equals(name, parameter.getName())) {
+            return false;
+        }
+        if (!Objects.equals(encode, parameter.getEncode())) {
             return false;
         }
         if (!Objects.equals(multiValue, parameter.isMultiValue())) {

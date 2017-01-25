@@ -268,7 +268,7 @@ public class ServiceGenerator {
                 if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
                     arg = listElementVarName;
                 }
-                if (parameter.getType().equals("String")) {
+                if (parameter.getType().equals("String") && parameter.getEncode()) {
                     invocation.arg(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg)));
                 } else if (parameter.getType().endsWith("[]")) {
                     JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
