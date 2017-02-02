@@ -32,7 +32,7 @@ public class Parameter {
     private boolean multiValue = false;
     private Boolean optional = false;
     private String[] description;
-    private Boolean encode = true;
+    private boolean encode = true;
 
     public String getType() {
         if (multiValue) {
@@ -77,11 +77,11 @@ public class Parameter {
         this.description = description;
     }
 
-    public Boolean getEncode() {
+    public boolean getEncode() {
         return encode;
     }
 
-    public void setEncode(Boolean encode) {
+    public void setEncode(boolean encode) {
         this.encode = encode;
     }
 
