@@ -69,9 +69,6 @@
             "multiValue": {
               "type": "boolean"
             },
-            "encode": {
-              "type": "boolean"
-            },
             "description": {
               "$ref": "#/definitions/stringArray"
             }
@@ -95,8 +92,7 @@
                 "GET",
                 "PUT",
                 "POST",
-                "DELETE",
-                "PATCH"
+                "DELETE"
               ]
             },
             "uri": {
