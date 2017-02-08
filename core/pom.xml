@@ -45,12 +45,6 @@
         <dependency>
             <groupId>com.flipkart.phantom</groupId>
             <artifactId>runtime</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-webapp</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.kristofa</groupId>
