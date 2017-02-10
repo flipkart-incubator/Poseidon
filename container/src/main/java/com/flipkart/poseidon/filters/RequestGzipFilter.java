@@ -31,6 +31,9 @@ import java.util.zip.GZIPInputStream;
  * Created by shrey.garg on 27/05/16.
  */
 public class RequestGzipFilter implements Filter {
+
+    private static final String _PATCH = "PATCH";
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
 
@@ -42,7 +45,7 @@ public class RequestGzipFilter implements Filter {
         HttpServletResponse servletResponse = (HttpServletResponse) response;
         boolean isGzipped = servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING) != null
                 && servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING).contains("gzip");
-        boolean requestTypeSupported = HttpMethod.POST.asString().equals(servletRequest.getMethod()) || HttpMethod.PUT.asString().equals(servletRequest.getMethod()) || "PATCH".equals(servletRequest.getMethod());
+        boolean requestTypeSupported = HttpMethod.POST.asString().equals(servletRequest.getMethod()) || HttpMethod.PUT.asString().equals(servletRequest.getMethod()) || _PATCH.equals(servletRequest.getMethod());
         if (isGzipped && !requestTypeSupported) {
             throw new IllegalStateException(new StringBuilder()
                     .append(servletRequest.getMethod())

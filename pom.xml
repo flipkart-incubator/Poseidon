@@ -372,10 +372,15 @@
 
     <distributionManagement>
         <repository>
-            <id>clojars</id>
-            <name>Clojars repository</name>
-            <url>https://clojars.org/repo</url>
+            <id>fk-artifactory</id>
+            <name>Flipkart Artifactory</name>
+            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases-local</url>
         </repository>
+        <snapshotRepository>
+            <id>fk-artifactory</id>
+            <name>Flipkart Artifactory</name>
+            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots-local</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>
