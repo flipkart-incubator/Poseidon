@@ -18,7 +18,7 @@ package com.flipkart.poseidon.filters;
 
 import com.google.common.io.ByteStreams;
 import org.apache.http.HttpHeaders;
-import org.eclipse.jetty.http.HttpMethod;
+import org.springframework.http.HttpMethod;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +45,7 @@ public class RequestGzipFilter implements Filter {
         HttpServletResponse servletResponse = (HttpServletResponse) response;
         boolean isGzipped = servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING) != null
                 && servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING).contains("gzip");
-        boolean requestTypeSupported = HttpMethod.POST.asString().equals(servletRequest.getMethod()) || HttpMethod.PUT.asString().equals(servletRequest.getMethod()) || _PATCH.equals(servletRequest.getMethod());
+        boolean requestTypeSupported = HttpMethod.POST.toString().equals(servletRequest.getMethod()) || HttpMethod.PUT.toString().equals(servletRequest.getMethod()) || HttpMethod.PATCH.toString().equals(servletRequest.getMethod());
         if (isGzipped && !requestTypeSupported) {
             throw new IllegalStateException(new StringBuilder()
                     .append(servletRequest.getMethod())

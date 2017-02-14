@@ -103,7 +103,7 @@ public class PoseidonServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String method = request.getMethod();
-        if (_PATCH.equals(method)) {
+        if (PATCH.toString().equals(method)) {
             doPatch(request, response);
         } else {
             super.service(request, response);
