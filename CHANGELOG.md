@@ -1,3 +1,8 @@
+## 5.1.0 (WIP)
+- Upgrade Jetty version to v9.4.1.v20170120
+- Support incoming PATCH method calls
+- Support PATCH calls for service clients
+
 ## 5.0.0 (Jan 2, 2017)
 - Included snapshot version fixes
 - Sample application
@@ -15,6 +20,11 @@
 - Using annotations like Name, Version over interfaces like Identifiable, Versioned
 - Removed AbstractDataType
 - Max connections in SinglePoolHttpTaskHandler is inferred from concurrency automatically
+
+## 4.7.0 (Feb 15, 2017)
+- Upgrade Jetty version to v9.4.1.v20170120
+- Support incoming PATCH method calls
+- Support PATCH calls for service clients
 
 ## 4.6.1-SNAPSHOT (Dec 7, 2016)
 - 5xx from HTTP upstreams will be logged as errors and 4xx, 3xx as debug logs 
