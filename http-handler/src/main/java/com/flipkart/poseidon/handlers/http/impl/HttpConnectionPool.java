@@ -324,7 +324,13 @@ public class HttpConnectionPool {
             setRequestBody(request,data);
             setRequestHeaders(request, requestHeaders);
             return request;
-        } else
+        } else if ("PATCH".equals(requestType))
+        {
+            HttpPatch request = new HttpPatch(constructUrl(uri));
+            setRequestBody(request,data);
+            setRequestHeaders(request, requestHeaders);
+            return request;
+        }  else
         {
             HttpRequestBase request = null;
             logger.error("Invalid requestType+:"+requestType);
