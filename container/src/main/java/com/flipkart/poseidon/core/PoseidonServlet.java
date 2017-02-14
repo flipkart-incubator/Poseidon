@@ -54,6 +54,7 @@ public class PoseidonServlet extends HttpServlet {
     private static final Logger logger = getLogger(PoseidonServlet.class);
     private final Application application;
     private final Configuration configuration;
+    private static final String _PATCH = "PATCH";
 
     public PoseidonServlet(Application application, Configuration configuration) {
         this.application = application;
@@ -93,6 +94,20 @@ public class PoseidonServlet extends HttpServlet {
     @Override
     protected void doTrace(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doRequest(TRACE, request, response);
+    }
+
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest(PATCH, request, response);
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+        if (PATCH.toString().equals(method)) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
     }
 
     protected void doRequest(HttpMethod method, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {

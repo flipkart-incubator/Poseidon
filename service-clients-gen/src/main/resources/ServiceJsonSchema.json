@@ -92,7 +92,8 @@
                 "GET",
                 "PUT",
                 "POST",
-                "DELETE"
+                "DELETE",
+                "PATCH"
               ]
             },
             "uri": {

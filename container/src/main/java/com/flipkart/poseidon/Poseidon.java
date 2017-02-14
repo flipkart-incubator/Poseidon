@@ -275,7 +275,7 @@ public class Poseidon {
      */
     private FilterHolder getGzipFilter() {
         FilterHolder gzipFilterHolder = new FilterHolder(new GzipFilter());
-        gzipFilterHolder.setInitParameter("methods", "GET,POST,PUT,DELETE");
+        gzipFilterHolder.setInitParameter("methods", "GET,POST,PUT,DELETE,PATCH");
         return gzipFilterHolder;
     }
 
