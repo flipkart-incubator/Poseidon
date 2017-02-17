@@ -35,6 +35,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADERS;
@@ -83,6 +84,12 @@ public abstract class AbstractServiceClient implements ServiceClient {
         if(commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
         }
+
+        if (ServiceContext.get(ServiceClientConstants.COLLECT_COMMANDS)) {
+            ConcurrentLinkedQueue<String> commandNames = ServiceContext.get(ServiceClientConstants.COMMANDS);
+            commandNames.add(commandName);
+        }
+
         logger.info("Executing {} with {} {}", commandName, httpMethod, uri);
 
         Map<String, String> params = new HashMap<>();
