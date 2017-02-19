@@ -85,7 +85,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
             commandName = getCommandName();
         }
 
-        if (ServiceContext.get(ServiceClientConstants.COLLECT_COMMANDS)) {
+        if (ServiceContext.get(ServiceClientConstants.COLLECT_COMMANDS) != null && (boolean) ServiceContext.get(ServiceClientConstants.COLLECT_COMMANDS)) {
             ConcurrentLinkedQueue<String> commandNames = ServiceContext.get(ServiceClientConstants.COMMANDS);
             commandNames.add(commandName);
         }
