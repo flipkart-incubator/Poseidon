@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -87,6 +88,8 @@ public class HystrixContextFilter implements Filter {
 
             ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
             ServiceContext.set(ServiceClientConstants.HEADERS, immutableHeaders);
+            ServiceContext.set(ServiceClientConstants.COMMANDS, new ConcurrentLinkedQueue<String>());
+            ServiceContext.set(ServiceClientConstants.COLLECT_COMMANDS, configuration.collectServiceClientCommandNames());
             RequestContext.set(HEADERS, immutableHeaders);
             MDC.setContextMap(immutableHeaders);
         }

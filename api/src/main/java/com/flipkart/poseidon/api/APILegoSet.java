@@ -24,6 +24,7 @@ import com.flipkart.poseidon.ds.trie.Trie;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
+import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.flipkart.poseidon.utils.ApiHelper;
 import flipkart.lego.api.entities.Buildable;
 import flipkart.lego.api.entities.Request;
@@ -37,9 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.flipkart.poseidon.constants.RequestConstants.ENDPOINT_NAME;
-import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
-import static com.flipkart.poseidon.constants.RequestConstants.URI;
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -97,6 +96,8 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             EndpointPOJO pojo = ((APIBuildable) buildable).getPojo();
             RequestContext.set(URI, pojo.getUrl());
             RequestContext.set(ENDPOINT_NAME, pojo.getName());
+            RequestContext.set(ENDPOINT_METHOD, pojo.getHttpMethod());
+            ServiceContext.set(ENDPOINT_NAME, pojo.getName());
         }
 
         String name = buildable.getName();
