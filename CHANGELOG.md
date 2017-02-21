@@ -1,4 +1,4 @@
-## 5.1.0 (WIP)
+## 5.1.0 (WIP) (Feb 21, 2017)
 - Upgrade Jetty version to v9.4.1.v20170120
 - Support incoming PATCH method calls
 - Support PATCH calls for service clients
