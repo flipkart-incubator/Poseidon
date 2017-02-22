@@ -39,6 +39,7 @@ import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
 import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
+import com.flipkart.poseidon.logback.access.RequestLogImplFix;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -168,7 +169,7 @@ public class Poseidon {
     }
 
     private Handler getRequestLogHandler(Handler handler) {
-        RequestLogImpl requestLog = new RequestLogImpl();
+        RequestLogImpl requestLog = new RequestLogImplFix();
         requestLog.setFileName(configuration.getLogbackAccessPath());
 
         RequestLogHandler requestLogHandler = new RequestLogHandler();
