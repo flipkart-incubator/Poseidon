@@ -34,7 +34,6 @@ public class Generator {
     private static String moduleName;
     private static Version version;
     private static String packageName;
-    private static String[] pojoOrdering;
     private static Song serviceClientSong;
 
     static {
@@ -51,40 +50,26 @@ public class Generator {
         logger.info("Using module path: {}", modulePath);
         logger.info("Using module name: {}", moduleName);
         logger.info("Using version: {}", version);
-        if (pojoOrdering != null && pojoOrdering.length > 0) {
-            logger.info("Using pojo ordering: {}", Arrays.toString(pojoOrdering));
-        }
 
         ensurePaths();
         generate();
     }
 
     private static void generate() throws Exception {
+
         Tune serviceClientTune = new DefaultTune();
         serviceClientSong = new Song(serviceClientTune);
         String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
         File pojoFolder = new File(modulePath + idlBasePath + POJO_FOLDER_NAME);
         generatePojo(pojoFolder);
+
     }
     private static void generatePojo(File pojoFolder) throws Exception {
         if (!pojoFolder.exists()) {
             return;
         }
-
         File[] files;
-        if (pojoOrdering != null && pojoOrdering.length > 0) {
-            files = new File[pojoOrdering.length];
-            int i = 0;
-            for (String fileName : pojoOrdering) {
-                File file = new File(pojoFolder.getPath() + File.separator + fileName);
-                if (file.isDirectory()) {
-                    throw new IllegalArgumentException("Pojo ordering can't contain a directory");
-                }
-                files[i++] = file;
-            }
-        } else {
-            files = pojoFolder.listFiles();
-        }
+        files = pojoFolder.listFiles();
         if (files == null) {
             return;
         }
@@ -135,20 +120,10 @@ public class Generator {
         }
         moduleParentPath = modulePath.substring(0, lastIndex);
 
-        determineVersion(args[1]);
+        setVersion(args[1]);
         String majorVersion = "v" + version.getMajor();
         packageName = PACKAGE_NAME + moduleName + "." + majorVersion;
-
-        if (args.length > 2) {
-            pojoOrdering = args[2].split(",");
-        }
         return true;
-    }
-
-
-    private static void determineVersion(String localPomVersion) {
-        setVersion(localPomVersion);
-//        updateVersion();
     }
 
     private static void setVersion(String moduleVersion) {
