@@ -2,12 +2,28 @@
 <archetype-descriptor xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd" name="poseidon-service-clients"
     xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <fileSets>
-    <fileSet encoding="UTF-8" filtered="true">
-      <directory>src/main/resources</directory>
-      <includes>
-        <include>**/*.json</include>
-      </includes>
-    </fileSet>
-   </fileSets>
+
+  <modules>
+    <module id="${artifactId}-model" dir="__artifactId__-model" name="${artifactId}-model">
+      <fileSets>
+        <fileSet encoding="UTF-8" filtered="true">
+          <directory>src/main/resources/idl/pojos</directory>
+          <includes>
+            <include>**/*.json</include>
+          </includes>
+        </fileSet>
+      </fileSets>
+    </module>
+    <module id="${artifactId}-service-client" dir="__artifactId__-service-client" name="${artifactId}-service-client">
+      <fileSets>
+        <fileSet encoding="UTF-8" filtered="true">
+          <directory>src/main/resources/idl/service</directory>
+          <includes>
+            <include>**/*.json</include>
+          </includes>
+        </fileSet>
+      </fileSets>
+    </module>
+ </modules>
+
 </archetype-descriptor>
