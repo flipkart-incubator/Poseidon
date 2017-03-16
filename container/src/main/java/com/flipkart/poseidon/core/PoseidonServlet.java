@@ -95,6 +95,20 @@ public class PoseidonServlet extends HttpServlet {
         doRequest(TRACE, request, response);
     }
 
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest(PATCH, request, response);
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+        if (PATCH.toString().equals(method)) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+
     protected void doRequest(HttpMethod method, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException {
         PoseidonRequest request = new PoseidonRequest(httpRequest);
         request.setAttribute(METHOD, method);
