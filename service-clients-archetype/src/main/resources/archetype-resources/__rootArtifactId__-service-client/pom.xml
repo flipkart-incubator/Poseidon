@@ -4,24 +4,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Poseidon Service Client Sample</name>
-    <description>Poseidon sample service client to get data from a dummy online REST API</description>
+    <name>${rootArtifactId} Service Client</name>
+    <description>${rootArtifactId} Service Client</description>
 
     <parent>
-        <artifactId>poseidon</artifactId>
-        <groupId>com.flipkart.poseidon</groupId>
-        <version>5.1.0-SNAPSHOT</version>
+        <groupId>com.flipkart.poseidon.service-clients</groupId>
+        <artifactId>${rootArtifactId}</artifactId>
+        <version>${version}</version>
     </parent>
 
-    <artifactId>sampleSC</artifactId>
+    <artifactId>${artifactId}</artifactId>
+    <version>${version}</version>
     <packaging>jar</packaging>
-    <version>1.0.0-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>service-clients-core</artifactId>
-            <version>${project.parent.version}</version>
+            <version>5.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.flipkart.poseidon.service-clients</groupId>
+            <artifactId>${rootArtifactId}-model</artifactId>
+            <version>${version}</version>
         </dependency>
     </dependencies>
 
@@ -30,8 +35,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
-
+                <version>1.6.0</version>
                 <executions>
                     <execution>
                         <id>generator</id>
@@ -41,31 +45,26 @@
                         </goals>
                         <configuration>
                             <mainClass>com.flipkart.poseidon.serviceclients.generator.Generator</mainClass>
-                            <commandlineArgs>${project.basedir} ${project.version}
-                                Post.json,Posts.json,Geo.json,BaseAddress.json,Address.json,Company.json,User.json,UserList.json
-                            </commandlineArgs>
+                            <commandlineArgs>${project.basedir} ${project.version}</commandlineArgs>
                             <sourceRoot>${project.build.directory}/generated-sources</sourceRoot>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                             <includePluginDependencies>true</includePluginDependencies>
                         </configuration>
                     </execution>
                 </executions>
-
                 <dependencies>
                     <dependency>
                         <groupId>com.flipkart.poseidon</groupId>
                         <artifactId>service-clients-core</artifactId>
-                        <version>${project.parent.version}</version>
+                        <version>5.1.0-SNAPSHOT</version>
                     </dependency>
-
                     <dependency>
                         <groupId>com.flipkart.poseidon</groupId>
                         <artifactId>service-clients-gen</artifactId>
-                        <version>${project.parent.version}</version>
+                        <version>5.1.0-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>
         </plugins>
     </build>
-
 </project>

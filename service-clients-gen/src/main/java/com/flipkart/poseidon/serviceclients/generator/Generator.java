@@ -80,7 +80,7 @@ public class Generator {
         }
         modulePath = args[0];
         moduleName = modulePath.substring(lastIndex + 1);
-        if (!moduleName.matches("^[a-zA-Z_]*$")) {
+        if (!moduleName.matches("^[a-zA-Z0-9_.+-]*$")) {
             logger.error("Invalid module name. Should contain only alphabets and underscore");
             return false;
         }
@@ -89,6 +89,7 @@ public class Generator {
         determineVersion(args[1]);
         String majorVersion = "v" + version.getMajor();
         packageName = PACKAGE_NAME + moduleName + "." + majorVersion;
+        packageName = packageName.replace('-', '.').replace('_', '.').replace('+', '.');
 
         if (args.length > 2) {
             pojoOrdering = args[2].split(",");
