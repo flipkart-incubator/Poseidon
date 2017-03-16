@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <modules>
-    <module id="${artifactId}-model" dir="__artifactId__-model" name="${artifactId}-model">
+    <module id="${rootArtifactId}-model" dir="__rootArtifactId__-model" name="${rootArtifactId}-model">
       <fileSets>
         <fileSet encoding="UTF-8" filtered="true">
           <directory>src/main/resources/idl/pojos</directory>
@@ -14,13 +14,16 @@
         </fileSet>
       </fileSets>
     </module>
-    <module id="${artifactId}-service-client" dir="__artifactId__-service-client" name="${artifactId}-service-client">
+    <module id="${rootArtifactId}-service-client" dir="__rootArtifactId__-service-client" name="${rootArtifactId}-service-client">
       <fileSets>
         <fileSet encoding="UTF-8" filtered="true">
           <directory>src/main/resources/idl/service</directory>
           <includes>
             <include>**/*.json</include>
           </includes>
+        </fileSet>
+        <fileSet encoding="UTF-8" filtered="true">
+          <directory>src/test/java</directory>
         </fileSet>
       </fileSets>
     </module>

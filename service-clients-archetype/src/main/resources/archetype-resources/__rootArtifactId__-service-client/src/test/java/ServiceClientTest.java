@@ -1,0 +1,2 @@
+
+public class ServiceClientTest { }
