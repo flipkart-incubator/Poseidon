@@ -17,11 +17,13 @@
 package com.flipkart.poseidon.sample.datasources;
 
 import co.paralleluniverse.fibers.Suspendable;
+import com.flipkart.poseidon.api.Headers;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
+import com.flipkart.poseidon.sample.commons.SampleConstants;
 import com.flipkart.poseidon.sample.datatypes.UserDataType;
 import com.flipkart.poseidon.serviceclients.sampleSC.v1.*;
 import flipkart.lego.api.entities.LegoSet;
@@ -43,6 +45,8 @@ public class UserDataSource extends AbstractDataSource<UserDataType> {
     @Suspendable
     public UserDataType call() throws Exception {
         try {
+            String requestId = Headers.getGlobalHeader(SampleConstants.REQUEST_ID_HEADER).get();
+            System.out.println("requestId: " + requestId);
             String userId = request.getAttribute("userId");
             SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
             UserList userList = serviceClient.getUser(userId).get();
