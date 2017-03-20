@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.phantom.task.spi.TaskResult;
 import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
 import flipkart.lego.concurrency.api.Promise;
@@ -80,6 +81,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     }
 
     @Override
+    @Suspendable
     public void await() throws InterruptedException {
         try {
             for (Future<TaskResult> future : futureList) {
@@ -95,6 +97,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     }
 
     @Override
+    @Suspendable
     public void await(long timeout, TimeUnit timeUnit) throws InterruptedException {
         try {
             for (Future<TaskResult> future : futureList) {
@@ -110,6 +113,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     }
 
     @Override
+    @Suspendable
     public DomainObject get() throws PromiseBrokenException, InterruptedException {
         try {
             ServiceResponse<DomainObject> serviceResponse = new ServiceResponse<>();
@@ -139,6 +143,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     }
 
     @Override
+    @Suspendable
     public DomainObject get(long timeout, TimeUnit timeUnit) throws PromiseBrokenException, TimeoutException, InterruptedException {
         try {
             ServiceResponse<DomainObject> serviceResponse = new ServiceResponse<>();
@@ -167,6 +172,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         }
     }
 
+    @Suspendable
     public Map<String, String> getHeaders() throws PromiseBrokenException, InterruptedException {
         try {
             TaskResult taskResult;

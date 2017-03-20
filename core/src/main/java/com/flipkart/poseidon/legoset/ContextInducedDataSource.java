@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.legoset;
 
+import co.paralleluniverse.fibers.Suspendable;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.Request;
@@ -36,6 +37,7 @@ public class ContextInducedDataSource<T extends DataType> extends ContextInduced
     }
 
     @Override
+    @Suspendable
     public T call() throws Exception {
         try {
             initAllContext(request);

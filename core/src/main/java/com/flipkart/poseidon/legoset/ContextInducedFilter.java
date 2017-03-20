@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.legoset;
 
+import co.paralleluniverse.fibers.Suspendable;
 import flipkart.lego.api.entities.Filter;
 import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.entities.Response;
@@ -37,6 +38,7 @@ public class ContextInducedFilter extends ContextInducedBlock implements Filter 
     }
 
     @Override
+    @Suspendable
     public void filterRequest(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         try {
             // We don't want to trace requests in filter traces. Hence pass null for request.
@@ -49,6 +51,7 @@ public class ContextInducedFilter extends ContextInducedBlock implements Filter 
     }
 
     @Override
+    @Suspendable
     public void filterResponse(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         try {
             // We don't want to trace responses in filter traces. Hence pass null for request.

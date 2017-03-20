@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.flipkart.poseidon</groupId>
 		<artifactId>poseidon</artifactId>
-		<version>5.1.0-SNAPSHOT</version>
+		<version>5.1.0.FIBER-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>http-handler</artifactId>
@@ -26,6 +26,17 @@
             <artifactId>validation-api</artifactId>
             <version>1.0.0.GA</version>
         </dependency>
+		<dependency>
+			<groupId>co.paralleluniverse</groupId>
+			<artifactId>quasar-core</artifactId>
+			<version>0.7.6</version>
+			<classifier>jdk8</classifier>
+		</dependency>
+		<dependency>
+			<groupId>co.paralleluniverse</groupId>
+			<artifactId>comsat-httpclient</artifactId>
+			<version>0.7.0</version>
+		</dependency>
 	</dependencies>
 
 </project>

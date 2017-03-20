@@ -13,7 +13,7 @@
         <property name="timeToLiveInSecs" value="60"/>
         <property name="concurrentPoolSizeParams">
             <map>
-                <entry key="userServiceHttpRequest" value="5"/>
+                <entry key="userServiceHttpRequest" value="50"/>
             </map>
         </property>
     </bean>
@@ -27,7 +27,7 @@
         <property name="timeToLiveInSecs" value="60"/>
         <property name="concurrentPoolSizeParams">
             <map>
-                <entry key="postsServiceHttpRequest" value="5"/>
+                <entry key="postsServiceHttpRequest" value="50"/>
             </map>
         </property>
     </bean>
@@ -36,6 +36,17 @@
     Comes from phantom's sample-task-proxy which just performs
     arithmetic operations and returns the result
     -->
-    <bean class="com.flipkart.phantom.sample.handler.ArithmeticTaskHandler"/>
+    <bean class="com.flipkart.phantom.sample.handler.ArithmeticTaskHandler">
+        <property name="concurrentPoolSizeParams">
+            <map>
+                <entry key="add" value="60"/>
+            </map>
+        </property>
+        <property name="coreConcurrentPoolSizeParams">
+            <map>
+                <entry key="add" value="60"/>
+            </map>
+        </property>
+    </bean>
 
 </beans>

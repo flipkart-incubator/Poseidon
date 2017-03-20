@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.internal;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
@@ -63,6 +64,7 @@ public class ParamValidationFilter implements Filter {
     }
 
     @Override
+    @Suspendable
     public void filterRequest(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         PoseidonRequest poseidonRequest = (PoseidonRequest) request;
         Map<String, Object> parsedParams = new HashMap<>();

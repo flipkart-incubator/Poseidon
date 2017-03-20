@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon.handlers.http.impl;
 
+import co.paralleluniverse.fibers.Suspendable;
+import co.paralleluniverse.fibers.httpasyncclient.FiberCloseableHttpAsyncClient;
+import co.paralleluniverse.fibers.httpclient.FiberHttpClientBuilder;
 import com.flipkart.poseidon.handlers.http.HttpDelete;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
@@ -32,6 +35,8 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -69,7 +74,7 @@ public class HttpConnectionPool {
 
     /** The variables holding the Pool details  */
     private String name;
-    private HttpClient client;
+    private CloseableHttpAsyncClient client;
     private String host;
     private Integer port;
     private Boolean secure;
@@ -142,13 +147,24 @@ public class HttpConnectionPool {
         HttpConnectionParams.setSoTimeout(httpParams, operationTimeout);
 
         // create client pool
-        this.client = new DefaultHttpClient(cm, httpParams);
+//        this.client = FiberHttpClientBuilder
+//                .create(Runtime.getRuntime().availableProcessors())
+//                .setMaxConnPerRoute(maxConnections)
+//                .setMaxConnTotal(maxConnections)
+//                .build();
+
+        this.client = FiberCloseableHttpAsyncClient.wrap(HttpAsyncClients.
+                custom().
+                setMaxConnPerRoute(maxConnections).
+                setMaxConnTotal(maxConnections).
+                build());
+        this.client.start();
 
         // policies (cookie)
-        this.client.getParams().setParameter(ClientPNames.COOKIE_POLICY,CookiePolicy.IGNORE_COOKIES);
+//        this.client.getParams().setParameter(ClientPNames.COOKIE_POLICY,CookiePolicy.IGNORE_COOKIES);
 
         // adding gzip support for http client
-        addGzipHeaderInRequestResponse();
+//        addGzipHeaderInRequestResponse();
 
     }
 
@@ -184,9 +200,10 @@ public class HttpConnectionPool {
      * Get the statistics
      */
     public String getStats() {
-        PoolingClientConnectionManager cm = (PoolingClientConnectionManager) this.client.getConnectionManager();
-        PoolStats stats = cm.getTotalStats();
-        return "Connections: " + stats.toString() + " AvailableRequests: " + processQueue.availablePermits();
+//        PoolingClientConnectionManager cm = (PoolingClientConnectionManager) this.client.getConnectionManager();
+//        PoolStats stats = cm.getTotalStats();
+//        return "Connections: " + stats.toString() + " AvailableRequests: " + processQueue.availablePermits();
+        return null;
     }
 
     /**
@@ -251,9 +268,10 @@ public class HttpConnectionPool {
                 if (request.getHeaders(TIMESTAMP_HEADER).length == 0) {
                     request.addHeader(TIMESTAMP_HEADER, String.valueOf(System.currentTimeMillis()));
                 }
-                response = client.execute(request);
+                response = client.execute(request, null).get();
             } catch (Exception e) {
-                logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());
+//                e.printStackTrace();
+//                logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());
                 throw e;
             } finally {
                 processQueue.release();
@@ -353,7 +371,7 @@ public class HttpConnectionPool {
             }
         }
     }
-
+/*
     private void addGzipHeaderInRequestResponse(){
 
         DefaultHttpClient httpclient = (DefaultHttpClient) this.client;
@@ -413,4 +431,5 @@ public class HttpConnectionPool {
     public void setResponseGzipEnabled(boolean responseGzipEnabled) {
         this.responseGzipEnabled = responseGzipEnabled;
     }
+    */
 }

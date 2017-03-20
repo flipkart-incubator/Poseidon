@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.sample.datasources;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
@@ -39,6 +40,7 @@ public class ArithmeticDataSource extends AbstractDataSource<ArithmeticResultDat
     }
 
     @Override
+    @Suspendable
     public ArithmeticResultDataType call() throws Exception {
         float num1 = ((Double) request.getAttribute("num1")).floatValue();
         float num2 = ((Double) request.getAttribute("num2")).floatValue();

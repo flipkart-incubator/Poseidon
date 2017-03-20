@@ -37,10 +37,11 @@ import com.flipkart.poseidon.core.PoseidonServlet;
 import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
 import com.flipkart.poseidon.filters.RequestGzipFilter;
+import com.flipkart.poseidon.handlers.http.hystrix.FiberThreadPoolExecutor;
 import com.flipkart.poseidon.healthchecks.Rotation;
+import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
-import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.*;
@@ -51,7 +52,6 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,6 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static javax.servlet.DispatcherType.REQUEST;
@@ -89,8 +88,8 @@ public class Poseidon {
         this.configuration = configuration;
         this.application = application;
 
-        dataSourceES = Executors.newCachedThreadPool();
-        filterES = Executors.newCachedThreadPool();
+        dataSourceES = new FiberThreadPoolExecutor();
+        filterES = new FiberThreadPoolExecutor();
     }
 
     public static void main(String[] args) {

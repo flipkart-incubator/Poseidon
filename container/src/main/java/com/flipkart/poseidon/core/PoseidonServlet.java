@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.core;
 
+import co.paralleluniverse.fibers.servlet.FiberHttpServlet;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.exception.DataSourceException;
@@ -49,7 +50,7 @@ import static javax.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
 
-public class PoseidonServlet extends HttpServlet {
+public class PoseidonServlet extends FiberHttpServlet {
 
     private static final Logger logger = getLogger(PoseidonServlet.class);
     private final Application application;

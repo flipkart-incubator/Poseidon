@@ -9,7 +9,7 @@
     <bean id="sampleTracingConfiguration" class="com.flipkart.poseidon.sample.api.config.SampleTracingConfiguration">
         <property name="collectorHost" value="localhost"/>
         <property name="port" value="9410"/>
-        <property name="enableTracing" value="true"/>
+        <property name="enableTracing" value="false"/>
         <property name="sampleRateMap">
             <map>
                 <entry key="*" value="100"/>

@@ -16,7 +16,7 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.flipkart.hydra.dispatcher.DefaultDispatcher;
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.hydra.dispatcher.Dispatcher;
 import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
@@ -48,10 +48,16 @@ public class OrchestratorDataSource extends AbstractDataSource {
     }
 
     @Override
+    @Suspendable
     public DataType call() throws Exception {
         APIComposer composer = new APIComposer(responseContext, initialParams, mappers, mappedBeans);
-        Dispatcher dispatcher = new DefaultDispatcher(this.legoset.getDataSourceExecutor());
-        Object response = dispatcher.execute(initialParams, tasks, composer);
+        Dispatcher dispatcher = new FiberDispatcher();
+        Object response;
+        try {
+            response = dispatcher.execute(initialParams, tasks, composer);
+        } finally {
+            dispatcher.shutdown();
+        }
 
         if (response == null) {
             return null;

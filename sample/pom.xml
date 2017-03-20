@@ -10,7 +10,7 @@
     <parent>
         <artifactId>poseidon</artifactId>
         <groupId>com.flipkart.poseidon</groupId>
-        <version>5.1.0-SNAPSHOT</version>
+        <version>5.1.0.FIBER-SNAPSHOT</version>
     </parent>
 
     <artifactId>sample</artifactId>
@@ -39,6 +39,32 @@
             <artifactId>sample-task-proxy</artifactId>
             <version>${phantom.version}</version>
         </dependency>
+<!--
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>1.8.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>osgi</artifactId>
+            <version>3.2.1-R32x_v20060919</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+-->
     </dependencies>
 
     <build>
@@ -58,6 +84,52 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!--<plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                            <excludeArtifactIds>aspectjtools</excludeArtifactIds>
+                            <includeScope>compile</includeScope>
+                            <excludeTypes>co.paralleluniverse.common.test.TestUtil</excludeTypes>
+                            <excludeScope>test</excludeScope
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <target>
+                                <taskdef name="scanSuspendables"
+                                    classname="co.paralleluniverse.fibers.instrument.SuspendablesScanner"
+                                    classpathref="maven.dependency.classpath"/>
+                                <scanSuspendables auto="false" append="true"
+                                    supersFile="target/classes/META-INF/suspendable-supers"
+                                    suspendablesFile="target/classes/META-INF/suspendables">
+                                    <fileset dir="target/classes/"/>
+                                </scanSuspendables>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
         </plugins>
     </build>
 

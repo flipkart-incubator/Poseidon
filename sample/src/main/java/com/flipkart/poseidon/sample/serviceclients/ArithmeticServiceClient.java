@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.sample.serviceclients;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
@@ -35,6 +36,7 @@ import java.util.Map;
 @Version(major = 1, minor = 0, patch = 0)
 @Description("Arithmetic service client mainly used in sample application to do arithmetic operations")
 public class ArithmeticServiceClient implements ServiceClient {
+    @Suspendable
     public float doOperation(float num1, float num2, String operation) {
         Map<String, Object> params = new HashMap<>();
         params.put("num1", num1);

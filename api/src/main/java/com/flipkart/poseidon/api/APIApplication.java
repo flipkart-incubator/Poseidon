@@ -20,6 +20,7 @@ import com.codahale.metrics.Timer;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
+import com.flipkart.poseidon.CompositeFiberCompletionService;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -48,7 +49,7 @@ public class APIApplication implements Application {
 
     @Override
     public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) {
-        lego = new Lego(legoSet, datasourceTPE, filterTPE);
+        lego = new Lego(legoSet, filterTPE);
         legoSet.setDataSourceExecutor(datasourceTPE);
         apiManager.init();
     }
@@ -68,7 +69,7 @@ public class APIApplication implements Application {
             // instead of a map as in APIBuildable), we start a meter in
             // APILegoSet.getBuildable() and stop it here
             try {
-                lego.buildResponse(request, response);
+                lego.buildResponse(request, response, new CompositeFiberCompletionService());
             } finally {
                 Object timerContext = request.getAttribute(TIMER_CONTEXT);
                 if (timerContext != null && timerContext instanceof Timer.Context) {

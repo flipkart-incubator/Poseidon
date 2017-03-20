@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.sample.datasources;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.exception.DataSourceException;
 import com.flipkart.poseidon.model.annotations.Description;
@@ -39,6 +40,7 @@ public class UserDataSource extends AbstractDataSource<UserDataType> {
     }
 
     @Override
+    @Suspendable
     public UserDataType call() throws Exception {
         try {
             String userId = request.getAttribute("userId");
