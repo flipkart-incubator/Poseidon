@@ -20,8 +20,8 @@
       "parameters": [
         "id"
       ],
-      "requestObject": "Pojo",
-      "responseObject": "Pojo",
+      "requestObject": "Object",
+      "responseObject": "Object",
       "description": [
         "Some comment about endPoint"
       ]
