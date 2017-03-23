@@ -1,0 +1,116 @@
+{
+  "service": {
+    "baseUri": "/",
+    "headers": {
+      "X-VERSION": "v1",
+      "X-REQUEST-ID": "{parameters.requestId}"
+    },
+    "description": [
+      "Sample Service Client"
+    ]
+  },
+  "parameters": {
+    "id": {
+      "type": "java.util.List<String>",
+      "description": [
+        "Post Unique ID"
+      ]
+    },
+    "userId": {
+      "type": "java.util.List<String>",
+      "description": [
+        "User Unique ID"
+      ]
+    },
+    "requestId": {
+      "type": "String",
+      "description": [
+        "Unique Request Id"
+      ]
+    },
+    "log": {
+      "type": "boolean",
+      "optional": true,
+      "description": [
+        "To log or not (Internal for demo purpose - not supported by API server)"
+      ]
+    },
+    "ids": {
+      "type": "String[]",
+      "description": [
+        "Array of IDs (Internal for demo purpose - not supported by API server)"
+      ]
+    }
+  },
+  "endPoints": {
+    "getUser": {
+      "httpMethod": "GET",
+      "uri": "users",
+      "commandName": "sampleServiceHttpRequest",
+      "parameters": [
+        "log",
+        "id"
+      ],
+      "responseObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.UserList",
+      "description": [
+        "Fetches an existing user"
+      ]
+    },
+    "getAllPostsOfUser": {
+      "httpMethod": "GET",
+      "uri": "posts",
+      "commandName": "sampleServiceHttpRequest",
+      "parameters": [
+        "userId"
+      ],
+      "responseObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Posts",
+      "description": [
+        "Fetches all posts of an user"
+      ]
+    },
+    "createPost": {
+      "httpMethod": "POST",
+      "uri": "posts",
+      "commandName": "sampleServiceHttpRequest",
+      "headers": {
+        "X-LOG": "{parameters.log}"
+      },
+      "requestObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Post",
+      "responseObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Post",
+      "description": [
+        "Creates a new post for an user"
+      ]
+    },
+    "updatePost": {
+      "httpMethod": "PUT",
+      "uri": "posts/{parameters.id}",
+      "commandName": "sampleServiceHttpRequest",
+      "parameters": [
+        "id"
+      ],
+      "requestObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Post",
+      "responseObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Post",
+      "description": [
+        "Updates a post of an user"
+      ]
+    },
+    "getPostsOfUser": {
+      "httpMethod": "GET",
+      "uri": "posts",
+      "commandName": "sampleServiceHttpRequest",
+      "parameters": [
+        "userId",
+        "ids"
+      ],
+      "responseObject": "com.flipkart.poseidon.serviceclients.sampleSC.model.v1.Posts",
+      "description": [
+        "Fetches multiple posts of an user"
+      ]
+    }
+  },
+  "exceptions": {
+    "400": "SampleServiceBadRequest",
+    "404": "SampleServiceResourceNotFound",
+    "500": "SampleServiceFailure"
+  }
+}

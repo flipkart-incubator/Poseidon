@@ -4,68 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Poseidon Service Client Sample</name>
-    <description>Poseidon sample service client to get data from a dummy online REST API</description>
+    <name>sampleSC Rome Service Client</name>
+    <description>sampleSC Rome Service Client</description>
 
     <parent>
-        <artifactId>poseidon</artifactId>
         <groupId>com.flipkart.poseidon</groupId>
-        <version>5.1.0-SNAPSHOT</version>
+        <artifactId>service-clients</artifactId>
+        <version>2.0.1</version>
     </parent>
 
+    <groupId>com.flipkart.poseidon.service-clients</groupId>
     <artifactId>sampleSC</artifactId>
-    <packaging>jar</packaging>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.flipkart.poseidon</groupId>
-            <artifactId>service-clients-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
-
-                <executions>
-                    <execution>
-                        <id>generator</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>com.flipkart.poseidon.serviceclients.generator.Generator</mainClass>
-                            <commandlineArgs>${project.basedir} ${project.version}
-                                Post.json,Posts.json,Geo.json,BaseAddress.json,Address.json,Company.json,User.json,UserList.json
-                            </commandlineArgs>
-                            <sourceRoot>${project.build.directory}/generated-sources</sourceRoot>
-                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
-                            <includePluginDependencies>true</includePluginDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>com.flipkart.poseidon</groupId>
-                        <artifactId>service-clients-core</artifactId>
-                        <version>${project.parent.version}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>com.flipkart.poseidon</groupId>
-                        <artifactId>service-clients-gen</artifactId>
-                        <version>${project.parent.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
+    <modules>
+        <module>sampleSC-model</module>
+        <module>sampleSC-service-client</module>
+    </modules>
 
 </project>
