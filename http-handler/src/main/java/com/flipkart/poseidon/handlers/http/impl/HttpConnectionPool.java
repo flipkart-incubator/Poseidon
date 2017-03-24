@@ -16,12 +16,33 @@
 
 package com.flipkart.poseidon.handlers.http.impl;
 
-import com.flipkart.poseidon.handlers.http.HttpDelete;
-import org.apache.http.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.GzipDecompressingEntity;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.conn.routing.HttpRoute;
@@ -40,11 +61,7 @@ import org.apache.http.protocol.HttpContext;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import com.flipkart.poseidon.handlers.http.HttpDelete;
 
 public class HttpConnectionPool {
 
@@ -228,6 +245,16 @@ public class HttpConnectionPool {
                 request.setEntity(new ByteArrayEntity(data));
             }
         }
+        setRequestHeaders(request, requestHeaders);
+        return execute(request);
+    }
+    
+    /**
+     * Method for executing HTTP POST request with form params
+     */
+    public HttpResponse doPOST(String uri, List<NameValuePair> formParams , Map<String, String> requestHeaders) throws Exception {
+        HttpPost request = new HttpPost(constructUrl(uri));
+        request.setEntity(new UrlEncodedFormEntity(formParams));
         setRequestHeaders(request, requestHeaders);
         return execute(request);
     }
