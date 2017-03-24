@@ -178,9 +178,6 @@ public class FiberHttpServlet extends HttpServlet {
         /* Poseidon's service context from parent thread */
         private final Map<String, Object> parentServiceContext;
 
-        /* Hystrix request context from parent thread */
-        private final HystrixRequestContext parentThreadState;
-
         /* MDC request context from parent thread */
         private final Map<String, String> mdcContext;
 
@@ -198,19 +195,17 @@ public class FiberHttpServlet extends HttpServlet {
 
             parentContext = RequestContext.getContextMap();
             parentServiceContext = ServiceContext.getContextMap();
-            parentThreadState = HystrixRequestContext.getContextForCurrentThread();
             mdcContext = MDC.getCopyOfContextMap();
             serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
         }
 
         @Override
         public final void run() throws SuspendExecution, InterruptedException {
-            existingState = HystrixRequestContext.getContextForCurrentThread();
             RequestContext.initialize();
             parentContext.forEach(RequestContext::set);
             ServiceContext.initialize();
             parentServiceContext.forEach(ServiceContext::set);
-            HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
+            HystrixRequestContext.initializeContext();
             if (mdcContext != null) {
                 MDC.setContextMap(mdcContext);
             }
@@ -223,7 +218,7 @@ public class FiberHttpServlet extends HttpServlet {
             } finally {
                 RequestContext.shutDown();
                 ServiceContext.shutDown();
-                HystrixRequestContext.setContextOnCurrentThread(existingState);
+                HystrixRequestContext.setContextOnCurrentThread(null);
                 MDC.clear();
                 Brave.getServerSpanThreadBinder().setCurrentSpan(null);
             }
