@@ -30,6 +30,7 @@ public class RequestConstants {
     public static final String METHOD = "poseidon.method";
     public static final String URI = "poseidon.uri";
     public static final String ENDPOINT_NAME = "poseidon.endpoint.name";
+    public static final String ENDPOINT_METHOD = "poseidon.endpoint.method";
     public static final String REDIRECT_URL = "poseidon.redirectURL";
     public static final String HEADERS = "poseidon.headers";
     public static final String ENABLE_TRACING = "poseidon.enableTracing";

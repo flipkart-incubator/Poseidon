@@ -47,6 +47,7 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -160,10 +161,18 @@ public class Poseidon {
     private HandlerCollection getHandlers() {
         ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
         contextHandlerCollection.setHandlers(new Handler[]{
-                getRequestLogHandler(getParentHandler()),
+                getRequestLogHandler(getGzipHandler(getParentHandler())),
                 getMetricsHandler()
         });
         return contextHandlerCollection;
+    }
+
+    private Handler getGzipHandler(Handler handler) {
+        GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.addIncludedMethods("GET", "POST", "PUT", "DELETE", "PATCH");
+        gzipHandler.addIncludedPaths("/*");
+        gzipHandler.setHandler(handler);
+        return gzipHandler;
     }
 
     private Handler getRequestLogHandler(Handler handler) {
@@ -256,7 +265,6 @@ public class Poseidon {
             servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
         }
         servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
-        servletContextHandler.addFilter(getGzipFilter(), "/*", EnumSet.of(REQUEST));
 
         List<JettyFilterConfiguration> jettyFilterConfigurations = Optional.ofNullable(configuration.getJettyConfiguration()).map(JettyConfiguration::getJettyFilterConfigurations).orElse(new ArrayList<>());
         for (JettyFilterConfiguration filterConfig : jettyFilterConfigurations) {
@@ -266,15 +274,6 @@ public class Poseidon {
                 servletContextHandler.addFilter(filterHolder, mapping, filterConfig.getDispatcherTypes());
             }
         }
-    }
-
-    /*
-     * Jetty9 GzipFilter, by default, enables compressing of response only for GET requests.
-     */
-    private FilterHolder getGzipFilter() {
-        FilterHolder gzipFilterHolder = new FilterHolder(new GzipFilter());
-        gzipFilterHolder.setInitParameter("methods", "GET,POST,PUT,DELETE,PATCH");
-        return gzipFilterHolder;
     }
 
     private PoseidonServlet getPoseidonServlet() {

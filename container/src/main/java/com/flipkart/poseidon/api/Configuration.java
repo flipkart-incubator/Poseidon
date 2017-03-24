@@ -53,4 +53,8 @@ public interface Configuration {
     default ObjectMapper getObjectMapper() {
         return ObjectMapperHelper.getMapper();
     }
+
+    default boolean collectServiceClientCommandNames() {
+        return false;
+    }
 }
