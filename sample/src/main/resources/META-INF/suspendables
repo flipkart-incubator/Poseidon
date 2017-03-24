@@ -29,7 +29,6 @@ com.flipkart.phantom.task.spi.registry.AbstractHandlerRegistry$HandlerInitFuture
 com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler.*
 com.flipkart.poseidon.handlers.http.impl.HttpConnectionPool.*
 com.flipkart.phantom.task.impl.TaskHandler.*
-javax.servlet.http.HttpServlet.*
 co.paralleluniverse.fibers.servlet.FiberHttpServlet.exec0
 com.flipkart.poseidon.core.PoseidonServlet.*
 com.flipkart.poseidon.api.APIApplication.*

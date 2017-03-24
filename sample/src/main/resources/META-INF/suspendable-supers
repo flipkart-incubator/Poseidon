@@ -24,3 +24,4 @@ com.flipkart.phantom.task.spi.TaskContext.*
 java.util.concurrent.ScheduledExecutorService.*
 flipkart.lego.concurrency.executors.CompositeCompletionService.*
 com.flipkart.poseidon.api.Application.*
+javax.servlet.http.HttpServlet.service

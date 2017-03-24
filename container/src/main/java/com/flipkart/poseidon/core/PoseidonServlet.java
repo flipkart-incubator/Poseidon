@@ -35,15 +35,16 @@ import org.springframework.http.HttpMethod;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static javax.servlet.http.HttpServletResponse.*;
@@ -55,6 +56,11 @@ public class PoseidonServlet extends FiberHttpServlet {
     private static final Logger logger = getLogger(PoseidonServlet.class);
     private final Application application;
     private final Configuration configuration;
+
+    private static final String LSTRING_FILE =
+            "javax.servlet.http.LocalStrings";
+    private static ResourceBundle lStrings =
+            ResourceBundle.getBundle(LSTRING_FILE);
 
     public PoseidonServlet(Application application, Configuration configuration) {
         this.application = application;
@@ -100,13 +106,72 @@ public class PoseidonServlet extends FiberHttpServlet {
         doRequest(PATCH, request, response);
     }
 
+    private void maybeSetLastModified(HttpServletResponse resp,
+                                      long lastModified) {
+        if (resp.containsHeader("Last-Modified"))
+            return;
+        if (lastModified >= 0)
+            resp.setDateHeader("Last-Modified", lastModified);
+    }
+
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String method = request.getMethod();
         if (PATCH.toString().equals(method)) {
             doPatch(request, response);
         } else {
-            super.service(request, response);
+            if (method.equals(GET.toString())) {
+                long lastModified = getLastModified(request);
+                if (lastModified == -1) {
+                    // servlet doesn't support if-modified-since, no reason
+                    // to go through further expensive logic
+                    doGet(request, response);
+                } else {
+                    long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+                    if (ifModifiedSince < lastModified) {
+                        // If the servlet mod time is later, call doGet()
+                        // Round down to the nearest second for a proper compare
+                        // A ifModifiedSince of -1 will always be less
+                        maybeSetLastModified(response, lastModified);
+                        doGet(request, response);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    }
+                }
+
+            } else if (method.equals(HEAD.toString())) {
+                long lastModified = getLastModified(request);
+                maybeSetLastModified(response, lastModified);
+                doHead(request, response);
+
+            } else if (method.equals(POST.toString())) {
+                doPost(request, response);
+
+            } else if (method.equals(PUT.toString())) {
+                doPut(request, response);
+
+            } else if (method.equals(DELETE.toString())) {
+                doDelete(request, response);
+
+            } else if (method.equals(OPTIONS.toString())) {
+                doOptions(request, response);
+
+            } else if (method.equals(TRACE.toString())) {
+                doTrace(request, response);
+
+            } else {
+                //
+                // Note that this means NO servlet supports whatever
+                // method was requested, anywhere on this server.
+                //
+
+                String errMsg = lStrings.getString("http.method_not_implemented");
+                Object[] errArgs = new Object[1];
+                errArgs[0] = method;
+                errMsg = MessageFormat.format(errMsg, errArgs);
+
+                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, errMsg);
+            }
         }
     }
 
