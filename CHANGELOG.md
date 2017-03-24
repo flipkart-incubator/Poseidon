@@ -1,8 +1,9 @@
-## 5.1.0 (WIP) (Feb 28, 2017)
+## 5.1.0 (WIP) (Mar 24, 2017)
 - Upgrade Jetty version to v9.4.1.v20170120
 - Support incoming PATCH method calls
 - Support PATCH calls for service clients
 - Bumping Phantom to 3.4.0
+- HttpConnectionPool supports form encoded POST body
 
 ## 5.0.0 (Jan 2, 2017)
 - Included snapshot version fixes
