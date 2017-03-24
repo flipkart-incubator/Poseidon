@@ -239,7 +239,12 @@ public class HttpConnectionPool {
      */
     public HttpResponse doPOST(String uri, List<NameValuePair> formParams , Map<String, String> requestHeaders) throws Exception {
         HttpPost request = new HttpPost(constructUrl(uri));
-        request.setEntity(new UrlEncodedFormEntity(formParams));
+		if (this.requestGzipEnabled) {
+			request.addHeader(CONTENT_ENCODING, COMPRESSION_TYPE);
+			request.setEntity(new GzipCompressingEntity(new UrlEncodedFormEntity(formParams)));
+		} else {
+			request.setEntity(new UrlEncodedFormEntity(formParams));
+		}
         setRequestHeaders(request, requestHeaders);
         return execute(request);
     }
