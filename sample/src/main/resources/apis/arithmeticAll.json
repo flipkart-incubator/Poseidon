@@ -1,0 +1,58 @@
+{
+  "url": "/v1/arithmetic",
+  "httpMethod": "GET",
+  "timeout": 10000,
+  "name": "arithmetic",
+  "params": {
+    "required": [
+      {
+        "name": "num1",
+        "datatype": "number"
+      },
+      {
+        "name": "num2",
+        "datatype": "number"
+      }
+    ]
+  },
+  "tasks": {
+    "addResultDT": {
+      "name": "ArithmeticDS_1.0.0",
+      "context": {
+        "num1": "{{$num1}}",
+        "num2": "{{$num2}}",
+        "op": "add"
+      }
+    },
+    "subtractResultDT": {
+      "name": "ArithmeticDS_1.0.0",
+      "context": {
+        "num1": "{{$num1}}",
+        "num2": "{{$num2}}",
+        "op": "subtract"
+      }
+    },
+    "multiplyResultDT": {
+      "name": "ArithmeticDS_1.0.0",
+      "context": {
+        "num1": "{{$num1}}",
+        "num2": "{{$num2}}",
+        "op": "multiply"
+      }
+    },
+    "divideResultDT": {
+      "name": "ArithmeticDS_1.0.0",
+      "context": {
+        "num1": "{{$num1}}",
+        "num2": "{{$num2}}",
+        "op": "divide"
+      }
+    }
+  },
+  "response": {
+    "add": "{{$addResultDT.result}}",
+    "subtract": "{{$subtractResultDT.result}}",
+    "multiply": "{{$multiplyResultDT.result}}",
+    "divide": "{{$divideResultDT.result}}"
+  }
+}

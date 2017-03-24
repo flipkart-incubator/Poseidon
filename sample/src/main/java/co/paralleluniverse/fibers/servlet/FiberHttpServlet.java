@@ -130,6 +130,7 @@ public class FiberHttpServlet extends HttpServlet {
         return stackSize;
     }
 
+    /*
     @Override
     @Suspendable
     final public void service(final ServletRequest req, ServletResponse res) throws ServletException, IOException {
@@ -165,6 +166,7 @@ public class FiberHttpServlet extends HttpServlet {
         else
             new Fiber(null, stackSize, new ServletSuspendableRunnable(this, ac, r, response)).start();
     }
+    */
 
     private final static class ServletSuspendableRunnable implements SuspendableRunnable {
         private final AsyncContext ac;
