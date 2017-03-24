@@ -3,6 +3,7 @@
 - Support incoming PATCH method calls
 - Support PATCH calls for service clients
 - Bumping Phantom to 3.4.0
+- HttpConnectionPool supports form encoded POST body
 
 ## 5.0.0 (Jan 2, 2017)
 - Included snapshot version fixes
