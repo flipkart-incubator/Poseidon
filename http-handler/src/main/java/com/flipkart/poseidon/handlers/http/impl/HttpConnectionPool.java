@@ -21,6 +21,7 @@ import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.GzipDecompressingEntity;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
@@ -42,6 +43,7 @@ import org.trpr.platform.core.spi.logging.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -232,6 +234,21 @@ public class HttpConnectionPool {
         return execute(request);
     }
 
+    /**
+     * Method for executing HTTP POST request with form params
+     */
+    public HttpResponse doPOST(String uri, List<NameValuePair> formParams , Map<String, String> requestHeaders) throws Exception {
+        HttpPost request = new HttpPost(constructUrl(uri));
+		if (this.requestGzipEnabled) {
+			request.addHeader(CONTENT_ENCODING, COMPRESSION_TYPE);
+			request.setEntity(new GzipCompressingEntity(new UrlEncodedFormEntity(formParams)));
+		} else {
+			request.setEntity(new UrlEncodedFormEntity(formParams));
+		}
+        setRequestHeaders(request, requestHeaders);
+        return execute(request);
+    }
+    
     /**
      * Method for executing HTTP DELETE request
      */
