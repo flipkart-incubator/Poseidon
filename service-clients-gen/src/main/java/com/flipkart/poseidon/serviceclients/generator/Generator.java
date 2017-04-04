@@ -16,43 +16,58 @@
 
 package com.flipkart.poseidon.serviceclients.generator;
 
-import com.flipkart.poseidon.serviceclients.executor.CommandFailedException;
-import com.flipkart.poseidon.serviceclients.executor.GitCommandExecutor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flipkart.lyrics.Song;
+import com.flipkart.lyrics.config.DefaultTune;
+import com.flipkart.lyrics.config.Tune;
+import com.flipkart.lyrics.model.TypeModel;
+import com.flipkart.poseidon.serviceclients.converter.JsonSchemaToLyricsMapper;
 import com.flipkart.poseidon.serviceclients.idl.pojo.ServiceIDL;
 import com.flipkart.poseidon.serviceclients.idl.pojo.Version;
 import com.flipkart.poseidon.serviceclients.idl.reader.IDLReader;
+import com.flipkart.poseidon.serviceclients.mapper.ClassDesc;
 import com.sun.codemodel.JCodeModel;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by mohan.pandian on 20/02/15.
  *
+ * Updated 31/3/17
  * Generates pojo and service client interface & implementation using
- * PojoGenerator  and ServiceGenerator respectively.
+ * Lyrics  and ServiceGenerator respectively.
  */
 public class Generator {
+    private final static JCodeModel jCodeModel = new JCodeModel();
+
+
     private final static String IDL_BASE_PATH = ".src.main.resources.idl.";
     private final static String POJO_FOLDER_NAME = "pojos";
     private final static String SERVICE_FOLDER_NAME = "service";
     private final static String DESTINATION_JAVA_FOLDER = ".target.generated-sources.";
     private final static String PACKAGE_NAME = "com.flipkart.poseidon.serviceclients."; // module name and major version will be appended to this
-    private final static JCodeModel jCodeModel = new JCodeModel();
     private final static Logger logger = LoggerFactory.getLogger(Generator.class);
 
+    private static ObjectMapper objectMapper;
     private static String moduleParentPath;
     private static String modulePath;
     private static String moduleName;
     private static Version version;
     private static String packageName;
-    private static String[] pojoOrdering;
+    private static Song serviceClientSong;
+    private static boolean isOldJson;
 
-    public static void main(String[] args) throws Exception {
+    static {
+        objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+    }
+
+    public static void main(String args[]) throws Exception {
         if (!validateInput(args)) {
             printUsage();
             System.exit(-1);
@@ -61,12 +76,60 @@ public class Generator {
         logger.info("Using module path: {}", modulePath);
         logger.info("Using module name: {}", moduleName);
         logger.info("Using version: {}", version);
-        if (pojoOrdering != null && pojoOrdering.length > 0) {
-            logger.info("Using pojo ordering: {}", Arrays.toString(pojoOrdering));
-        }
-
+        isOldJson = !(args.length > 2 && args[2].equals("useLyrics"));
         ensurePaths();
         generate();
+    }
+
+    private static void generatePojo(File pojoFolder) throws Exception {
+        if (!pojoFolder.exists()) {
+            return;
+        }
+        File[] files;
+        files = pojoFolder.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (file.isDirectory()) {
+                generatePojo(file);
+                continue;
+            }
+            logger.info("Generating from " + file.getName());
+            String className = file.getName().replaceFirst("[.][^.]+$", ""); // Remove extension
+            if (isOldJson) {
+                generateFromOldJson(className, file.getPath());
+            } else {
+                generatePojo(className, file.getPath());
+            }
+        }
+    }
+
+    private static void generateFromOldJson(String className, String filePath) throws Exception {
+        String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
+        List<ClassDesc> classDescList = JsonSchemaToLyricsMapper.getInstance().convert(filePath, packageName, className);
+        for (ClassDesc classDesc : classDescList) {
+            serviceClientSong.createType(classDesc.getClassName(), packageName, classDesc.getTypeModel(), new File(destinationFolder));
+        }
+    }
+
+    private static void generatePojo(String className, String filePath) throws IOException {
+        String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
+        TypeModel typeModel = objectMapper.readValue(new File(filePath), TypeModel.class);
+        serviceClientSong.createType(className, packageName, typeModel, new File(destinationFolder));
+    }
+
+    private static void ensurePaths() {
+        File javaFolder = new File(modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar));
+        if (!javaFolder.exists() && !javaFolder.mkdirs()) {
+            logger.warn("Couldn't create destination java folder");
+        }
+    }
+
+    private static void printUsage() {
+        logger.error("Module path and version are required. Pojo files ordering is optional");
+        logger.error("IntelliJ IDEA Ex: $MODULE_DIR$ 1.0.0-SNAPSHOT pojo1.json,pojo2.json");
+        logger.error("Maven Ex: ${project.basedir} ${project.version} pojo1.json,pojo2.json");
     }
 
     private static boolean validateInput(String[] args) {
@@ -86,19 +149,10 @@ public class Generator {
         }
         moduleParentPath = modulePath.substring(0, lastIndex);
 
-        determineVersion(args[1]);
+        setVersion(args[1]);
         String majorVersion = "v" + version.getMajor();
         packageName = PACKAGE_NAME + moduleName + "." + majorVersion;
-
-        if (args.length > 2) {
-            pojoOrdering = args[2].split(",");
-        }
         return true;
-    }
-
-    private static void determineVersion(String localPomVersion) {
-        setVersion(localPomVersion);
-//        updateVersion();
     }
 
     private static void setVersion(String moduleVersion) {
@@ -125,70 +179,16 @@ public class Generator {
         }
     }
 
-    private static void updateVersion() {
-        String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
-        File folder = new File(modulePath + idlBasePath + SERVICE_FOLDER_NAME);
-        if (folder.exists()) {
-            File[] files = folder.listFiles();
-            if (files != null && files.length > 0) {
-                Versioner.getInstance().updateVersion(moduleParentPath, moduleName, files[0].getPath(), version);
-            }
-        }
-    }
-
-    private static void printUsage() {
-        logger.error("Module path and version are required. Pojo files ordering is optional");
-        logger.error("IntelliJ IDEA Ex: $MODULE_DIR$ 1.0.0-SNAPSHOT pojo1.json,pojo2.json");
-        logger.error("Maven Ex: ${project.basedir} ${project.version} pojo1.json,pojo2.json");
-    }
-
-    private static void ensurePaths() {
-        File javaFolder = new File(modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar));
-        if (!javaFolder.exists() && !javaFolder.mkdirs()) {
-            logger.warn("Couldn't create destination java folder");
-        }
-    }
-
     private static void generate() throws Exception {
+
+        Tune serviceClientTune = new DefaultTune();
+        serviceClientSong = new Song(serviceClientTune);
         String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
         File pojoFolder = new File(modulePath + idlBasePath + POJO_FOLDER_NAME);
         generatePojo(pojoFolder);
 
         File serviceFolder = new File(modulePath + idlBasePath + SERVICE_FOLDER_NAME);
         generateService(serviceFolder);
-    }
-
-    private static void generatePojo(File pojoFolder) throws Exception {
-        if (!pojoFolder.exists()) {
-            return;
-        }
-
-        File[] files;
-        if (pojoOrdering != null && pojoOrdering.length > 0) {
-            files = new File[pojoOrdering.length];
-            int i = 0;
-            for (String fileName : pojoOrdering) {
-                File file = new File(pojoFolder.getPath() + File.separator + fileName);
-                if (file.isDirectory()) {
-                    throw new IllegalArgumentException("Pojo ordering can't contain a directory");
-                }
-                files[i++] = file;
-            }
-        } else {
-            files = pojoFolder.listFiles();
-        }
-        if (files == null) {
-            return;
-        }
-        for (File file : files) {
-            if (file.isDirectory()) {
-                generatePojo(file);
-                continue;
-            }
-            logger.info("Generating from " + file.getName());
-            String className = file.getName().replaceFirst("[.][^.]+$", ""); // Remove extension
-            generatePojo(className, file.getPath());
-        }
     }
 
     private static void generateService(File serviceFolder) throws Exception {
@@ -207,17 +207,6 @@ public class Generator {
         }
     }
 
-    private static void generatePojo(String className, String filePath) throws Exception {
-        JsonValidator.getInstance().validatePojo(filePath);
-
-        String pojoJson = FileUtils.readFileToString(new File(filePath));
-        //javaType should contain FQN of referenced (to-be-generated) class. But as the package is determined
-        //at runtime (containing version), we inject the package name here
-        pojoJson = pojoJson.replaceAll("\"javaType\"\\s*:\\s*\"(?!.*\\.)", "\"javaType\": \"" + packageName + ".");
-        String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
-
-        PojoGenerator.getInstance().generate(pojoJson, jCodeModel, destinationFolder, className, packageName);
-    }
 
     private static void generateService(String className, String filePath) throws Exception {
         JsonValidator.getInstance().validateService(filePath);
@@ -247,4 +236,5 @@ public class Generator {
             }
         }
     }
+
 }
