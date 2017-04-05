@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>5.1.1-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>service-clients-gen</artifactId>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.flipkart.rome</groupId>
             <artifactId>lyrics-json</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

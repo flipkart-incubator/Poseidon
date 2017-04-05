@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by prasad.krishna on 24/03/17.
  */
-public class FieldDesc {
+public class FieldDescriptor {
 
     private Type type;
     @JsonProperty("enum")
@@ -17,7 +17,7 @@ public class FieldDesc {
     private String description;
     private boolean usePrimitives;
     private boolean required;
-    private FieldDesc items;
+    private FieldDescriptor items;
     private FormatType format;
     private boolean optional;
     @JsonProperty("default")
@@ -71,11 +71,11 @@ public class FieldDesc {
         this.required = required;
     }
 
-    public FieldDesc getItems() {
+    public FieldDescriptor getItems() {
         return items;
     }
 
-    public void setItems(FieldDesc items) {
+    public void setItems(FieldDescriptor items) {
         this.items = items;
     }
 

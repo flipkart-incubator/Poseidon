@@ -8,17 +8,17 @@ import java.util.Map;
 /**
  * Created by prasad.krishna on 24/03/17.
  */
-public class ServiceClientPojoMapper {
+public class ServiceClientPojo {
 
     private Type type;
     private Object additionalProperties;
     private String description;
-    private Map<String, FieldDesc> properties;
+    private Map<String, FieldDescriptor> properties;
     @JsonProperty("enum")
     private List<String> enumeration;
     private List<String> javaEnumNames;
     @JsonProperty("extends")
-    private FieldDesc extendedClass;
+    private FieldDescriptor extendedClass;
 
     public Type getType() {
         return type;
@@ -44,11 +44,11 @@ public class ServiceClientPojoMapper {
         this.description = description;
     }
 
-    public Map<String, FieldDesc> getProperties() {
+    public Map<String, FieldDescriptor> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, FieldDesc> properties) {
+    public void setProperties(Map<String, FieldDescriptor> properties) {
         this.properties = properties;
     }
 
@@ -60,11 +60,11 @@ public class ServiceClientPojoMapper {
         this.enumeration = enumeration;
     }
 
-    public FieldDesc getExtendedClass() {
+    public FieldDescriptor getExtendedClass() {
         return extendedClass;
     }
 
-    public void setExtendedClass(FieldDesc extendedClass) {
+    public void setExtendedClass(FieldDescriptor extendedClass) {
         this.extendedClass = extendedClass;
     }
 

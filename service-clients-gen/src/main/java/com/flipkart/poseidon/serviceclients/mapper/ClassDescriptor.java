@@ -5,11 +5,11 @@ import com.flipkart.lyrics.model.TypeModel;
 /**
  * Created by prasad.krishna on 30/03/17.
  */
-public class ClassDesc {
+public class ClassDescriptor {
     private String className;
     private TypeModel typeModel;
 
-    public ClassDesc(String className, TypeModel typeModel) {
+    public ClassDescriptor(String className, TypeModel typeModel) {
         this.className = className;
         this.typeModel = typeModel;
     }

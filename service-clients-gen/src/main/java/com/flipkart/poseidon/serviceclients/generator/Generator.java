@@ -26,7 +26,7 @@ import com.flipkart.poseidon.serviceclients.converter.JsonSchemaToLyricsMapper;
 import com.flipkart.poseidon.serviceclients.idl.pojo.ServiceIDL;
 import com.flipkart.poseidon.serviceclients.idl.pojo.Version;
 import com.flipkart.poseidon.serviceclients.idl.reader.IDLReader;
-import com.flipkart.poseidon.serviceclients.mapper.ClassDesc;
+import com.flipkart.poseidon.serviceclients.mapper.ClassDescriptor;
 import com.sun.codemodel.JCodeModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,9 +107,9 @@ public class Generator {
 
     private static void generateFromOldJson(String className, String filePath) throws Exception {
         String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
-        List<ClassDesc> classDescList = JsonSchemaToLyricsMapper.getInstance().convert(filePath, packageName, className);
-        for (ClassDesc classDesc : classDescList) {
-            serviceClientSong.createType(classDesc.getClassName(), packageName, classDesc.getTypeModel(), new File(destinationFolder));
+        List<ClassDescriptor> classDescriptorList = JsonSchemaToLyricsMapper.getInstance().convert(filePath, packageName, className);
+        for (ClassDescriptor classDescriptor : classDescriptorList) {
+            serviceClientSong.createType(classDescriptor.getClassName(), packageName, classDescriptor.getTypeModel(), new File(destinationFolder));
         }
     }
 
