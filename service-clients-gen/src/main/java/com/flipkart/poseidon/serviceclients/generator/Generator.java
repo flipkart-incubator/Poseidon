@@ -181,7 +181,7 @@ public class Generator {
 
     private static void generate() throws Exception {
 
-        Tune serviceClientTune = new DefaultTune();
+        Tune serviceClientTune = new PoseidonTune();
         serviceClientSong = new Song(serviceClientTune);
         String idlBasePath = IDL_BASE_PATH.replace('.', File.separatorChar);
         File pojoFolder = new File(modulePath + idlBasePath + POJO_FOLDER_NAME);
