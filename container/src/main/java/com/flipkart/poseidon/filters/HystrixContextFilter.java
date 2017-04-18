@@ -18,6 +18,7 @@ package com.flipkart.poseidon.filters;
 
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.metrics.Metrics;
@@ -70,7 +71,9 @@ public class HystrixContextFilter implements Filter {
         // Ingest API response status codes for HttpServletResponse
         if (response instanceof HttpServletResponse && !StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
             String status = (((HttpServletResponse) response).getStatus() / 100) + "XX";
-            Metrics.getRegistry().counter("poseidon.api." + RequestContext.get(ENDPOINT_NAME) + "." + status).inc();
+            Metrics.getRegistry()
+                    .counter("poseidon.api." + RequestContext.get(ENDPOINT_NAME) + "_" + RequestContext.get(RequestConstants.METHOD) + "." + status)
+                    .inc();
         }
     }
 
