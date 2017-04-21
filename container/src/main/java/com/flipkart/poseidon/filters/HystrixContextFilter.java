@@ -127,11 +127,11 @@ public class HystrixContextFilter implements Filter {
      * A command might not have been executed (say threadpool/semaphore rejected,
      * short circuited). Command might have been executed but failed (say timed out,
      * command execution failed).
-     * <p>
+     *
      * This is required as Phantom's RequestLogger logs failures of sync command
      * executions alone (and not async command executions) and doesn't provide request
      * level view of all commands.
-     * <p>
+     *
      * We log global headers here as it typically contains request id
      */
     private void logFailedHystrixCommands(ServletRequest request) {
