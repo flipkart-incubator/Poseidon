@@ -21,6 +21,7 @@ import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.helpers.MetricsHelper;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
@@ -72,7 +73,7 @@ public class HystrixContextFilter implements Filter {
         if (response instanceof HttpServletResponse && !StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
             String status = (((HttpServletResponse) response).getStatus() / 100) + "XX";
             Metrics.getRegistry()
-                    .counter("poseidon.api." + RequestContext.get(ENDPOINT_NAME) + "_" + RequestContext.get(RequestConstants.METHOD) + "." + status)
+                    .counter(MetricsHelper.getStatusCodeMetricsName(RequestContext.get(ENDPOINT_NAME), RequestContext.get(RequestConstants.METHOD), status))
                     .inc();
         }
     }
@@ -126,11 +127,11 @@ public class HystrixContextFilter implements Filter {
      * A command might not have been executed (say threadpool/semaphore rejected,
      * short circuited). Command might have been executed but failed (say timed out,
      * command execution failed).
-     *
+     * <p>
      * This is required as Phantom's RequestLogger logs failures of sync command
      * executions alone (and not async command executions) and doesn't provide request
      * level view of all commands.
-     *
+     * <p>
      * We log global headers here as it typically contains request id
      */
     private void logFailedHystrixCommands(ServletRequest request) {
