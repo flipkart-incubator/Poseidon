@@ -27,6 +27,7 @@ public class MetricsHelper {
     public static String getStatusCodeMetricsName(String endpoint, String method, String status) {
         return new StringBuilder(BASE_METRICS_NAME)
                 .append(endpoint)
+                .append(DEFAULT_DELIMITER)
                 .append(method)
                 .append(DEFAULT_DELIMITER)
                 .append(status)
