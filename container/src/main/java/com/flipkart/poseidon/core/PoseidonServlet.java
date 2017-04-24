@@ -19,6 +19,7 @@ package com.flipkart.poseidon.core;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.exception.DataSourceException;
+import com.flipkart.poseidon.internal.ByteArrayDataType;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -188,8 +189,8 @@ public class PoseidonServlet extends HttpServlet {
         if (responseObj != null) {
             if (responseObj instanceof String) {
             	httpResponse.getWriter().println((String)responseObj);
-            } else if (responseObj instanceof byte[]) {
-            	byte[] rawBytes = (byte[])responseObj;
+            } else if (responseObj instanceof ByteArrayDataType) {
+            	byte[] rawBytes = ((ByteArrayDataType)responseObj).getRawBytes();
             	// we override default response meta-data as the data is raw bytes
             	httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
             	httpResponse.setContentLength(rawBytes.length);
