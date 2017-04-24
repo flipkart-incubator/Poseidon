@@ -186,13 +186,17 @@ public class PoseidonServlet extends HttpServlet {
         httpResponse.setStatus(statusCode);
         Object responseObj = poseidonResponse.getResponse();
         if (responseObj != null) {
-            String responseStr = "";
             if (responseObj instanceof String) {
-                responseStr = (String) responseObj;
+            	httpResponse.getWriter().println((String)responseObj);
+            } else if (responseObj instanceof byte[]) {
+            	byte[] rawBytes = (byte[])responseObj;
+            	// we override default response meta-data as the data is raw bytes
+            	httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
+            	httpResponse.setContentLength(rawBytes.length);
+            	httpResponse.getOutputStream().write(rawBytes);
             } else {
-                responseStr = configuration.getObjectMapper().writeValueAsString(responseObj);
+            	httpResponse.getWriter().println(configuration.getObjectMapper().writeValueAsString(responseObj));
             }
-            httpResponse.getWriter().println(responseStr);
         }
     }
 
