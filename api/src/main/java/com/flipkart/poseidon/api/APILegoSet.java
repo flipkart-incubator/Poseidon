@@ -21,6 +21,7 @@ import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.ds.trie.KeyWrapper;
 import com.flipkart.poseidon.ds.trie.Trie;
+import com.flipkart.poseidon.helpers.MetricsHelper;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
@@ -106,7 +107,7 @@ public abstract class APILegoSet extends PoseidonLegoSet {
 
             String name = pojo.getName();
             if (name != null && !name.isEmpty()) {
-                poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer("poseidon.api." + name + "." + httpMethod).time());
+                poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer(MetricsHelper.getApiTimerMetricsName(name, httpMethod)).time());
             }
         }
 
