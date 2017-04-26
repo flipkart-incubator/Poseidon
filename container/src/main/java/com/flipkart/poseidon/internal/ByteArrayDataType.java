@@ -24,7 +24,7 @@ import flipkart.lego.api.entities.DataType;
 
 @Name("ByteArrayDataType")
 @Version(major = 1, minor = 0, patch = 0)
-@Description("DataType wrapper for Lists")
+@Description("DataType wrapper for byte array")
 public class ByteArrayDataType implements DataType {
 
 	private static final long serialVersionUID = 1L;
@@ -36,7 +36,7 @@ public class ByteArrayDataType implements DataType {
     }
 
     public ByteArrayDataType(byte[] rawBytes) {
-        this.rawBytes = rawBytes;
+    	this.rawBytes = rawBytes;
     }
 
 	public byte[] getRawBytes() {
