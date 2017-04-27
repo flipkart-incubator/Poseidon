@@ -31,10 +31,6 @@ public class ByteArrayDataType implements DataType {
 	
 	private byte[] rawBytes;
 	
-    public ByteArrayDataType() {
-        super();
-    }
-
     public ByteArrayDataType(byte[] rawBytes) {
     	this.rawBytes = rawBytes;
     }
