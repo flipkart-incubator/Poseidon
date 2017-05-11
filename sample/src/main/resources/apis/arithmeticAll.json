@@ -21,7 +21,7 @@
       "context": {
         "num1": "{{$num1}}",
         "num2": "{{$num2}}",
-        "op": "add"
+        "operation": "add"
       }
     },
     "subtractResultDT": {
@@ -29,7 +29,7 @@
       "context": {
         "num1": "{{$num1}}",
         "num2": "{{$num2}}",
-        "op": "subtract"
+        "operation": "subtract"
       }
     },
     "multiplyResultDT": {
@@ -37,7 +37,7 @@
       "context": {
         "num1": "{{$num1}}",
         "num2": "{{$num2}}",
-        "op": "multiply"
+        "operation": "multiply"
       }
     },
     "divideResultDT": {
@@ -45,7 +45,7 @@
       "context": {
         "num1": "{{$num1}}",
         "num2": "{{$num2}}",
-        "op": "divide"
+        "operation": "divide"
       }
     }
   },

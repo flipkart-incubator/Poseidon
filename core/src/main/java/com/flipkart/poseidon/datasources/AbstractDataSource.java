@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.datasources;
 
+import co.paralleluniverse.fibers.Suspendable;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
@@ -35,26 +36,31 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         this.request = request;
     }
 
+    @Suspendable
     protected <Q extends DataType> Future<Q> execute(String dsId, Map<String, Object> requestMap) throws Exception {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
         dataSourceRequest.setAttributes(requestMap);
         return execute(dsId, dataSourceRequest);
     }
 
+    @Suspendable
     protected <Q extends DataType> Future<Q> execute(AbstractDataSource<Q> dataSource) throws Exception {
         return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
     }
 
+    @Suspendable
     protected <Q extends DataType> Future<Q> execute(String dsId, Request request) throws Exception {
         DataSource<Q> dataSource = this.legoset.getDataSource(dsId, request);
         return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
+    @Suspendable
     protected <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
         return dataSource.call();
     }
 
     @Override
+    @Suspendable
     public abstract T call() throws Exception;
 
     protected Request getRequest() {
