@@ -75,41 +75,29 @@ public class HystrixContextScheduler extends Scheduler {
                 throw new RejectedExecutionException();
             }
 
-            try {
-                final AtomicReference<Subscription> sf = new AtomicReference<Subscription>();
-                final Subscription s = Subscriptions.from(new Fiber<Void>(fiberScheduler, new SuspendableRunnable() {
-
-                    @Override
-                    public void run() throws SuspendExecution {
-                        try {
-                            if (innerSubscription.isUnsubscribed()) {
-                                return;
-                            }
-                            action.call();
-                        } finally {
-                            // remove the subscription now that we're completed
-                            Subscription s = sf.get();
-                            if (s != null) {
-                                innerSubscription.remove(s);
-                            }
-                        }
+            final AtomicReference<Subscription> sf = new AtomicReference<Subscription>();
+            final Subscription s = Subscriptions.from(new Fiber<Void>(fiberScheduler, () -> {
+                try {
+                    if (innerSubscription.isUnsubscribed()) {
+                        return;
                     }
-                }).start());
-
-                sf.set(s);
-                innerSubscription.add(s);
-                return Subscriptions.create(new Action0() {
-
-                    @Override
-                    public void call() {
-                        s.unsubscribe();
-                        innerSubscription.remove(s);
+                    action.call();
+                } finally {
+                    // remove the subscription now that we're completed
+                    Subscription s1 = sf.get();
+                    if (s1 != null) {
+                        innerSubscription.remove(s1);
                     }
+                    semaphore.release();
+                }
+            }).start());
 
-                });
-            } finally {
-                semaphore.release();
-            }
+            sf.set(s);
+            innerSubscription.add(s);
+            return Subscriptions.create(() -> {
+                s.unsubscribe();
+                innerSubscription.remove(s);
+            });
         }
 
         @Override
