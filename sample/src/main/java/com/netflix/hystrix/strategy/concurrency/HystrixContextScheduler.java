@@ -21,14 +21,14 @@ import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.FiberScheduler;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.SuspendableRunnable;
-import com.netflix.hystrix.HystrixThreadPool;
+import co.paralleluniverse.strands.concurrent.Semaphore;
 import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
-import rx.functions.Func0;
 import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.Subscriptions;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,31 +37,31 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class HystrixContextScheduler extends Scheduler {
     private final FiberScheduler fiberScheduler;
+    private final Semaphore semaphore;
 
-    public HystrixContextScheduler(FiberScheduler fiberScheduler) {
+    public HystrixContextScheduler(FiberScheduler fiberScheduler, Semaphore semaphore) {
         if (fiberScheduler == null)
             throw new IllegalArgumentException("Fiber scheduler is null");
         this.fiberScheduler = fiberScheduler;
+        this.semaphore = semaphore;
     }
 
-    public HystrixContextScheduler(HystrixConcurrencyStrategy concurrencyStrategy, HystrixThreadPool threadPool, Func0<Boolean> shouldInterruptThread) {
-        this();
-    }
-
-    private HystrixContextScheduler() {
-        this(DefaultFiberScheduler.getInstance());
+    public HystrixContextScheduler(Semaphore semaphore) {
+        this(DefaultFiberScheduler.getInstance(), semaphore);
     }
 
     @Override
     public Scheduler.Worker createWorker() {
-        return new EventLoopScheduler();
+        return new EventLoopScheduler(semaphore);
     }
 
 
     private class EventLoopScheduler extends Scheduler.Worker implements Subscription {
         private final CompositeSubscription innerSubscription = new CompositeSubscription();
+        private final Semaphore semaphore;
 
-        private EventLoopScheduler() {
+        private EventLoopScheduler(Semaphore semaphore) {
+            this.semaphore = semaphore;
         }
 
         @Override
@@ -71,75 +71,50 @@ public class HystrixContextScheduler extends Scheduler {
                 return Subscriptions.empty();
             }
 
-            final AtomicReference<Subscription> sf = new AtomicReference<Subscription>();
-            final Subscription s = Subscriptions.from(new Fiber<Void>(fiberScheduler, new SuspendableRunnable() {
+            if (!semaphore.tryAcquire()) {
+                throw new RejectedExecutionException();
+            }
 
-                @Override
-                public void run() throws SuspendExecution {
-                    try {
-                        if (innerSubscription.isUnsubscribed()) {
-                            return;
-                        }
-                        action.call();
-                    } finally {
-                        // remove the subscription now that we're completed
-                        Subscription s = sf.get();
-                        if (s != null) {
-                            innerSubscription.remove(s);
+            try {
+                final AtomicReference<Subscription> sf = new AtomicReference<Subscription>();
+                final Subscription s = Subscriptions.from(new Fiber<Void>(fiberScheduler, new SuspendableRunnable() {
+
+                    @Override
+                    public void run() throws SuspendExecution {
+                        try {
+                            if (innerSubscription.isUnsubscribed()) {
+                                return;
+                            }
+                            action.call();
+                        } finally {
+                            // remove the subscription now that we're completed
+                            Subscription s = sf.get();
+                            if (s != null) {
+                                innerSubscription.remove(s);
+                            }
                         }
                     }
-                }
-            }).start());
+                }).start());
 
-            sf.set(s);
-            innerSubscription.add(s);
-            return Subscriptions.create(new Action0() {
+                sf.set(s);
+                innerSubscription.add(s);
+                return Subscriptions.create(new Action0() {
 
-                @Override
-                public void call() {
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
-                }
+                    @Override
+                    public void call() {
+                        s.unsubscribe();
+                        innerSubscription.remove(s);
+                    }
 
-            });
+                });
+            } finally {
+                semaphore.release();
+            }
         }
 
         @Override
         public Subscription schedule(final Action0 action, final long delayTime, final TimeUnit unit) {
-            final AtomicReference<Subscription> sf = new AtomicReference<Subscription>();
-
-            final Subscription s = Subscriptions.from(new Fiber<Void>(fiberScheduler, new SuspendableRunnable() {
-
-                @Override
-                public void run() throws InterruptedException, SuspendExecution {
-                    Fiber.sleep(delayTime, unit);
-                    try {
-                        if (innerSubscription.isUnsubscribed()) {
-                            return;
-                        }
-                        // now that the delay is past schedule the work to be done for real on the UI thread
-                        action.call();
-                    } finally {
-                        // remove the subscription now that we're completed
-                        Subscription s = sf.get();
-                        if (s != null) {
-                            innerSubscription.remove(s);
-                        }
-                    }
-                }
-            }).start());
-
-            sf.set(s);
-            innerSubscription.add(s);
-            return Subscriptions.create(new Action0() {
-
-                @Override
-                public void call() {
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
-                }
-
-            });
+            throw new IllegalStateException("Hystrix does not support delayed scheduling");
         }
 
         @Override

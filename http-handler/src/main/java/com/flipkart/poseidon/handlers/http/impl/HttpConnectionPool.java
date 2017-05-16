@@ -16,37 +16,33 @@
 
 package com.flipkart.poseidon.handlers.http.impl;
 
-import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.fibers.httpasyncclient.FiberCloseableHttpAsyncClient;
-import co.paralleluniverse.fibers.httpclient.FiberHttpClientBuilder;
 import com.flipkart.poseidon.handlers.http.HttpDelete;
-import org.apache.http.*;
-import org.apache.http.client.HttpClient;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.params.CookiePolicy;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.pool.PoolStats;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
+import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
+import org.apache.http.nio.conn.NoopIOSessionStrategy;
+import org.apache.http.nio.conn.SchemeIOSessionStrategy;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
+import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.protocol.HttpContext;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +80,7 @@ public class HttpConnectionPool {
     private Semaphore processQueue;
     private boolean requestGzipEnabled;
     private boolean responseGzipEnabled;
+    private DummyFutureCallback futureCallback;
 
 
     /** Add a value to headers */
@@ -103,7 +100,7 @@ public class HttpConnectionPool {
      */
     protected HttpConnectionPool(final String name , String host, Integer port, Boolean secure, Integer connectionTimeout,
                                  Integer operationTimeout, Integer maxConnections, Integer processQueueSize,
-                                 Integer timeToLiveInSecs) {
+                                 Integer timeToLiveInSecs) throws Exception {
         this.name = name;
         this.host = host;
         this.port = port;
@@ -117,56 +114,68 @@ public class HttpConnectionPool {
         this.responseGzipEnabled = false;
 
 
-        // create scheme
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        RegistryBuilder<SchemeIOSessionStrategy> registryBuilder = RegistryBuilder.create();
         if (this.secure) {
-            schemeRegistry.register(new Scheme("https", port, SSLSocketFactory.getSocketFactory()));
+            registryBuilder.register("https", SSLIOSessionStrategy.getDefaultStrategy());
         } else {
-            schemeRegistry.register(new Scheme("http", port, PlainSocketFactory.getSocketFactory()));
+            registryBuilder.register("http", NoopIOSessionStrategy.INSTANCE);
         }
 
-        // create connection manager
-        PoolingClientConnectionManager cm;
-        if (this.timeToLiveInSecs > 0 ) {
-            cm = new PoolingClientConnectionManager(schemeRegistry,this.timeToLiveInSecs, TimeUnit.SECONDS);
-        } else {
-            cm = new PoolingClientConnectionManager(schemeRegistry);
-        }
+        IOReactorConfig reactorConfig = IOReactorConfig.custom().
+                setConnectTimeout(connectionTimeout).
+                setSoTimeout(operationTimeout).
+                setIoThreadCount(1).
+                build();
 
-        // Max pool size
+        ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(reactorConfig);
+        PoolingNHttpClientConnectionManager cm = new PoolingNHttpClientConnectionManager(ioReactor, null, registryBuilder.build(), null, null, timeToLiveInSecs, TimeUnit.SECONDS);
         cm.setMaxTotal(maxConnections);
-
-        // Increase default max connection per route to 20
         cm.setDefaultMaxPerRoute(maxConnections);
+        cm.setMaxPerRoute(new HttpRoute(new HttpHost(host, port)), maxConnections);
 
-        // Increase max connections for host:port
-        HttpHost httpHost = new HttpHost(host, port);
-        cm.setMaxPerRoute(new HttpRoute(httpHost), maxConnections);
-
-        // set timeouts
-        HttpParams httpParams = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, connectionTimeout);
-        HttpConnectionParams.setSoTimeout(httpParams, operationTimeout);
-
-        // create client pool
 //        this.client = FiberHttpClientBuilder
 //                .create(Runtime.getRuntime().availableProcessors())
 //                .setMaxConnPerRoute(maxConnections)
 //                .setMaxConnTotal(maxConnections)
 //                .build();
 
-        this.client = FiberCloseableHttpAsyncClient.wrap(HttpAsyncClients.
-                custom().
+        HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClientBuilder.create().
                 setMaxConnPerRoute(maxConnections).
                 setMaxConnTotal(maxConnections).
-                build());
+                disableCookieManagement().
+                setConnectionManager(cm);
+
+        httpAsyncClientBuilder.addInterceptorLast((HttpRequest httpRequest, HttpContext httpContext) -> {
+            if (isResponseGzipEnabled() && !httpRequest.containsHeader(ACCEPT_ENCODING)) {
+                httpRequest.addHeader(ACCEPT_ENCODING, COMPRESSION_TYPE);
+            }
+        });
+        /*
+        Apache async http client doesn't support compression
+        http://httpclient-users.hc.apache.narkive.com/HTCFbPfx/httpasyncclient-basicasyncrequestproducer-prevents-httprequestinterceptor-from-replacing-httpentity-
+        Hence we manually decompress after executing request. Check execute(HttpRequestBase request) below.
+        This looks better too as decompression won't block IO dispatcher threads
+        httpAsyncClientBuilder.addInterceptorFirst((HttpResponse httpResponse, HttpContext httpContext) -> {
+            HttpEntity entity = httpResponse.getEntity();
+            if (entity != null) {
+                Header ceheader = entity.getContentEncoding();
+                if (ceheader != null) {
+                    HeaderElement[] codecs = ceheader.getElements();
+                    for (int i = 0; i < codecs.length; i++) {
+                        if (codecs[i].getName().equalsIgnoreCase(COMPRESSION_TYPE)) {
+                            httpResponse.setEntity(new GzipDecompressingEntity(httpResponse.getEntity()));
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+        */
+        futureCallback = new DummyFutureCallback();
+
+        this.client = FiberCloseableHttpAsyncClient.wrap(httpAsyncClientBuilder.build());
         this.client.start();
 
-        // policies (cookie)
-//        this.client.getParams().setParameter(ClientPNames.COOKIE_POLICY,CookiePolicy.IGNORE_COOKIES);
-
-        // adding gzip support for http client
-//        addGzipHeaderInRequestResponse();
 
     }
 
@@ -285,7 +294,10 @@ public class HttpConnectionPool {
                 if (request.getHeaders(TIMESTAMP_HEADER).length == 0) {
                     request.addHeader(TIMESTAMP_HEADER, String.valueOf(System.currentTimeMillis()));
                 }
-                response = client.execute(request, null).get();
+                response = client.execute(request, futureCallback).get();
+                if (isResponseGzipEnabled() && response != null && response.getEntity() != null) {
+                    response.setEntity(new GzipDecompressingEntity(response.getEntity()));
+                }
             } catch (Exception e) {
 //                e.printStackTrace();
 //                logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());
@@ -388,50 +400,6 @@ public class HttpConnectionPool {
             }
         }
     }
-/*
-    private void addGzipHeaderInRequestResponse(){
-
-        DefaultHttpClient httpclient = (DefaultHttpClient) this.client;
-
-        // add Accept-Encoding to all requests
-        httpclient.addRequestInterceptor(new HttpRequestInterceptor() {
-
-            public void process(
-                    final HttpRequest request,
-                    final HttpContext context) throws HttpException, IOException {
-                if (isResponseGzipEnabled() && !request.containsHeader(ACCEPT_ENCODING)) {
-                    request.addHeader(ACCEPT_ENCODING, COMPRESSION_TYPE);
-                }
-            }
-
-        });
-
-        // if the server sends gzip encoded data, unCompress
-        httpclient.addResponseInterceptor(new HttpResponseInterceptor() {
-
-            public void process(
-                    final HttpResponse response,
-                    final HttpContext context) throws HttpException, IOException {
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    Header ceheader = entity.getContentEncoding();
-                    if (ceheader != null) {
-                        HeaderElement[] codecs = ceheader.getElements();
-                        for (int i = 0; i < codecs.length; i++) {
-                            if (codecs[i].getName().equalsIgnoreCase(COMPRESSION_TYPE)) {
-                                response.setEntity(
-                                        new GzipDecompressingEntity(response.getEntity()));
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-
-        });
-
-
-    }
 
     public boolean isRequestGzipEnabled() {
         return requestGzipEnabled;
@@ -448,5 +416,19 @@ public class HttpConnectionPool {
     public void setResponseGzipEnabled(boolean responseGzipEnabled) {
         this.responseGzipEnabled = responseGzipEnabled;
     }
-    */
+}
+
+class DummyFutureCallback implements FutureCallback<HttpResponse> {
+
+    @Override
+    public void completed(HttpResponse o) {
+    }
+
+    @Override
+    public void failed(Exception e) {
+    }
+
+    @Override
+    public void cancelled() {
+    }
 }

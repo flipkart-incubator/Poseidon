@@ -127,8 +127,8 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         // set appropriate headers
         if (!accept.isEmpty()) pool.setHeader("Accept", accept);
         if (!contentType.isEmpty()) pool.setHeader("Content-Type", contentType);
-//        pool.setRequestGzipEnabled(isRequestCompressionEnabled());
-//        pool.setResponseGzipEnabled(isResponseCompressionEnabled());
+        pool.setRequestGzipEnabled(isRequestCompressionEnabled());
+        pool.setResponseGzipEnabled(isResponseCompressionEnabled());
 
         // set executor timeouts to a little more than the operation timeout
         executorTimeouts.put(poolName + commandPrefix, operationTimeout);
