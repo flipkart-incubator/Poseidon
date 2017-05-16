@@ -18,6 +18,7 @@ package com.flipkart.poseidon.handlers.http.impl;
 
 import co.paralleluniverse.fibers.httpasyncclient.FiberCloseableHttpAsyncClient;
 import com.flipkart.poseidon.handlers.http.HttpDelete;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -47,11 +48,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class HttpConnectionPool {
 
-    /** Defaults*/
+    /**
+     * Defaults
+     */
     private static final Integer defaultMaxConnections = 120;
     private static final Integer defaultProcessQueueSize = 100;
     private static final Integer defaultConnectionTimeout = 0;
@@ -65,12 +69,16 @@ public class HttpConnectionPool {
     private static final String COMPRESSION_TYPE = "gzip";
     private static final String TIMESTAMP_HEADER = "X-Timestamp";
 
-    /** socket connection timeToLive in seconds */
+    /**
+     * socket connection timeToLive in seconds
+     */
     private int timeToLiveInSecs = -1;
 
     private static final Logger logger = LogFactory.getLogger(HttpConnectionPool.class);
 
-    /** The variables holding the Pool details  */
+    /**
+     * The variables holding the Pool details
+     */
     private String name;
     private CloseableHttpAsyncClient client;
     private String host;
@@ -80,17 +88,28 @@ public class HttpConnectionPool {
     private Semaphore processQueue;
     private boolean requestGzipEnabled;
     private boolean responseGzipEnabled;
+    private PoolingNHttpClientConnectionManager connectionManager;
     private DummyFutureCallback futureCallback;
+    private static final ThreadFactory threadFactory;
+
+    static {
+        threadFactory = new ThreadFactoryBuilder().setNameFormat("reactor-%d").setUncaughtExceptionHandler((Thread t, Throwable e) ->
+                logger.error("Uncaught exception in thread {} - {}", t.getName(), e.getMessage())).build();
+    }
 
 
-    /** Add a value to headers */
+    /**
+     * Add a value to headers
+     */
     public void setHeader(String name, String value) {
         headers.put(name, value);
     }
 
-    /** Constructor
-     * @param host Host Name
-     * @param port Port Name
+    /**
+     * Constructor
+     *
+     * @param host              Host Name
+     * @param port              Port Name
      * @param secure
      * @param connectionTimeout
      * @param operationTimeout
@@ -98,7 +117,7 @@ public class HttpConnectionPool {
      * @param processQueueSize
      * @param timeToLiveInSecs
      */
-    protected HttpConnectionPool(final String name , String host, Integer port, Boolean secure, Integer connectionTimeout,
+    protected HttpConnectionPool(final String name, String host, Integer port, Boolean secure, Integer connectionTimeout,
                                  Integer operationTimeout, Integer maxConnections, Integer processQueueSize,
                                  Integer timeToLiveInSecs) throws Exception {
         this.name = name;
@@ -107,7 +126,7 @@ public class HttpConnectionPool {
         this.secure = secure;
         this.headers = new HashMap<String, String>();
         this.processQueue = new Semaphore(processQueueSize + maxConnections);
-        if(timeToLiveInSecs != null) {
+        if (timeToLiveInSecs != null) {
             this.timeToLiveInSecs = timeToLiveInSecs;
         }
         this.requestGzipEnabled = false;
@@ -128,22 +147,16 @@ public class HttpConnectionPool {
                 build();
 
         ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(reactorConfig);
-        PoolingNHttpClientConnectionManager cm = new PoolingNHttpClientConnectionManager(ioReactor, null, registryBuilder.build(), null, null, timeToLiveInSecs, TimeUnit.SECONDS);
-        cm.setMaxTotal(maxConnections);
-        cm.setDefaultMaxPerRoute(maxConnections);
-        cm.setMaxPerRoute(new HttpRoute(new HttpHost(host, port)), maxConnections);
+        connectionManager = new PoolingNHttpClientConnectionManager(ioReactor, null, registryBuilder.build(), null, null, timeToLiveInSecs, TimeUnit.SECONDS);
+        connectionManager.setMaxTotal(maxConnections);
+        connectionManager.setDefaultMaxPerRoute(maxConnections);
+        connectionManager.setMaxPerRoute(new HttpRoute(new HttpHost(host, port)), maxConnections);
 
-//        this.client = FiberHttpClientBuilder
-//                .create(Runtime.getRuntime().availableProcessors())
-//                .setMaxConnPerRoute(maxConnections)
-//                .setMaxConnTotal(maxConnections)
-//                .build();
 
         HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClientBuilder.create().
-                setMaxConnPerRoute(maxConnections).
-                setMaxConnTotal(maxConnections).
                 disableCookieManagement().
-                setConnectionManager(cm);
+                setThreadFactory(threadFactory).
+                setConnectionManager(connectionManager);
 
         httpAsyncClientBuilder.addInterceptorLast((HttpRequest httpRequest, HttpContext httpContext) -> {
             if (isResponseGzipEnabled() && !httpRequest.containsHeader(ACCEPT_ENCODING)) {
@@ -182,6 +195,7 @@ public class HttpConnectionPool {
 
     /**
      * Builds a pool from params
+     *
      * @param params
      * @return a new HttpConnectionPool
      * @throws Exception, in case of errors
@@ -202,19 +216,10 @@ public class HttpConnectionPool {
         Integer processQueueSize = defaultProcessQueueSize;
         try {
             processQueueSize = Integer.parseInt(params.get("processQueueSize"));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         //TODO: Exception quietly consumed
         return new HttpConnectionPool(name, host, port, secure, connectionTimeout, operationTimeout, maxConnections, processQueueSize, timeToLiveInSecs);
-    }
-
-    /**
-     * Get the statistics
-     */
-    public String getStats() {
-//        PoolingClientConnectionManager cm = (PoolingClientConnectionManager) this.client.getConnectionManager();
-//        PoolStats stats = cm.getTotalStats();
-//        return "Connections: " + stats.toString() + " AvailableRequests: " + processQueue.availablePermits();
-        return null;
     }
 
     /**
@@ -263,18 +268,18 @@ public class HttpConnectionPool {
     /**
      * Method for executing HTTP POST request with form params
      */
-    public HttpResponse doPOST(String uri, List<NameValuePair> formParams , Map<String, String> requestHeaders) throws Exception {
+    public HttpResponse doPOST(String uri, List<NameValuePair> formParams, Map<String, String> requestHeaders) throws Exception {
         HttpPost request = new HttpPost(constructUrl(uri));
-		if (this.requestGzipEnabled) {
-			request.addHeader(CONTENT_ENCODING, COMPRESSION_TYPE);
-			request.setEntity(new GzipCompressingEntity(new UrlEncodedFormEntity(formParams)));
-		} else {
-			request.setEntity(new UrlEncodedFormEntity(formParams));
-		}
+        if (this.requestGzipEnabled) {
+            request.addHeader(CONTENT_ENCODING, COMPRESSION_TYPE);
+            request.setEntity(new GzipCompressingEntity(new UrlEncodedFormEntity(formParams)));
+        } else {
+            request.setEntity(new UrlEncodedFormEntity(formParams));
+        }
         setRequestHeaders(request, requestHeaders);
         return execute(request);
     }
-    
+
     /**
      * Method for executing HTTP DELETE request
      */
@@ -284,7 +289,9 @@ public class HttpConnectionPool {
         return execute(request);
     }
 
-    /** Method to execute a request */
+    /**
+     * Method to execute a request
+     */
     public HttpResponse execute(HttpRequestBase request) throws Exception {
         if (processQueue.tryAcquire()) {
             HttpResponse response;
@@ -299,19 +306,20 @@ public class HttpConnectionPool {
                     response.setEntity(new GzipDecompressingEntity(response.getEntity()));
                 }
             } catch (Exception e) {
-//                e.printStackTrace();
-//                logger.error("Connections: {} AvailableRequests: {}", ((PoolingClientConnectionManager) this.client.getConnectionManager()).getTotalStats(), processQueue.availablePermits());
+                logger.error("{}. Permits: {}. Exception: {}", connectionManager.getTotalStats(), processQueue.availablePermits(), e.getMessage());
                 throw e;
             } finally {
                 processQueue.release();
             }
             return response;
         } else {
-            throw new Exception("PROCESS_QUEUE_FULL POOL:"+name);
+            throw new Exception("PROCESS_QUEUE_FULL POOL:" + name);
         }
     }
 
-    /** Getter/Setter methods */
+    /**
+     * Getter/Setter methods
+     */
     private void setRequestHeaders(HttpRequestBase request, Map<String, String> headers) {
         Map<String, String> requestHeaders = getRequestHeaders(headers);
         for (String key : requestHeaders.keySet()) {
@@ -331,7 +339,9 @@ public class HttpConnectionPool {
 
     /** End Getter/Setter methods */
 
-    /** Helper method to construct a URL */
+    /**
+     * Helper method to construct a URL
+     */
     private String constructUrl(String uri) {
         if (port == 80) {
             return "http" + (secure ? "s" : "") + "://" + host + uri;
@@ -344,49 +354,41 @@ public class HttpConnectionPool {
      * Method to create HttpRequest
      */
 
-    public HttpRequestBase createHttpRequest(String uri, byte[] data, Map<String, String> requestHeaders, String requestType)
-    {
-        if("GET".equals(requestType))
-        {
+    public HttpRequestBase createHttpRequest(String uri, byte[] data, Map<String, String> requestHeaders, String requestType) {
+        if ("GET".equals(requestType)) {
             HttpGet request = new HttpGet(constructUrl(uri));
             setRequestHeaders(request, requestHeaders);
             return request;
-        } else if ("POST".equals(requestType))
-        {
+        } else if ("POST".equals(requestType)) {
             HttpPost request = new HttpPost(constructUrl(uri));
-            setRequestBody(request,data);
+            setRequestBody(request, data);
             setRequestHeaders(request, requestHeaders);
             return request;
 
-        } else if ("PUT".equals(requestType))
-        {
+        } else if ("PUT".equals(requestType)) {
             HttpPut request = new HttpPut(constructUrl(uri));
-            setRequestBody(request,data);
+            setRequestBody(request, data);
             setRequestHeaders(request, requestHeaders);
             return request;
 
-        } else if ("DELETE".equals(requestType))
-        {
+        } else if ("DELETE".equals(requestType)) {
             HttpDelete request = new HttpDelete(constructUrl(uri));
-            setRequestBody(request,data);
+            setRequestBody(request, data);
             setRequestHeaders(request, requestHeaders);
             return request;
-        } else if ("PATCH".equals(requestType))
-        {
+        } else if ("PATCH".equals(requestType)) {
             HttpPatch request = new HttpPatch(constructUrl(uri));
-            setRequestBody(request,data);
+            setRequestBody(request, data);
             setRequestHeaders(request, requestHeaders);
             return request;
-        }  else
-        {
+        } else {
             HttpRequestBase request = null;
-            logger.error("Invalid requestType+:"+requestType);
+            logger.error("Invalid requestType+:" + requestType);
             return request;
         }
     }
 
     /**
-     *
      * @param request
      * @param data
      */
