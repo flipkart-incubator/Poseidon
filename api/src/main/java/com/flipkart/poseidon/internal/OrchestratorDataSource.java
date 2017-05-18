@@ -71,6 +71,9 @@ public class OrchestratorDataSource extends AbstractDataSource {
         if (response instanceof List) {
             return new ListDataType<>((List) response);
         }
+        if (response instanceof byte[]) {
+        	return new ByteArrayDataType((byte[]) response);
+        }
         throw new Exception("Unsupported response type");
     }
 }

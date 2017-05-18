@@ -20,6 +20,7 @@ import co.paralleluniverse.fibers.servlet.FiberHttpServlet;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.exception.DataSourceException;
+import com.flipkart.poseidon.internal.ByteArrayDataType;
 import com.google.common.net.MediaType;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -252,13 +253,17 @@ public class PoseidonServlet extends FiberHttpServlet {
         httpResponse.setStatus(statusCode);
         Object responseObj = poseidonResponse.getResponse();
         if (responseObj != null) {
-            String responseStr = "";
             if (responseObj instanceof String) {
-                responseStr = (String) responseObj;
+            	httpResponse.getWriter().println((String)responseObj);
+            } else if (responseObj instanceof ByteArrayDataType) {
+            	byte[] rawBytes = ((ByteArrayDataType)responseObj).getRawBytes();
+            	// we override default response meta-data as the data is raw bytes
+            	httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
+            	httpResponse.setContentLength(rawBytes.length);
+            	httpResponse.getOutputStream().write(rawBytes);
             } else {
-                responseStr = configuration.getObjectMapper().writeValueAsString(responseObj);
+            	httpResponse.getWriter().println(configuration.getObjectMapper().writeValueAsString(responseObj));
             }
-            httpResponse.getWriter().println(responseStr);
         }
     }
 
