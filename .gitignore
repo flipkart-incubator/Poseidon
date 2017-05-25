@@ -5,6 +5,7 @@
 .idea/
 *.iml
 *.iws
+*.ipr
 
 *.pydevproject
 .project
