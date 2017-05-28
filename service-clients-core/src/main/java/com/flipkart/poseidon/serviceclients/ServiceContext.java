@@ -16,8 +16,11 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This context is used to pass information specific to the service clients
@@ -40,6 +43,10 @@ public class ServiceContext {
         }
     };
 
+    private static final ThreadLocal<Boolean> isDebug = ThreadLocal.withInitial(() -> false);
+
+    private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
+
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool
      */
@@ -58,13 +65,20 @@ public class ServiceContext {
      *
      * @param ctxt Context map
      */
-    public static void initialize(Map<String, Object> ctxt) {
+    public static void initialize(Map<String, Object> ctxt, boolean debug, Map<String, List<ServiceDebug>> serviceResponses) {
         if (isImmutable.get()) {
             throw new UnsupportedOperationException();
         }
 
         context.remove();
         context.get().putAll(ctxt);
+
+        if (debug) {
+            isDebug.set(debug);
+
+            debugResponses.remove();
+            debugResponses.set(serviceResponses);
+        }
 
         isImmutable.set(false);
     }
@@ -82,6 +96,44 @@ public class ServiceContext {
         }
 
         context.get().put(key, value);
+    }
+
+    /**
+     * Enables the collection of service response in ServiceContext
+     */
+    public static void enableDebug() {
+        if (isImmutable.get()) {
+            throw new UnsupportedOperationException();
+        }
+
+        isDebug.set(true);
+    }
+
+    /**
+     * Disables the collection of service response in ServiceContext
+     */
+    public static void disableDebug() {
+        if (isImmutable.get()) {
+            throw new UnsupportedOperationException();
+        }
+
+        isDebug.set(false);
+    }
+
+    public static boolean isDebug() {
+        return isDebug.get();
+    }
+
+    public static void addDebugResponse(String key, ServiceDebug response) {
+        if (!isDebug()) {
+            return;
+        }
+
+        debugResponses.get().computeIfAbsent(key, k -> new ArrayList<>()).add(response);
+    }
+
+    public static Map<String, List<ServiceDebug>> getDebugResponses() {
+        return debugResponses.get();
     }
 
     /**
@@ -109,5 +161,7 @@ public class ServiceContext {
     public static void shutDown() {
         context.remove();
         isImmutable.remove();
+        isDebug.remove();
+        debugResponses.remove();
     }
 }
