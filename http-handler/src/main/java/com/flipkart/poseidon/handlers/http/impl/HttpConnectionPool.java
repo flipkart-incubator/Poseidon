@@ -23,6 +23,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -86,6 +87,8 @@ public class HttpConnectionPool {
     private Boolean secure;
     private Map<String, String> headers;
     private Semaphore processQueue;
+    private int connectionTimeout;
+    private int operationTimeout;
     private boolean requestGzipEnabled;
     private boolean responseGzipEnabled;
     private PoolingNHttpClientConnectionManager connectionManager;
@@ -124,7 +127,9 @@ public class HttpConnectionPool {
         this.host = host;
         this.port = port;
         this.secure = secure;
-        this.headers = new HashMap<String, String>();
+        this.connectionTimeout = connectionTimeout;
+        this.operationTimeout = operationTimeout;
+        this.headers = new HashMap<>();
         this.processQueue = new Semaphore(processQueueSize + maxConnections);
         if (timeToLiveInSecs != null) {
             this.timeToLiveInSecs = timeToLiveInSecs;
@@ -141,9 +146,9 @@ public class HttpConnectionPool {
         }
 
         IOReactorConfig reactorConfig = IOReactorConfig.custom().
-                setConnectTimeout(connectionTimeout).
-                setSoTimeout(operationTimeout).
-                setIoThreadCount(1).
+//                setConnectTimeout(connectionTimeout).
+//                setSoTimeout(operationTimeout).
+//                setIoThreadCount(1).
                 build();
 
         ConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(reactorConfig);
@@ -294,6 +299,12 @@ public class HttpConnectionPool {
      */
     public HttpResponse execute(HttpRequestBase request) throws Exception {
         if (processQueue.tryAcquire()) {
+            RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+                    .setSocketTimeout(operationTimeout)
+                    .setConnectTimeout(connectionTimeout)
+                    .build();
+            request.setConfig(requestConfig);
+
             HttpResponse response;
             try {
                 // Inject timestamp in milliseconds just before sending request on wire.
