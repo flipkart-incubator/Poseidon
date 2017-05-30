@@ -87,26 +87,17 @@ public class DebugFilter implements Filter {
         }
     }
 
-    /**
-     * The services corresponding values contained in this map will be not be sent as part
-     * of the debug response unless the key is present as a query parameter in the request.
-     * @return a mapping of enable flags to service client class names
-     */
-    protected Map<String, String> enableFlags() {
-        return new HashMap<>();
+    protected List<String> disabledDebugServices(HttpServletRequest request) {
+        return new ArrayList<>();
     }
 
     private void filterDisabledServices(HttpServletRequest request, Map<String, List<ServiceDebug>> callDebug) {
-        if (enableFlags().isEmpty()) {
+        List<String> disabledServices = disabledDebugServices(request);
+        if (disabledServices.isEmpty()) {
             return;
         }
 
-        Map<String, String> enableFlags = enableFlags();
-        enableFlags.entrySet().forEach(e -> {
-            if (callDebug.containsKey(e.getValue()) && !request.getParameterMap().containsKey(e.getKey())) {
-                callDebug.remove(e.getValue());
-            }
-        });
+        disabledServices.forEach(callDebug::remove);
     }
 
     private void generateDebugResponse(HttpServletResponseCopier responseCopier, Map<String, List<ServiceCallDebug>> serviceCallDebugMap) throws IOException {
