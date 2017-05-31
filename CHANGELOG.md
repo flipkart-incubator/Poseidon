@@ -1,5 +1,5 @@
 ## 5.2.0-SNAPSHOT (May 31, 2017)
-- Debug flag in APIs to list all service resposes
+- Debug flag in APIs to list all service responses
 
 ## 5.1.0 (May 25, 2017)
 - Upgrade Jetty version to v9.4.1.v20170120
