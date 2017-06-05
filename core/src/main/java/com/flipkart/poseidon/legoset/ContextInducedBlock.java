@@ -18,6 +18,7 @@ package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.flipkart.poseidon.serviceclients.ServiceContextState;
 import com.flipkart.poseidon.serviceclients.ServiceDebug;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
@@ -46,14 +47,7 @@ public abstract class ContextInducedBlock {
     /* Poseidon's request context from parent thread */
     private final Map<String, Object> parentContext;
 
-    /* Poseidon's service context from parent thread */
-    private final Map<String, Object> parentServiceContext;
-
-    /* Is debug enabled for the call */
-    private final boolean isServiceDebugEnabled;
-
-    /* Store for the current call's debug service responses */
-    private final Map<String, List<ServiceDebug>> debugResponses;
+    private final ServiceContextState serviceContextState;
 
     /* Hystrix request context from parent thread */
     private final HystrixRequestContext parentThreadState;
@@ -74,9 +68,7 @@ public abstract class ContextInducedBlock {
     protected ContextInducedBlock(Block block) {
         this.block = block;
         parentContext = RequestContext.getContextMap();
-        parentServiceContext = ServiceContext.getContextMap();
-        isServiceDebugEnabled = ServiceContext.isDebug();
-        debugResponses = ServiceContext.getDebugResponses();
+        serviceContextState = ServiceContext.getState();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
         mdcContext = MDC.getCopyOfContextMap();
         serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
@@ -86,7 +78,7 @@ public abstract class ContextInducedBlock {
     protected void initAllContext(Request request) {
         existingState = HystrixRequestContext.getContextForCurrentThread();
         RequestContext.initialize(parentContext);
-        ServiceContext.initialize(parentServiceContext, isServiceDebugEnabled, debugResponses);
+        ServiceContext.initialize(serviceContextState);
         HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
         if (mdcContext != null) {
             MDC.setContextMap(mdcContext);

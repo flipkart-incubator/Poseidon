@@ -29,8 +29,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by mohan.pandian on 18/03/15.
@@ -43,13 +42,16 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     private final JavaType errorType;
     private final Logger logger;
     private final Map<String, Class<? extends ServiceClientException>> exceptions;
+    private final Map<String, Queue<String>> collectedHeaders;
+    private final Map<String, List<String>> localCollectedHeaders = new HashMap<>();
 
-    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
+    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions, Map<String, Queue<String>> collectedHeaders) {
         this.objectMapper = objectMapper;
         this.javaType = javaType;
         this.errorType = errorType;
         this.logger = logger;
         this.exceptions = exceptions;
+        this.collectedHeaders = collectedHeaders;
     }
 
     private Map<String, String> getHeaders(HttpResponse httpResponse) {
@@ -61,6 +63,14 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
         while (iterator.hasNext()) {
             Header header = iterator.nextHeader();
             headers.put(header.getName(), header.getValue());
+            if (collectedHeaders.isEmpty()) {
+                continue;
+            }
+
+            String lowerCaseHeader = header.getName().toLowerCase();
+            if (collectedHeaders.containsKey(header.getName().toLowerCase())) {
+                localCollectedHeaders.computeIfAbsent(lowerCaseHeader, s -> new ArrayList<>()).add(header.getValue());
+            }
         }
         return headers;
     }
@@ -68,6 +78,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     @Override
     public ServiceResponse<T> decode(HttpResponse httpResponse) throws Exception {
         Map<String, String> headers = getHeaders(httpResponse);
+        collectedHeaders.forEach((k, v) -> Optional.ofNullable(localCollectedHeaders.get(k)).ifPresent(v::addAll));
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         String statusCodeString = String.valueOf(statusCode);
         if (statusCode >= 200 && statusCode <= 299) {
@@ -144,7 +155,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     }
 
     @Override
-    public ServiceResponse<T> decode(InputStream is) {
-        throw new UnsupportedOperationException();
+    public ServiceResponse<T> decode(InputStream is) throws Exception {
+        return new ServiceResponse<T>(objectMapper.<T>readValue(is, javaType), null);
     }
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -31,7 +32,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -70,7 +70,7 @@ public class ServiceResponseDecoderTest {
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, new HashMap<>()));
     }
 
     /**
@@ -136,7 +136,7 @@ public class ServiceResponseDecoderTest {
         String errorString = "{\"error\":\"testing error\"}";
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -166,7 +166,7 @@ public class ServiceResponseDecoderTest {
         String errorString = "{\"error\":\"testing error\"}";
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, null, mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, null, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -196,7 +196,7 @@ public class ServiceResponseDecoderTest {
         String errorString = "{\"nonsense\":\"testing error\"}";
 
         Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions));
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
