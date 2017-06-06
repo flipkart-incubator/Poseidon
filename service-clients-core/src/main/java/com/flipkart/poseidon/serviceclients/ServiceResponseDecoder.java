@@ -68,7 +68,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
             }
 
             String lowerCaseHeader = header.getName().toLowerCase();
-            if (collectedHeaders.containsKey(header.getName().toLowerCase())) {
+            if (collectedHeaders.containsKey(lowerCaseHeader)) {
                 localCollectedHeaders.computeIfAbsent(lowerCaseHeader, s -> new ArrayList<>()).add(header.getValue());
             }
         }
