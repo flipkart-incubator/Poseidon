@@ -180,7 +180,10 @@ public class ServiceContext {
     }
 
     public static List<String> getCollectedHeaders(String header) {
-        return new ArrayList<>(getCollectedHeaders().get(header.toLowerCase()));
+        return Optional.ofNullable(getCollectedHeaders())
+                .map(m -> m.get(header.toLowerCase()))
+                .map(ArrayList::new)
+                .orElseGet(null);
     }
 
     public static ServiceContextState getState() {
