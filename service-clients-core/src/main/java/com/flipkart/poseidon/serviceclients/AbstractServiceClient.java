@@ -126,7 +126,11 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(getObjectMapper(), javaType, errorType, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder =
+                new ServiceResponseDecoder<>(
+                        getObjectMapper(), javaType,
+                        errorType, logger,
+                        exceptions, ServiceContext.getCollectedHeaders());
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
         FutureTaskResultToDomainObjectPromiseWrapper<T> futureWrapper = new FutureTaskResultToDomainObjectPromiseWrapper<>(future);

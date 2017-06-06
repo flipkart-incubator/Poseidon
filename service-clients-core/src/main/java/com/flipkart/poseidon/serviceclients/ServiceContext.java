@@ -16,11 +16,9 @@
 
 package com.flipkart.poseidon.serviceclients;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This context is used to pass information specific to the service clients
@@ -46,40 +44,52 @@ public class ServiceContext {
     private static final ThreadLocal<Boolean> isDebug = ThreadLocal.withInitial(() -> false);
 
     private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
+    private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
 
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool
+     * @param responseHeadersToCollect
      */
-    public static void initialize() {
+    public static void initialize(List<String> responseHeadersToCollect) {
         if (isImmutable.get()) {
             throw new UnsupportedOperationException();
         }
 
         context.remove();
         isImmutable.set(false);
+
+        if (responseHeadersToCollect == null || responseHeadersToCollect.isEmpty()) {
+            return;
+        }
+
+        responseHeadersToCollect.forEach(header -> {
+            collectedHeaders.get().put(header.toLowerCase(), new ConcurrentLinkedQueue<>());
+        });
     }
 
     /**
      * initialize a new service context with the given context, it will cleanup previous value of
      * the threadlocal if it is being used in a threadpool
      *
-     * @param ctxt Context map
+     * @param state State of the previous thread's context
      */
-    public static void initialize(Map<String, Object> ctxt, boolean debug, Map<String, List<ServiceDebug>> serviceResponses) {
+    public static void initialize(ServiceContextState state) {
         if (isImmutable.get()) {
             throw new UnsupportedOperationException();
         }
 
         context.remove();
-        context.get().putAll(ctxt);
+        context.get().putAll(state.ctxt);
 
-        if (debug) {
-            isDebug.set(debug);
+        if (state.debug) {
+            isDebug.set(state.debug);
 
             debugResponses.remove();
-            debugResponses.set(serviceResponses);
+            debugResponses.set(state.serviceResponses);
         }
 
+        collectedHeaders.remove();
+        collectedHeaders.set(state.collectedHeaders);
         isImmutable.set(false);
     }
 
@@ -163,5 +173,25 @@ public class ServiceContext {
         isImmutable.remove();
         isDebug.remove();
         debugResponses.remove();
+    }
+
+    static Map<String, Queue<String>> getCollectedHeaders() {
+        return collectedHeaders.get();
+    }
+
+    public static List<String> getCollectedHeaders(String header) {
+        return Optional.ofNullable(getCollectedHeaders())
+                .map(m -> m.get(header.toLowerCase()))
+                .map(ArrayList::new)
+                .orElseGet(null);
+    }
+
+    public static ServiceContextState getState() {
+        ServiceContextState state = new ServiceContextState();
+        state.ctxt = getContextMap();
+        state.collectedHeaders = getCollectedHeaders();
+        state.debug = isDebug();
+        state.serviceResponses = getDebugResponses();
+        return state;
     }
 }
