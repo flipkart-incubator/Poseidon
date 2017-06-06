@@ -44,7 +44,7 @@ public class ServiceContext {
     private static final ThreadLocal<Boolean> isDebug = ThreadLocal.withInitial(() -> false);
 
     private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
-    private static ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
 
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool
@@ -58,16 +58,12 @@ public class ServiceContext {
         context.remove();
         isImmutable.set(false);
 
-        if (responseHeadersToCollect.isEmpty()) {
+        if (responseHeadersToCollect == null || responseHeadersToCollect.isEmpty()) {
             return;
         }
 
-        collectedHeaders = ThreadLocal.withInitial(() -> {
-            Map<String, Queue<String>> initialMap = new HashMap<>();
-            responseHeadersToCollect.forEach(header -> {
-                initialMap.put(header.toLowerCase(), new ConcurrentLinkedQueue<>());
-            });
-            return initialMap;
+        responseHeadersToCollect.forEach(header -> {
+            collectedHeaders.get().put(header.toLowerCase(), new ConcurrentLinkedQueue<>());
         });
     }
 
