@@ -21,10 +21,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
+import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,6 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -58,6 +58,7 @@ public class ServiceResponseDecoderTest {
     JavaType mockJavaType = mock(JavaType.class);
     JavaType mockErrorType = mockMapper.getTypeFactory().constructType(new TypeReference<TestErrorResponse>() {
     });
+    Map<String, Queue<String>> collectedHeaders;
 
     Class responseClass = String.class;
     Class errorClass = TestErrorResponse.class;
@@ -70,7 +71,8 @@ public class ServiceResponseDecoderTest {
     @Before
     public void setUp() {
         mockLogger = mock(Logger.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, new HashMap<>()));
+        collectedHeaders = new HashMap<>();
+        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
     }
 
     /**
@@ -93,9 +95,8 @@ public class ServiceResponseDecoderTest {
         when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
-        Assert.assertEquals("success", response.getDataList().get(0));
+        assertEquals("success", response.getDataList().get(0));
         Mockito.verify(mockLogger, Mockito.never());
-
     }
 
     /**
@@ -240,6 +241,71 @@ public class ServiceResponseDecoderTest {
             assertThat(e, instanceOf(ServiceClientException.class));
         }
         Mockito.verify(mockLogger).error("Non 200 response statusCode: {} response: {}","500", "error");
+
+    }
+
+    @Test
+    public void testHeaders() throws Exception {
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        HttpEntity mockEntity = mock(HttpEntity.class);
+        InputStream stream = mock(InputStream.class);
+        mockStatic(IOUtils.class);
+
+        Header headerOne = new BasicHeader("one", "1");
+        Header headerTwo = new BasicHeader("two", "2");
+        Header[] responseHeaders = new Header[] { headerOne, headerTwo };
+
+        when(mockStatusLine.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpResponse.getAllHeaders()).thenReturn(responseHeaders);
+        when(mockEntity.getContent()).thenReturn(stream);
+        BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
+        when(mockJavaType.getRawClass()).thenReturn(responseClass);
+
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertEquals("success", response.getDataList().get(0));
+        assertEquals(2, response.getHeaders().size());
+        assertEquals("1", response.getHeaders().get("one"));
+        assertEquals("2", response.getHeaders().get("two"));
+        assertEquals(0, collectedHeaders.size());
+        Mockito.verify(mockLogger, Mockito.never());
+    }
+
+    @Test
+    public void testCollectedHeaders() throws Exception {
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        HttpEntity mockEntity = mock(HttpEntity.class);
+        InputStream stream = mock(InputStream.class);
+        mockStatic(IOUtils.class);
+
+        collectedHeaders.put("one", new ConcurrentLinkedQueue<>());
+
+        Header headerOne = new BasicHeader("one", "1");
+        Header headerOneAgain = new BasicHeader("one", "3");
+        Header headerTwo = new BasicHeader("two", "2");
+        Header[] responseHeaders = new Header[] { headerOne, headerTwo, headerOneAgain };
+
+        when(mockStatusLine.getStatusCode()).thenReturn(200);
+        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpResponse.getAllHeaders()).thenReturn(responseHeaders);
+        when(mockEntity.getContent()).thenReturn(stream);
+        BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
+        when(mockJavaType.getRawClass()).thenReturn(responseClass);
+
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertEquals("success", response.getDataList().get(0));
+        assertEquals(2, response.getHeaders().size());
+        assertEquals("3", response.getHeaders().get("one"));
+        assertEquals("2", response.getHeaders().get("two"));
+        assertEquals(1, collectedHeaders.size());
+        assertEquals(2, collectedHeaders.get("one").size());
+        assertTrue(collectedHeaders.get("one").contains("1"));
+        assertTrue(collectedHeaders.get("one").contains("3"));
+        Mockito.verify(mockLogger, Mockito.never());
 
     }
 

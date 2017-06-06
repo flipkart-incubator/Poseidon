@@ -23,7 +23,6 @@ import com.flipkart.poseidon.handlers.http.HttpResponseDecoder;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 
@@ -56,12 +55,11 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
 
     private Map<String, String> getHeaders(HttpResponse httpResponse) {
         Map<String, String> headers = new HashMap<>();
-        HeaderIterator iterator = httpResponse.headerIterator();
-        if (iterator == null) {
+        Header[] responseHeaders = httpResponse.getAllHeaders();
+        if (responseHeaders == null || responseHeaders.length == 0) {
             return headers;
         }
-        while (iterator.hasNext()) {
-            Header header = iterator.nextHeader();
+        for (Header header : responseHeaders) {
             headers.put(header.getName(), header.getValue());
             if (collectedHeaders.isEmpty()) {
                 continue;
