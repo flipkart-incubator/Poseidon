@@ -44,6 +44,10 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     private final Map<String, Queue<String>> collectedHeaders;
     private final Map<String, List<String>> localCollectedHeaders = new HashMap<>();
 
+    public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
+        this(objectMapper, javaType, errorType, logger, exceptions, Collections.emptyMap());
+    }
+
     public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions, Map<String, Queue<String>> collectedHeaders) {
         this.objectMapper = objectMapper;
         this.javaType = javaType;
