@@ -183,7 +183,7 @@ public class ServiceContext {
         return collectedHeaders.get();
     }
 
-    public List<String> getCollectedHeaders(String header) {
+    public static List<String> getCollectedHeaders(String header) {
         return new ArrayList<>(getCollectedHeaders().get(header.toLowerCase()));
     }
 
