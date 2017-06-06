@@ -80,7 +80,7 @@ public class HystrixContextFilter implements Filter {
 
     private void initAllContext(ServletRequest request) {
         RequestContext.initialize();
-        ServiceContext.initialize();
+        ServiceContext.initialize(configuration.getResponseHeadersToCollect());
         if (request instanceof HttpServletRequest) {
             setContext((HttpServletRequest) request);
         }

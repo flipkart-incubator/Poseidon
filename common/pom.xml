@@ -10,10 +10,17 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>5.1.0.FIBER-SNAPSHOT</version>
+        <version>5.2.0.FIBER-SNAPSHOT</version>
     </parent>
 
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
     
 </project>

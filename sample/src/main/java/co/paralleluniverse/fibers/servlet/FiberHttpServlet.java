@@ -14,12 +14,12 @@
 package co.paralleluniverse.fibers.servlet;
 
 import co.paralleluniverse.common.util.SystemProperties;
-import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.flipkart.poseidon.serviceclients.ServiceContextState;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
@@ -29,12 +29,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -178,7 +175,7 @@ public class FiberHttpServlet extends HttpServlet {
         private final Map<String, Object> parentContext;
 
         /* Poseidon's service context from parent thread */
-        private final Map<String, Object> parentServiceContext;
+        private final ServiceContextState serviceContextState;
 
         /* MDC request context from parent thread */
         private final Map<String, String> mdcContext;
@@ -196,7 +193,7 @@ public class FiberHttpServlet extends HttpServlet {
             this.response = response;
 
             parentContext = RequestContext.getContextMap();
-            parentServiceContext = ServiceContext.getContextMap();
+            serviceContextState = ServiceContext.getState();
             mdcContext = MDC.getCopyOfContextMap();
             serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
         }
@@ -205,8 +202,7 @@ public class FiberHttpServlet extends HttpServlet {
         public final void run() throws SuspendExecution, InterruptedException {
             RequestContext.initialize();
             parentContext.forEach(RequestContext::set);
-            ServiceContext.initialize();
-            parentServiceContext.forEach(ServiceContext::set);
+            ServiceContext.initialize(serviceContextState);
             HystrixRequestContext.initializeContext();
             if (mdcContext != null) {
                 MDC.setContextMap(mdcContext);

@@ -10,7 +10,7 @@
     <parent>
         <artifactId>poseidon</artifactId>
         <groupId>com.flipkart.poseidon</groupId>
-        <version>5.1.0.FIBER-SNAPSHOT</version>
+        <version>5.2.0.FIBER-SNAPSHOT</version>
     </parent>
 
     <artifactId>sample</artifactId>
