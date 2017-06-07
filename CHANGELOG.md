@@ -1,4 +1,4 @@
-## 5.2.0-SNAPSHOT (May 31, 2017)
+## 5.2.0 (June 7, 2017)
 - Debug flag in APIs to list all service responses
 - Collect response headers from all upstream services for a particular call to the system.
 
