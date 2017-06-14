@@ -24,6 +24,7 @@ import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.sample.datatypes.PostDataType;
 import com.flipkart.poseidon.sample.datatypes.PostsDataType;
+import com.flipkart.poseidon.sample.datatypes.UserDataType;
 import com.flipkart.poseidon.serviceclients.sampleSC.v1.*;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
@@ -53,6 +54,13 @@ public class PostsDataSource extends AbstractDataSource<PostsDataType> {
             if (posts == null || posts.isEmpty()) {
                 return null;
             }
+
+            // UserDataSource is called just to test RequestCaching as userPosts API already fetches user
+            // through UserDataSource. If apache http wire logging is enabled in log4j.xml,
+            // we can see that only one user call goes on wire as we have enabled requestCachingEnabled
+            // in spring-proxy-handler-config.xml. This can be seen in distributed tracing as well
+            UserDataType userDataType = (UserDataType) execute("UserDS_1.0.0", request).get();
+            logger.info("User Name after calling a DS from another DS: " + userDataType.getUserName());
 
             PostsDataType postsDataType = new PostsDataType();
             List<PostDataType> postDataTypeList = new ArrayList<>();
