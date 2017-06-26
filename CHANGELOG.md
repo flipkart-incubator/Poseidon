@@ -1,3 +1,6 @@
+## 5.3.0 (June 28, 2017)
+- Ability to define and consume additional fields for an endpoint to be used as meta information
+
 ## 5.2.0 (June 7, 2017)
 - Debug flag in APIs to list all service responses
 - Collect response headers from all upstream services for a particular call to the system.

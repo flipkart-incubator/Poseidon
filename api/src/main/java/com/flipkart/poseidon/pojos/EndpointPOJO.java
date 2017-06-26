@@ -16,10 +16,13 @@
 
 package com.flipkart.poseidon.pojos;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flipkart.poseidon.utils.ApiHelper;
 import org.springframework.http.HttpMethod;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,6 +42,9 @@ public class EndpointPOJO {
     private String[] filters;
     private String[] mappers;
     private Object response;
+
+    /* User defined fields, to be used as annotations for an API */
+    private final Map<String, Object> additionalFields = new HashMap<>();
 
     public String getUrl() {
         return url;
@@ -82,5 +88,15 @@ public class EndpointPOJO {
 
     public Object getResponse() {
         return response;
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalFields() {
+        return additionalFields;
+    }
+
+    @JsonAnySetter
+    public void addAdditionalProperties(String name, Object value) {
+        this.additionalFields.put(name, value);
     }
 }
