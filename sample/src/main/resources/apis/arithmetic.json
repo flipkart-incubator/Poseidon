@@ -3,6 +3,9 @@
   "httpMethod": "GET",
   "timeout": 10000,
   "name": "arithmetic",
+  "properties": {
+    "errorMessage": "Modified bot rejection message"
+  },
   "params": {
     "required": [
       {

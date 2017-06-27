@@ -16,7 +16,9 @@
 
 package com.flipkart.poseidon.sample.api.filters;
 
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.filters.AbstractFilter;
 import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
@@ -27,6 +29,9 @@ import flipkart.lego.api.entities.Response;
 import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
+
+import java.util.Map;
+import java.util.Optional;
 
 @Name("BotFilter")
 @Version(major = 1, minor = 0, patch = 0)
@@ -40,7 +45,9 @@ public class BotFilter extends AbstractFilter {
     public void filterRequest(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
         String userAgent = ((PoseidonRequest) request).getHeader("User-Agent");
         if (userAgent != null && userAgent.contains("bot")) {
-            throw new BadRequestException("Bots are not allowed");
+            Map<String, Object> endpointAnnotations = RequestContext.get(RequestConstants.API_ANNOTATIONS);
+            String message = (String) Optional.ofNullable(endpointAnnotations.get("errorMessage")).orElse("Bots are not allowed");
+            throw new BadRequestException(message);
         }
     }
 
