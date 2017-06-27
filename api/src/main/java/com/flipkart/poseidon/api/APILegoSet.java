@@ -102,7 +102,6 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             RequestContext.set(API_ANNOTATIONS, pojo.getProperties());
             RequestContext.set(ENDPOINT_METHOD, pojo.getHttpMethod());
             ServiceContext.set(ENDPOINT_NAME, pojo.getName());
-            ServiceContext.set(API_ANNOTATIONS, pojo.getProperties());
 
             String name = pojo.getName();
             if (name != null && !name.isEmpty()) {
