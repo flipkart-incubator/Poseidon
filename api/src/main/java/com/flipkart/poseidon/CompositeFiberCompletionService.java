@@ -44,6 +44,8 @@ public class CompositeFiberCompletionService implements CompositeCompletionServi
                 } catch (InterruptedException e) {
                     throw e;
                 } catch (Exception e) {
+                    System.out.println("Exception in CFCS: " + e.getMessage());
+                    e.printStackTrace();
                     throw new RuntimeException(e.getMessage());
                 } finally {
                     channel.send(this);

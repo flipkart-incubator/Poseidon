@@ -68,6 +68,8 @@ public class FiberThreadPoolExecutor extends ThreadPoolExecutor {
                 } catch (InterruptedException e) {
                     throw e;
                 } catch (Exception e) {
+                    System.out.println("Exception in FTPE: " + e.getMessage());
+                    e.printStackTrace();
                     throw new RuntimeException(e.getMessage());
                 } finally {
                 }
