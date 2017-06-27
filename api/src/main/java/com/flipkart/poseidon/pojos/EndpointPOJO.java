@@ -91,8 +91,4 @@ public class EndpointPOJO {
     public Map<String, Object> getProperties() {
         return properties;
     }
-
-    public void addAdditionalProperties(String name, Object value) {
-        this.properties.put(name, value);
-    }
 }
