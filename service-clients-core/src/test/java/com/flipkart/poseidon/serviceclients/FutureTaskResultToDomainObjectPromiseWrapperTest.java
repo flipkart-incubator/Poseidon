@@ -47,7 +47,6 @@ import static org.powermock.api.mockito.PowerMockito.*;
 public class FutureTaskResultToDomainObjectPromiseWrapperTest {
 
     private FutureTaskResultToDomainObjectPromiseWrapper wrapper;
-    private FutureTaskResultToDomainObjectPromiseWrapper wrapperWithOriginalException;
 
     private Future<TaskResult> future1 = mock(Future.class);
     private Future<TaskResult> future2 = mock(Future.class);
