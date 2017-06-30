@@ -22,6 +22,7 @@ import com.flipkart.poseidon.model.trace.ServiceCallDebug;
 import com.flipkart.poseidon.serviceclients.ServiceClientException;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.flipkart.poseidon.serviceclients.ServiceDebug;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -142,7 +143,7 @@ public class DebugFilter implements Filter {
 
             }
          } catch (Exception e) {
-            serviceResponse = e;
+            serviceResponse = Optional.ofNullable(ExceptionUtils.getRootCause(e)).orElse(e);
             serviceCallDebug.setSuccess(false);
             serviceCallDebug.setErrorIdentifier(e.getClass().getName());
             try {

@@ -23,4 +23,5 @@ public class ServiceClientConstants {
     public static final String HEADERS = "headers";
     public static final String COMMANDS = "commands";
     public static final String COLLECT_COMMANDS = "collect-commands";
+    public static final String THROW_ORIGINAL = "throw-original-exceptions";
 }

@@ -40,13 +40,24 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
     private final List<Future<TaskResult>> futureList = new ArrayList<>();
     private PromiseBrokenException promiseBrokenException;
     private ResponseMerger<DomainObject> responseMerger;
+    private final boolean throwOriginalException;
 
     public FutureTaskResultToDomainObjectPromiseWrapper(Future<TaskResult> future) {
+        this(future, false);
+    }
+
+    public FutureTaskResultToDomainObjectPromiseWrapper(Future<TaskResult> future, boolean throwOriginalException) {
         futureList.add(future);
+        this.throwOriginalException = throwOriginalException;
     }
 
     public FutureTaskResultToDomainObjectPromiseWrapper(ResponseMerger<DomainObject> responseMerger) {
+        this(responseMerger, false);
+    }
+
+    public FutureTaskResultToDomainObjectPromiseWrapper(ResponseMerger<DomainObject> responseMerger, boolean throwOriginalException) {
         this.responseMerger = responseMerger;
+        this.throwOriginalException = throwOriginalException;
     }
 
     @Override
@@ -86,6 +97,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 future.get();
             }
         } catch (ExecutionException exception) {
+            // TODO: 30/06/17 Throw PromiseBrokenException from here in 6.x
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -101,6 +113,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
                 future.get(timeout, timeUnit);
             }
         } catch (ExecutionException exception) {
+            // TODO: 30/06/17 Throw PromiseBrokenException from here in 6.x
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -130,6 +143,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             }
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
+            checkAndThrowOriginalException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -159,6 +173,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             }
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
+            checkAndThrowOriginalException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -179,6 +194,7 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             return response.getHeaders();
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
+            checkAndThrowOriginalException(exception);
             promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
@@ -216,5 +232,20 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         if (generatedException instanceof ServiceClientException) {
             throw (ServiceClientException) generatedException;
         }
+    }
+
+    /**
+     * If original exception is asked to be thrown, then find it and throw it.
+     * Ex: ServiceResponseDecoder throwing JSONMappingException for deserialization failures.
+     *
+     * @param exception
+     * @throws Throwable
+     */
+    private void checkAndThrowOriginalException(ExecutionException exception) throws PromiseBrokenException {
+        if (!throwOriginalException) {
+            return;
+        }
+
+        throw new PromiseBrokenException(Optional.ofNullable(ExceptionUtils.getRootCause(exception)).orElse(exception));
     }
 }
