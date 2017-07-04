@@ -38,7 +38,6 @@ import java.util.concurrent.*;
 public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implements Promise<DomainObject> {
 
     private final List<Future<TaskResult>> futureList = new ArrayList<>();
-    private PromiseBrokenException promiseBrokenException;
     private ResponseMerger<DomainObject> responseMerger;
     private final boolean throwOriginalException;
 
@@ -98,10 +97,8 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             }
         } catch (ExecutionException exception) {
             // TODO: 30/06/17 Throw PromiseBrokenException from here in 6.x
-            promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
-        } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
+        } catch (CancellationException ignored) {
         }
 
     }
@@ -114,11 +111,8 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
             }
         } catch (ExecutionException exception) {
             // TODO: 30/06/17 Throw PromiseBrokenException from here in 6.x
-            promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
-        } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-        } catch (TimeoutException ignored) {
+        } catch (CancellationException | TimeoutException ignored) {
         }
     }
 
@@ -144,11 +138,9 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
             checkAndThrowOriginalException(exception);
-            promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-            throw new PromiseBrokenException(promiseBrokenException);
+            throw new PromiseBrokenException(exception);
         }
     }
 
@@ -174,11 +166,9 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
             checkAndThrowOriginalException(exception);
-            promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-            throw new PromiseBrokenException(promiseBrokenException);
+            throw new PromiseBrokenException(exception);
         }
     }
 
@@ -195,11 +185,9 @@ public class FutureTaskResultToDomainObjectPromiseWrapper<DomainObject> implemen
         } catch (ExecutionException exception) {
             checkAndThrowServiceClientException(exception);
             checkAndThrowOriginalException(exception);
-            promiseBrokenException = new PromiseBrokenException(exception);
             throw new InterruptedException(exception.getMessage());
         } catch (CancellationException exception) {
-            promiseBrokenException = new PromiseBrokenException(exception);
-            throw new PromiseBrokenException(promiseBrokenException);
+            throw new PromiseBrokenException(exception);
         }
     }
 
