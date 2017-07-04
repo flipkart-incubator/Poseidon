@@ -44,6 +44,13 @@ public interface Configuration {
 
     TracingConfiguration getTracingConfiguration();
 
+    /**
+     * @return true to have Poseidon throw actual exceptions instead of InterruptedException (Observable onError !! :( )
+     */
+    default boolean throwOriginalExceptionsForNonUpstreamFailures() {
+        return false;
+    }
+
     /*
      * Return null to use default values at framework
      */

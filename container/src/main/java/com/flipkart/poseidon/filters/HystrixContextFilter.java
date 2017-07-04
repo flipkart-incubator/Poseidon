@@ -106,6 +106,7 @@ public class HystrixContextFilter implements Filter {
             ServiceContext.set(ServiceClientConstants.HEADERS, immutableHeaders);
             ServiceContext.set(ServiceClientConstants.COMMANDS, new ConcurrentLinkedQueue<String>());
             ServiceContext.set(ServiceClientConstants.COLLECT_COMMANDS, configuration.collectServiceClientCommandNames());
+            ServiceContext.set(ServiceClientConstants.THROW_ORIGINAL, configuration.throwOriginalExceptionsForNonUpstreamFailures());
             RequestContext.set(HEADERS, immutableHeaders);
             MDC.setContextMap(immutableHeaders);
         }

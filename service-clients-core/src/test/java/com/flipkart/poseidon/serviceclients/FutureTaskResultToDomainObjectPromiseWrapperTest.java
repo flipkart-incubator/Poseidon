@@ -20,6 +20,7 @@ import com.flipkart.phantom.task.spi.TaskResult;
 import com.flipkart.poseidon.serviceclients.batch.ResponseMerger;
 import flipkart.lego.concurrency.api.PromiseListener;
 import flipkart.lego.concurrency.exceptions.PromiseBrokenException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +47,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 public class FutureTaskResultToDomainObjectPromiseWrapperTest {
 
     private FutureTaskResultToDomainObjectPromiseWrapper wrapper;
+
     private Future<TaskResult> future1 = mock(Future.class);
     private Future<TaskResult> future2 = mock(Future.class);
     private long timeout = 5;
@@ -164,6 +166,21 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
         wrapper.get();
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testGetFutureExecutionExceptionWithOriginals() throws Exception {
+        wrapper = spy(new FutureTaskResultToDomainObjectPromiseWrapper(future1, true));
+        ExecutionException executionException = new ExecutionException(new NullPointerException());
+        when(future1.get()).thenThrow(executionException);
+        try {
+            wrapper.get();
+        } catch (PromiseBrokenException e) {
+            Throwable rootCause = ExceptionUtils.getRootCause(e);
+            assertEquals(NullPointerException.class.getName(), rootCause.getClass().getName());
+            throw (Exception) rootCause;
+        }
+        fail();
+    }
+
     @Test
     public void testGetSuccessCase() throws Exception {
         ServiceResponse<String> response1 = new ServiceResponse<>("test", new HashMap<String, String>() {{
@@ -249,6 +266,21 @@ public class FutureTaskResultToDomainObjectPromiseWrapperTest {
         when(future1.get(timeout, timeUnit)).thenThrow(ExecutionException.class);
         exception.expect(InterruptedException.class);
         wrapper.get(timeout, timeUnit);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testGetFutureExecutionExceptionWithOriginalsWithTimeout() throws Exception {
+        wrapper = spy(new FutureTaskResultToDomainObjectPromiseWrapper(future1, true));
+        ExecutionException executionException = new ExecutionException(new NullPointerException());
+        when(future1.get(timeout, timeUnit)).thenThrow(executionException);
+        try {
+            wrapper.get();
+        } catch (PromiseBrokenException e) {
+            Throwable rootCause = ExceptionUtils.getRootCause(e);
+            assertEquals(NullPointerException.class.getName(), rootCause.getClass().getName());
+            throw (Exception) rootCause;
+        }
+        fail();
     }
 
     @Test
