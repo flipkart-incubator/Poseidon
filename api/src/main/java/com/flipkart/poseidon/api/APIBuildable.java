@@ -19,11 +19,13 @@ package com.flipkart.poseidon.api;
 import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonResponse;
+import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.internal.OrchestratorDataSource;
 import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
+import com.flipkart.poseidon.pojos.ParamPOJO;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
@@ -47,6 +49,11 @@ public class APIBuildable implements Buildable {
         this.pojo = pojo;
         this.configuration = configuration;
         this.tasks = tasks;
+
+        if (pojo.getParams() != null) {
+            loadJavaTypes(pojo.getParams().getRequired());
+            loadJavaTypes(pojo.getParams().getOptional());
+        }
     }
 
     @Override
@@ -121,5 +128,22 @@ public class APIBuildable implements Buildable {
 
     public EndpointPOJO getPojo() {
         return pojo;
+    }
+
+    private void loadJavaTypes(ParamPOJO[] params) {
+        if (params == null) {
+            return;
+        }
+
+        for (ParamPOJO param : params) {
+            if (!StringUtils.isNullOrEmpty(param.getJavatype())) {
+                try {
+                    Class<?> javaType = Class.forName(param.getJavatype());
+                    param.setJavaType(javaType);
+                } catch (ClassNotFoundException e) {
+                    throw new UnsupportedOperationException("Specify a know class as JavaType", e);
+                }
+            }
+        }
     }
 }

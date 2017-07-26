@@ -38,6 +38,7 @@ public class ParamPOJO {
     private boolean file;
     private boolean body = false;
     private String javatype;
+    private Class<?> javaType;
     private boolean header = false;
     private boolean pathparam = false;
     private int position = 0;
@@ -94,6 +95,14 @@ public class ParamPOJO {
 
     public String getSeparator() {
         return separator;
+    }
+
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(Class<?> javaType) {
+        this.javaType = javaType;
     }
 
     public static enum DataType {

@@ -18,11 +18,13 @@ package com.flipkart.poseidon.internal;
 
 import com.flipkart.poseidon.TestConfiguration;
 import com.flipkart.poseidon.TestEnum;
+import com.flipkart.poseidon.api.APIBuildable;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import flipkart.lego.api.exceptions.BadRequestException;
@@ -504,5 +506,12 @@ public class ParamValidationFilterTest {
         });
         when(servletRequest.getParameterMap()).thenReturn(parameterMap);
         return servletRequest;
+    }
+
+    private void load(ParamsPOJO params) {
+        EndpointPOJO endpointPOJO = spy(EndpointPOJO.class);
+        when(endpointPOJO.getParams()).thenReturn(params);
+
+        new APIBuildable(null, endpointPOJO, configuration, new HashMap<>());
     }
 }
