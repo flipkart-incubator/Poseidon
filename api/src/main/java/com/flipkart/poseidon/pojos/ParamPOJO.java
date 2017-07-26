@@ -97,7 +97,7 @@ public class ParamPOJO {
     }
 
     public static enum DataType {
-        STRING, INTEGER, NUMBER, BOOLEAN;
+        STRING, INTEGER, NUMBER, BOOLEAN, ENUM;
 
         @JsonCreator
         public static DataType getValueFor(String value) {
