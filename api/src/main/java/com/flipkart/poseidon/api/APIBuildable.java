@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.api;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonResponse;
@@ -24,6 +25,7 @@ import com.flipkart.poseidon.internal.OrchestratorDataSource;
 import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.mappers.Mapper;
+import com.flipkart.poseidon.model.VariableModel;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import flipkart.lego.api.entities.*;
@@ -136,14 +138,31 @@ public class APIBuildable implements Buildable {
         }
 
         for (ParamPOJO param : params) {
-            if (!StringUtils.isNullOrEmpty(param.getJavatype())) {
-                try {
-                    Class<?> javaType = Class.forName(param.getJavatype());
-                    param.setJavaType(javaType);
-                } catch (ClassNotFoundException e) {
-                    throw new UnsupportedOperationException("Specify a know class as JavaType", e);
-                }
+            final JavaType javaType;
+            if (param.getType() != null) {
+                javaType = constructJavaType(param.getType());
+            } else if (!StringUtils.isNullOrEmpty(param.getJavatype())) {
+                javaType = constructJavaType(new VariableModel(param.getJavatype()));
+            } else {
+                javaType = null;
             }
+            param.setJavaType(javaType);
         }
+    }
+
+    private JavaType constructJavaType(VariableModel variableModel) {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(variableModel.getType());
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException("Specify a known class " + variableModel.getType(), e);
+        }
+
+        JavaType[] javaTypes = new JavaType[variableModel.getTypes().length];
+        for (int i = 0; i < variableModel.getTypes().length; i++) {
+            javaTypes[i] = constructJavaType(variableModel.getTypes()[i]);
+        }
+
+        return configuration.getObjectMapper().getTypeFactory().constructParametrizedType(clazz, clazz, javaTypes);
     }
 }

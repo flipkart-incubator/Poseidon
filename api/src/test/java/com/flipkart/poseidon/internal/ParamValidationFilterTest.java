@@ -19,12 +19,14 @@ package com.flipkart.poseidon.internal;
 import com.flipkart.poseidon.TestConfiguration;
 import com.flipkart.poseidon.TestEnum;
 import com.flipkart.poseidon.TestPOJO;
+import com.flipkart.poseidon.Wrapper;
 import com.flipkart.poseidon.api.APIBuildable;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.model.VariableModel;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
@@ -35,6 +37,7 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -485,6 +488,110 @@ public class ParamValidationFilterTest {
         assertEquals(true, testPOJO.isTest());
     }
 
+    @Test
+    public void testBodyParamList() throws Exception {
+        ParamsPOJO params = mock(ParamsPOJO.class);
+
+        ParamPOJO paramPOJO = mockBodyParam("test",
+                new VariableModel("java.util.List",
+                        new VariableModel[] { new VariableModel("com.flipkart.poseidon.TestPOJO") }));
+
+        ParamPOJO[] paramPOJOs = new ParamPOJO[] { paramPOJO };
+        when(params.getRequired()).thenReturn(paramPOJOs);
+        load(params);
+
+        RequestContext.set(RequestConstants.URI, "/3/abc/xyz");
+        HttpServletRequest servletRequest = mockHttpServletRequest("/3/abc/xyz");
+
+        PoseidonRequest request = new PoseidonRequest(servletRequest);
+        request.setAttribute(RequestConstants.BODY, configuration.getObjectMapper().writeValueAsString(Collections.singletonList(new TestPOJO("xyz", true))));
+
+        new ParamValidationFilter(params, configuration).filterRequest(request, new PoseidonResponse());
+
+        Map<String, Object> parsedParams = request.getAttribute(RequestConstants.PARAMS);
+        assertEquals(1, parsedParams.size());
+
+        Object test = parsedParams.get("test");
+        assertTrue(test instanceof List);
+        Object testPOJOBlob = ((List) test).get(0);
+        assertTrue(testPOJOBlob instanceof TestPOJO);
+        TestPOJO testPOJO = (TestPOJO) testPOJOBlob;
+        assertEquals("xyz", testPOJO.getAbc());
+        assertEquals(true, testPOJO.isTest());
+    }
+
+    @Test
+    public void testBodyParamMap() throws Exception {
+        ParamsPOJO params = mock(ParamsPOJO.class);
+
+        ParamPOJO paramPOJO = mockBodyParam("test",
+                new VariableModel("java.util.Map", new VariableModel[] {
+                        new VariableModel("java.lang.String"),
+                        new VariableModel("com.flipkart.poseidon.TestPOJO")
+                }));
+
+        ParamPOJO[] paramPOJOs = new ParamPOJO[] { paramPOJO };
+        when(params.getRequired()).thenReturn(paramPOJOs);
+        load(params);
+
+        RequestContext.set(RequestConstants.URI, "/3/abc/xyz");
+        HttpServletRequest servletRequest = mockHttpServletRequest("/3/abc/xyz");
+
+        PoseidonRequest request = new PoseidonRequest(servletRequest);
+        request.setAttribute(RequestConstants.BODY, configuration.getObjectMapper().writeValueAsString(Collections.singletonMap("key", new TestPOJO("xyz", true))));
+
+        new ParamValidationFilter(params, configuration).filterRequest(request, new PoseidonResponse());
+
+        Map<String, Object> parsedParams = request.getAttribute(RequestConstants.PARAMS);
+        assertEquals(1, parsedParams.size());
+
+        Object test = parsedParams.get("test");
+        assertTrue(test instanceof Map);
+        Object testPOJOBlob = ((Map) test).get("key");
+        assertTrue(testPOJOBlob instanceof TestPOJO);
+        TestPOJO testPOJO = (TestPOJO) testPOJOBlob;
+        assertEquals("xyz", testPOJO.getAbc());
+        assertEquals(true, testPOJO.isTest());
+    }
+
+    @Test
+    public void testBodyParamGenerics() throws Exception {
+        ParamsPOJO params = mock(ParamsPOJO.class);
+
+        ParamPOJO paramPOJO = mockBodyParam("test",
+                new VariableModel("com.flipkart.poseidon.Wrapper", new VariableModel[] {
+                        new VariableModel("java.util.Map", new VariableModel[] {
+                                new VariableModel("java.lang.String"),
+                                new VariableModel("com.flipkart.poseidon.TestPOJO")
+                        })
+                }));
+
+        ParamPOJO[] paramPOJOs = new ParamPOJO[] { paramPOJO };
+        when(params.getRequired()).thenReturn(paramPOJOs);
+        load(params);
+
+        RequestContext.set(RequestConstants.URI, "/3/abc/xyz");
+        HttpServletRequest servletRequest = mockHttpServletRequest("/3/abc/xyz");
+
+        PoseidonRequest request = new PoseidonRequest(servletRequest);
+        request.setAttribute(RequestConstants.BODY, configuration.getObjectMapper().writeValueAsString(new Wrapper<>(Collections.singletonMap("key", new TestPOJO("xyz", true)))));
+
+        new ParamValidationFilter(params, configuration).filterRequest(request, new PoseidonResponse());
+
+        Map<String, Object> parsedParams = request.getAttribute(RequestConstants.PARAMS);
+        assertEquals(1, parsedParams.size());
+
+        Object test = parsedParams.get("test");
+        assertTrue(test instanceof Wrapper);
+        Object wrapperMap = ((Wrapper) test).getObj();
+        assertTrue(wrapperMap instanceof Map);
+        Object testPOJOBlob = ((Map) wrapperMap).get("key");
+        assertTrue(testPOJOBlob instanceof TestPOJO);
+        TestPOJO testPOJO = (TestPOJO) testPOJOBlob;
+        assertEquals("xyz", testPOJO.getAbc());
+        assertEquals(true, testPOJO.isTest());
+    }
+
     private ParamPOJO mockPathParam(String name, int position) {
         return mockPathParam(name, position, ParamPOJO.DataType.STRING);
     }
@@ -509,7 +616,16 @@ public class ParamValidationFilterTest {
     private ParamPOJO mockBodyParam(String name, String javaType) {
         ParamPOJO paramPOJO = spy(ParamPOJO.class);
         when(paramPOJO.getName()).thenReturn(name);
+        when(paramPOJO.getType()).thenReturn(new VariableModel(javaType));
         when(paramPOJO.getJavatype()).thenReturn(javaType);
+        when(paramPOJO.isBody()).thenReturn(true);
+        return paramPOJO;
+    }
+
+    private ParamPOJO mockBodyParam(String name, VariableModel variableModel) {
+        ParamPOJO paramPOJO = spy(ParamPOJO.class);
+        when(paramPOJO.getName()).thenReturn(name);
+        when(paramPOJO.getType()).thenReturn(variableModel);
         when(paramPOJO.isBody()).thenReturn(true);
         return paramPOJO;
     }

@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.internal;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
@@ -220,7 +221,7 @@ public class ParamValidationFilter implements Filter {
         return builder.toString();
     }
 
-    private Object parseParamValues(String name, String[] values, ParamPOJO.DataType datatype, boolean multivalue, Class<?> javaType) throws BadRequestException {
+    private Object parseParamValues(String name, String[] values, ParamPOJO.DataType datatype, boolean multivalue, JavaType javaType) throws BadRequestException {
         try {
             if (values != null) {
                 if (!multivalue && values.length > 1) {
@@ -237,7 +238,7 @@ public class ParamValidationFilter implements Filter {
         }
     }
 
-    private List getValues(String[] values, ParamPOJO.DataType datatype, Class<?> javaType) throws BadRequestException {
+    private List getValues(String[] values, ParamPOJO.DataType datatype, JavaType javaType) throws BadRequestException {
         switch (datatype) {
             case NUMBER:
                 return getDoubleValues(values);
@@ -283,7 +284,7 @@ public class ParamValidationFilter implements Filter {
         return Arrays.asList(values);
     }
 
-    private List getEnumValues(String[] values, Class<?> javaType) throws BadRequestException {
+    private List getEnumValues(String[] values, JavaType javaType) throws BadRequestException {
         List enumValues = new ArrayList<>();
         for (String value : values) {
             try {
