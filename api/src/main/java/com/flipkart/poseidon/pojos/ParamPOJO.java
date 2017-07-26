@@ -18,6 +18,7 @@ package com.flipkart.poseidon.pojos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flipkart.poseidon.model.VariableModel;
 
 public class ParamPOJO {
 
@@ -38,12 +39,15 @@ public class ParamPOJO {
     private boolean file;
     private boolean body = false;
     private String javatype;
+    @JsonIgnore
     private Class<?> javaType;
     private boolean header = false;
     private boolean pathparam = false;
     private int position = 0;
     @JsonIgnore
     private int greedyPosition = 0;
+    private VariableModel type;
+
 
     public String getName() {
         return name;
@@ -103,6 +107,14 @@ public class ParamPOJO {
 
     public void setJavaType(Class<?> javaType) {
         this.javaType = javaType;
+    }
+
+    public VariableModel getType() {
+        return type;
+    }
+
+    public void setType(VariableModel type) {
+        this.type = type;
     }
 
     public static enum DataType {
