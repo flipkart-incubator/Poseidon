@@ -44,7 +44,8 @@ public class APIValidator {
                 try {
                     final Class<?> customValidatorClass = Class.forName(args[1]);
                     if (!CustomValidator.class.isAssignableFrom(customValidatorClass)) {
-                        logger.info("Validator class passed does not implement CustomValidator");
+                        logger.error("Validator class passed does not implement CustomValidator");
+                        System.exit(-1);
                     } else {
                         customValidator = (CustomValidator) customValidatorClass.newInstance();
                     }
