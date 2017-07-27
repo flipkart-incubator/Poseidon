@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.validator;
 
 import com.flipkart.poseidon.api.APIManager;
+import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,26 @@ public class APIValidator {
 
     public static void main(String[] args) {
         Path dir = Paths.get(args[0]);
+        CustomValidator customValidator = null;
+        if (args.length > 1) {
+            if (!StringUtils.isNullOrEmpty(args[1])) {
+                try {
+                    final Class<?> customValidatorClass = Class.forName(args[1]);
+                    if (!CustomValidator.class.isAssignableFrom(customValidatorClass)) {
+                        logger.info("Validator class passed does not implement CustomValidator");
+                    } else {
+                        customValidator = (CustomValidator) customValidatorClass.newInstance();
+                    }
+                } catch (ClassNotFoundException e) {
+                    logger.error("Wrong CustomValidator passed", e);
+                    System.exit(-1);
+                } catch (Exception e) {
+                    logger.error("Something went wrong while constructing CustomValidator", e);
+                    System.exit(-1);
+                }
+            }
+        }
+
         List<String> validConfigs = new ArrayList<>();
         try {
             APIManager.scanAndAdd(dir, validConfigs);
@@ -47,6 +68,11 @@ public class APIValidator {
             Map<String, List<String>> errors = new HashMap<>();
             for (EndpointPOJO pojo : pojos) {
                 List<String> pojoErrors = EndpointValidator.validate(pojo);
+
+                if (customValidator != null) {
+                    pojoErrors.addAll(customValidator.validate(pojo));
+                }
+
                 if (!pojoErrors.isEmpty()) {
                     errors.put(pojo.getHttpMethod() + " " + pojo.getUrl(), pojoErrors);
                 }
