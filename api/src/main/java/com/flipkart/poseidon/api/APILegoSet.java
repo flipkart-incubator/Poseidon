@@ -21,6 +21,7 @@ import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.ds.trie.KeyWrapper;
 import com.flipkart.poseidon.ds.trie.Trie;
+import com.flipkart.poseidon.helpers.MetricsHelper;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
@@ -39,10 +40,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.flipkart.poseidon.Poseidon.STARTUP_LOGGER;
-import static com.flipkart.poseidon.constants.RequestConstants.ENDPOINT_NAME;
-import static com.flipkart.poseidon.constants.RequestConstants.ENDPOINT_METHOD;
-import static com.flipkart.poseidon.constants.RequestConstants.TIMER_CONTEXT;
-import static com.flipkart.poseidon.constants.RequestConstants.URI;
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -101,12 +99,13 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             EndpointPOJO pojo = ((APIBuildable) buildable).getPojo();
             RequestContext.set(URI, pojo.getUrl());
             RequestContext.set(ENDPOINT_NAME, pojo.getName());
+            RequestContext.set(API_ANNOTATIONS, pojo.getProperties());
             RequestContext.set(ENDPOINT_METHOD, pojo.getHttpMethod());
             ServiceContext.set(ENDPOINT_NAME, pojo.getName());
 
             String name = pojo.getName();
             if (name != null && !name.isEmpty()) {
-                poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer("poseidon.api." + name + "." + httpMethod).time());
+                poseidonRequest.setAttribute(TIMER_CONTEXT, Metrics.getRegistry().timer(MetricsHelper.getApiTimerMetricsName(name, httpMethod)).time());
             }
         }
 

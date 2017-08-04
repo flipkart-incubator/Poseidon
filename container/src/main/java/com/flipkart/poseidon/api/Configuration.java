@@ -19,6 +19,9 @@ package com.flipkart.poseidon.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface Configuration {
 
     int getPort();
@@ -41,6 +44,13 @@ public interface Configuration {
 
     TracingConfiguration getTracingConfiguration();
 
+    /**
+     * @return true to have Poseidon throw actual exceptions instead of InterruptedException (Observable onError !! :( )
+     */
+    default boolean throwOriginalExceptionsForNonUpstreamFailures() {
+        return false;
+    }
+
     /*
      * Return null to use default values at framework
      */
@@ -57,4 +67,6 @@ public interface Configuration {
     default boolean collectServiceClientCommandNames() {
         return false;
     }
+
+    default List<String> getResponseHeadersToCollect() { return new ArrayList<>(); }
 }

@@ -34,6 +34,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
@@ -126,10 +127,23 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
-        ServiceResponseDecoder<T> serviceResponseDecoder = new ServiceResponseDecoder<>(getObjectMapper(), javaType, errorType, logger, exceptions);
+        ServiceResponseDecoder<T> serviceResponseDecoder =
+                new ServiceResponseDecoder<>(
+                        getObjectMapper(), javaType,
+                        errorType, logger,
+                        exceptions, ServiceContext.getCollectedHeaders());
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
-        return new FutureTaskResultToDomainObjectPromiseWrapper<>(future);
+
+        final Boolean throwOriginal = ServiceContext.get(ServiceClientConstants.THROW_ORIGINAL);
+        FutureTaskResultToDomainObjectPromiseWrapper<T> futureWrapper = new FutureTaskResultToDomainObjectPromiseWrapper<>(future, Optional.ofNullable(throwOriginal).orElse(false));
+
+        if (ServiceContext.isDebug()) {
+            properties.setHeadersMap(injectedHeadersMap);
+            ServiceContext.addDebugResponse(this.getClass().getName(), new ServiceDebug(properties, futureWrapper));
+        }
+
+        return futureWrapper;
     }
 
     /**

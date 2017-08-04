@@ -39,6 +39,7 @@ It demonstrates the following capabilities of Poseidon
 ![DT Details](docs/DTDetails.png?raw=true)
 + Scatter-Gather capability built using [Lego](https://github.com/flipkart-incubator/Lego)
 + Dispatcher Composer Engine at Poseidon API implemented using [Hydra](https://github.com/flipkart-incubator/hydra)
++ API debugging - Add whatIsWrongWithThis parameter to any API to see service responses in detail for that API. Example [here](http://localhost:21000/v1/userPosts?userId=1&whatIsWrongWithThis).
 + Metrics out of the box for both upstreams and API. Connect to jmx port 3335 on localhost using jconsole and look for "metrics" under MBeans.
 ![Upstream Metrics](docs/MetricsUpstreams.png?raw=true)
 ![API Metrics](docs/MetricsAPI.png?raw=true)
