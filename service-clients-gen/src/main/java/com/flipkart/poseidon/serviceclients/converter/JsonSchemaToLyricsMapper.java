@@ -62,7 +62,7 @@ public class JsonSchemaToLyricsMapper {
                 String firstParamType = Type.STRING.getPackageName();
                 String secondParamType = additionalPropertiesObj.getType().getPackageName();
                 VariableModel variableModel = new VariableModel(objectType, new VariableModel[]{new VariableModel(firstParamType), new VariableModel(secondParamType)});
-                FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0], false);
+                FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0]);
                 fields.put("additionalProperties", model);
             } else {
                 ClassDescriptor classDescriptor = getPropertyClass();
@@ -72,7 +72,7 @@ public class JsonSchemaToLyricsMapper {
                 String firstParamType = Type.STRING.getPackageName();
                 String secondParamType = getAcutalClassName(classDescriptor.getClassName());
                 VariableModel variableModel = new VariableModel(objectType, new VariableModel[]{new VariableModel(firstParamType), new VariableModel(secondParamType)});
-                FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0], false);
+                FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0]);
                 fields.put(classDescriptor.getClassName(), model);
             }
         }
@@ -99,7 +99,7 @@ public class JsonSchemaToLyricsMapper {
             }
         }
 
-        classDescriptorList.add(new ClassDescriptor(className, getTypeModel(type, extendsModel, fields, new LinkedHashMap<>(), new ArrayList<>())));
+        classDescriptorList.add(new ClassDescriptor(className, getTypeModel(type, extendsModel, fields, new LinkedHashMap<>(), new ArrayList<>(), null)));
         return classDescriptorList;
     }
 
@@ -110,9 +110,9 @@ public class JsonSchemaToLyricsMapper {
         String firstParamType = Type.STRING.getPackageName();
         String secondParamType = Type.OBJECT.getPackageName();
         VariableModel variableModel = new VariableModel(objectType, new VariableModel[]{new VariableModel(firstParamType), new VariableModel(secondParamType)});
-        FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0], false);
+        FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0]);
         fields.put("additionalProperties", model);
-        return new ClassDescriptor(className + "Property",  getTypeModel(com.flipkart.lyrics.model.Type.CLASS, null, fields, new LinkedHashMap<>(), new ArrayList<>()));
+        return new ClassDescriptor(className + "Property",  getTypeModel(com.flipkart.lyrics.model.Type.CLASS, null, fields, new LinkedHashMap<>(), new ArrayList<>(), null));
     }
 
     private String getAcutalClassName(String className) {
@@ -155,7 +155,7 @@ public class JsonSchemaToLyricsMapper {
         if (fieldDescriptor.getDefaultValue() != null) {
             initializerModel = new InitializerModel(fieldDescriptor.getDefaultValue());
         }
-        return new FieldModel(null , fieldType, variableModel, primitive,  new Modifier[0] , false, null, !fieldDescriptor.isOptional(), false, false, array, initializerModel, false, false);
+        return new FieldModel(null , fieldType, variableModel, primitive,  new Modifier[0] , false, null, !fieldDescriptor.isOptional(), false, false, array, initializerModel, false);
     }
 
     private FieldType getFieldType(Type type) {
@@ -182,6 +182,7 @@ public class JsonSchemaToLyricsMapper {
         Map<String, Object[]> valuesWithFields = new LinkedHashMap<>();
         Map<String, FieldModel> fields = new LinkedHashMap<>();
         List<String> fieldOrder = new ArrayList<>();
+        Map<String, Object> additionalFields = new HashMap<>();
         if (enums != null) {
             if (javaEnumNames == null) {
                 javaEnumNames = enums.stream().map(String::toUpperCase).collect(Collectors.toList());
@@ -189,19 +190,24 @@ public class JsonSchemaToLyricsMapper {
             for (int i = 0; i< enums.size(); i++) {
                 valuesWithFields.put(javaEnumNames.get(i), new Object[]{enums.get(i)});
             }
-            fields.put("value", getFieldModel(FieldType.STRING, new VariableModel(), new Modifier[0], true));
+            fields.put("value", getFieldModel(FieldType.STRING, new VariableModel(), new Modifier[0]));
             fieldOrder.add("value");
+            additionalFields.put("jsonValue", true);
         }
-        classDescriptorList.add(new ClassDescriptor(className, getTypeModel(type, null, fields, valuesWithFields, fieldOrder)));
+        classDescriptorList.add(new ClassDescriptor(className, getTypeModel(type, null, fields, valuesWithFields, fieldOrder, additionalFields)));
         return classDescriptorList;
     }
 
-    private FieldModel getFieldModel(FieldType fieldType, VariableModel variableModel, Modifier[] modifiers, boolean jsonValue) {
-        return new FieldModel(null, fieldType, variableModel, false, modifiers , false, null, false, false, false, false, null, false, jsonValue);
+    private FieldModel getFieldModel(FieldType fieldType, VariableModel variableModel, Modifier[] modifiers) {
+        return new FieldModel(null, fieldType, variableModel, false, modifiers , false, null, false, false, false, false, null, false);
     }
 
-    private TypeModel getTypeModel(com.flipkart.lyrics.model.Type type, VariableModel extendsModel, Map<String, FieldModel> fields, Map<String, Object[]> valuesWithFields, List<String> fieldOrder) {
-        return new TypeModel(type, new Modifier[0], extendsModel, new HashSet(), new ArrayList(), new ArrayList(), fields, new LinkedHashMap(), null, null, valuesWithFields, fieldOrder, null,null,null,null);
+    private TypeModel getTypeModel(com.flipkart.lyrics.model.Type type, VariableModel extendsModel, Map<String, FieldModel> fields, Map<String, Object[]> valuesWithFields, List<String> fieldOrder, Map<String, Object> additionalProperties) {
+        TypeModel typeModel = new TypeModel(type, new Modifier[0], extendsModel, new HashSet(), new ArrayList(), new ArrayList(), fields, new LinkedHashMap(), null, null, valuesWithFields, fieldOrder, null,null,null,null);
+        if (additionalProperties != null) {
+            additionalProperties.forEach((key, value) -> typeModel.addAdditionalProperties(key, value));
+        }
+        return typeModel;
     }
 
     private VariableModel getVariableModel(String javaType) {
