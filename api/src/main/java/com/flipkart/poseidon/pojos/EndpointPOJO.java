@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flipkart.poseidon.utils.ApiHelper;
 import org.springframework.http.HttpMethod;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,6 +40,9 @@ public class EndpointPOJO {
     private String[] filters;
     private String[] mappers;
     private Object response;
+
+    /* User defined fields, to be used as annotations for an API */
+    private final Map<String, Object> properties = new HashMap<>();
 
     public String getUrl() {
         return url;
@@ -82,5 +86,9 @@ public class EndpointPOJO {
 
     public Object getResponse() {
         return response;
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
     }
 }

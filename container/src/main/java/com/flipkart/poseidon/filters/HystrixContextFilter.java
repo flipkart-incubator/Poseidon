@@ -18,8 +18,10 @@ package com.flipkart.poseidon.filters;
 
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.helpers.MetricsHelper;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
@@ -70,13 +72,15 @@ public class HystrixContextFilter implements Filter {
         // Ingest API response status codes for HttpServletResponse
         if (response instanceof HttpServletResponse && !StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
             String status = (((HttpServletResponse) response).getStatus() / 100) + "XX";
-            Metrics.getRegistry().counter("poseidon.api." + RequestContext.get(ENDPOINT_NAME) + "." + status).inc();
+            Metrics.getRegistry()
+                    .counter(MetricsHelper.getStatusCodeMetricsName(RequestContext.get(ENDPOINT_NAME), RequestContext.get(RequestConstants.METHOD), status))
+                    .inc();
         }
     }
 
     private void initAllContext(ServletRequest request) {
         RequestContext.initialize();
-        ServiceContext.initialize();
+        ServiceContext.initialize(configuration.getResponseHeadersToCollect());
         if (request instanceof HttpServletRequest) {
             setContext((HttpServletRequest) request);
         }
@@ -102,6 +106,7 @@ public class HystrixContextFilter implements Filter {
             ServiceContext.set(ServiceClientConstants.HEADERS, immutableHeaders);
             ServiceContext.set(ServiceClientConstants.COMMANDS, new ConcurrentLinkedQueue<String>());
             ServiceContext.set(ServiceClientConstants.COLLECT_COMMANDS, configuration.collectServiceClientCommandNames());
+            ServiceContext.set(ServiceClientConstants.THROW_ORIGINAL, configuration.throwOriginalExceptionsForNonUpstreamFailures());
             RequestContext.set(HEADERS, immutableHeaders);
             MDC.setContextMap(immutableHeaders);
         }

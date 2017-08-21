@@ -17,6 +17,11 @@
 package com.flipkart.poseidon.sample.api.config;
 
 import com.flipkart.poseidon.api.JettyConfiguration;
+import com.flipkart.poseidon.api.JettyFilterConfiguration;
+import com.flipkart.poseidon.filters.DebugFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class SampleJettyConfiguration implements JettyConfiguration {
     private int acceptors;
@@ -88,5 +93,10 @@ public class SampleJettyConfiguration implements JettyConfiguration {
 
     public void setThreadIdleTimeout(int threadIdleTimeout) {
         this.threadIdleTimeout = threadIdleTimeout;
+    }
+
+    public List<JettyFilterConfiguration> getJettyFilterConfigurations() {
+        JettyFilterConfiguration debugFilterConfig = new JettyFilterConfiguration(new DebugFilter());
+        return Arrays.asList(debugFilterConfig);
     }
 }

@@ -18,6 +18,8 @@ package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.flipkart.poseidon.serviceclients.ServiceContextState;
+import com.flipkart.poseidon.serviceclients.ServiceDebug;
 import com.github.kristofa.brave.Brave;
 import com.github.kristofa.brave.ServerSpan;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
@@ -25,6 +27,7 @@ import flipkart.lego.api.entities.Block;
 import flipkart.lego.api.entities.Request;
 import org.slf4j.MDC;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.flipkart.poseidon.tracing.TraceHelper.endTrace;
@@ -44,8 +47,7 @@ public abstract class ContextInducedBlock {
     /* Poseidon's request context from parent thread */
     private final Map<String, Object> parentContext;
 
-    /* Poseidon's service context from parent thread */
-    private final Map<String, Object> parentServiceContext;
+    private final ServiceContextState serviceContextState;
 
     /* Hystrix request context from parent thread */
     private final HystrixRequestContext parentThreadState;
@@ -66,7 +68,7 @@ public abstract class ContextInducedBlock {
     protected ContextInducedBlock(Block block) {
         this.block = block;
         parentContext = RequestContext.getContextMap();
-        parentServiceContext = ServiceContext.getContextMap();
+        serviceContextState = ServiceContext.getState();
         parentThreadState = HystrixRequestContext.getContextForCurrentThread();
         mdcContext = MDC.getCopyOfContextMap();
         serverSpan = Brave.getServerSpanThreadBinder().getCurrentServerSpan();
@@ -76,7 +78,7 @@ public abstract class ContextInducedBlock {
     protected void initAllContext(Request request) {
         existingState = HystrixRequestContext.getContextForCurrentThread();
         RequestContext.initialize(parentContext);
-        ServiceContext.initialize(parentServiceContext);
+        ServiceContext.initialize(serviceContextState);
         HystrixRequestContext.setContextOnCurrentThread(parentThreadState);
         if (mdcContext != null) {
             MDC.setContextMap(mdcContext);
