@@ -22,9 +22,6 @@ public class JsonSchemaToLyricsMapper {
     private static final JsonSchemaToLyricsMapper INSTANCE = new JsonSchemaToLyricsMapper();
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static ServiceClientPojo jsonSchemaModel;
-    private static String packageName;
-    private static String className;
 
     private JsonSchemaToLyricsMapper() {
 
@@ -35,21 +32,19 @@ public class JsonSchemaToLyricsMapper {
     }
 
     public List<ClassDescriptor> convert(String filePath, String packageName, String className) throws Exception {
-        this.packageName = packageName;
-        this.className = className;
         JsonValidator.getInstance().validatePojo(filePath);
-        this.jsonSchemaModel = objectMapper.readValue(new File(filePath), ServiceClientPojo.class);
-        return generateLyricsPojo();
+        ServiceClientPojo jsonSchemaModel = objectMapper.readValue(new File(filePath), ServiceClientPojo.class);
+        return generateLyricsPojo(packageName, className, jsonSchemaModel);
     }
 
-    private List<ClassDescriptor> generateLyricsPojo() {
+    private List<ClassDescriptor> generateLyricsPojo(String packageName, String className, ServiceClientPojo jsonSchemaModel) {
         if (jsonSchemaModel.getEnumeration() == null) {
-            return generateClass();
+            return generateClass(packageName, className, jsonSchemaModel);
         }
         return generateEnum(className, jsonSchemaModel.getEnumeration(), jsonSchemaModel.getJavaEnumNames());
     }
 
-    private List<ClassDescriptor> generateClass() {
+    private List<ClassDescriptor> generateClass(String packageName, String className, ServiceClientPojo jsonSchemaModel) {
         com.flipkart.lyrics.model.Type type = com.flipkart.lyrics.model.Type.CLASS;
         List<ClassDescriptor> classDescriptorList = new ArrayList<>();
         Map<String, FieldModel> fields = new HashMap<>();
@@ -65,12 +60,12 @@ public class JsonSchemaToLyricsMapper {
                 FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0]);
                 fields.put("additionalProperties", model);
             } else {
-                ClassDescriptor classDescriptor = getPropertyClass();
+                ClassDescriptor classDescriptor = getPropertyClass(className);
                 classDescriptorList.add(classDescriptor);
                 FieldType fieldType = FieldType.OBJECT;
                 String objectType = Type.MAP.getPackageName();
                 String firstParamType = Type.STRING.getPackageName();
-                String secondParamType = getAcutalClassName(classDescriptor.getClassName());
+                String secondParamType = getAcutalClassName(packageName, classDescriptor.getClassName());
                 VariableModel variableModel = new VariableModel(objectType, new VariableModel[]{new VariableModel(firstParamType), new VariableModel(secondParamType)});
                 FieldModel model = getFieldModel(fieldType, variableModel, new Modifier[0]);
                 fields.put(classDescriptor.getClassName(), model);
@@ -83,9 +78,9 @@ public class JsonSchemaToLyricsMapper {
                     classDescriptorList.addAll(enumModels);
                     FieldDescriptor fieldDescriptor = new FieldDescriptor();
                     fieldDescriptor.setJavaType(entry.getKey().substring(0, 1).toUpperCase() + entry.getKey().substring(1));
-                    fields.put(entry.getKey(), fieldDescToFieldModel(fieldDescriptor));
+                    fields.put(entry.getKey(), fieldDescToFieldModel(packageName, fieldDescriptor));
                 } else {
-                    fields.put(entry.getKey(), fieldDescToFieldModel(entry.getValue()));
+                    fields.put(entry.getKey(), fieldDescToFieldModel(packageName, entry.getValue()));
                 }
             }
         }
@@ -93,9 +88,9 @@ public class JsonSchemaToLyricsMapper {
         VariableModel extendsModel = null;
         if (extendedClass != null) {
             if (extendedClass.getType().equals(Type.ARRAY) && extendedClass.getItems() != null) {
-                extendsModel = new VariableModel(Type.ARRAY.getPackageName(), new VariableModel[]{getVariableModel(extendedClass.getItems().getJavaType())});
+                extendsModel = new VariableModel(Type.ARRAY.getPackageName(), new VariableModel[]{getVariableModel(packageName, extendedClass.getItems().getJavaType())});
             } else  if (extendedClass.getType().equals(Type.OBJECT)){
-                extendsModel = getVariableModel(extendedClass.getJavaType());
+                extendsModel = getVariableModel(packageName, extendedClass.getJavaType());
             }
         }
 
@@ -103,7 +98,7 @@ public class JsonSchemaToLyricsMapper {
         return classDescriptorList;
     }
 
-    private ClassDescriptor getPropertyClass() {
+    private ClassDescriptor getPropertyClass(String className) {
         Map<String, FieldModel> fields = new HashMap<>();
         FieldType fieldType = FieldType.OBJECT;
         String objectType = Type.MAP.getPackageName();
@@ -115,21 +110,21 @@ public class JsonSchemaToLyricsMapper {
         return new ClassDescriptor(className + "Property",  getTypeModel(com.flipkart.lyrics.model.Type.CLASS, null, fields, new LinkedHashMap<>(), new ArrayList<>(), null));
     }
 
-    private String getAcutalClassName(String className) {
+    private String getAcutalClassName(String packageName, String className) {
         if (className.contains(".")) {
             return className;
         }
         return packageName + "." + className;
     }
 
-    private FieldModel fieldDescToFieldModel(FieldDescriptor fieldDescriptor) {
+    private FieldModel fieldDescToFieldModel(String packageName, FieldDescriptor fieldDescriptor) {
         FieldType fieldType = getFieldType(fieldDescriptor.getType());
         VariableModel variableModel = new VariableModel();
         boolean array = false;
         if (fieldDescriptor.getType()!= null &&
                 fieldDescriptor.getType().equals(Type.ARRAY)) {
             if (fieldDescriptor.getItems() != null) {
-                variableModel = new VariableModel(Type.ARRAY.getPackageName(), new VariableModel[]{getVariableModel(fieldDescriptor.getItems().getJavaType())});
+                variableModel = new VariableModel(Type.ARRAY.getPackageName(), new VariableModel[]{getVariableModel(packageName, fieldDescriptor.getItems().getJavaType())});
             } else {
                 String javaType = fieldDescriptor.getJavaType();
                 if (javaType.length() > 2 && javaType.charAt(javaType.length() - 2) == '[' &&
@@ -138,14 +133,14 @@ public class JsonSchemaToLyricsMapper {
                     array = true;
                 }
                 fieldType = FieldType.OBJECT;
-                variableModel = new VariableModel(getAcutalClassName(javaType));
+                variableModel = new VariableModel(getAcutalClassName(packageName, javaType));
             }
         } else if (fieldDescriptor.getType() == null || fieldDescriptor.getType().equals(Type.OBJECT)) {
-            variableModel = getVariableModel(fieldDescriptor.getJavaType());
+            variableModel = getVariableModel(packageName, fieldDescriptor.getJavaType());
         }
         if (fieldDescriptor.getFormat() != null){
             fieldType = FieldType.OBJECT;
-            variableModel = getVariableModel(fieldDescriptor.getFormat().getPackageName());
+            variableModel = getVariableModel(packageName, fieldDescriptor.getFormat().getPackageName());
         }
         boolean primitive = false;
         if (fieldDescriptor.isUsePrimitives()){
@@ -210,7 +205,7 @@ public class JsonSchemaToLyricsMapper {
         return typeModel;
     }
 
-    private VariableModel getVariableModel(String javaType) {
+    private VariableModel getVariableModel(String packageName, String javaType) {
         javaType = javaType.trim();
         Stack<Object> genericStack = new Stack<>();
         int len = javaType.length();
@@ -244,7 +239,7 @@ public class JsonSchemaToLyricsMapper {
                 String tobeProcessedString = javaType.substring(iterator, len);
                 int punctIndex = getMin(tobeProcessedString.indexOf(","),
                         tobeProcessedString.indexOf("<"), tobeProcessedString.indexOf(">"), tobeProcessedString.length());
-                VariableModel variableModel = new VariableModel(getAcutalClassName(javaType.substring(iterator, iterator + punctIndex).trim()));
+                VariableModel variableModel = new VariableModel(getAcutalClassName(packageName, javaType.substring(iterator, iterator + punctIndex).trim()));
                 genericStack.push(variableModel);
                 iterator = punctIndex + iterator;
             }
