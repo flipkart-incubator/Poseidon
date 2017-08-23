@@ -1,5 +1,6 @@
 ## 5.4.0-SNAPSHOT (Jul 4, 2017)
 - Throw original exceptions for service failures (de-serialization exceptions etc) without wrapping in other exceptions
+- Exposed an interface in Validator framework for user defined logic
 
 ## 5.3.0 (June 27, 2017)
 - Ability to define and consume additional fields for an endpoint to be used as meta information
