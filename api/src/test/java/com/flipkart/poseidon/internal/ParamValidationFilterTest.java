@@ -390,31 +390,46 @@ public class ParamValidationFilterTest {
     }
 
     @Test
-    public void testQueryParamEnum() throws Exception {
+    public void testEnumParams() throws Exception {
         ParamsPOJO params = mock(ParamsPOJO.class);
 
         ParamPOJO paramPOJO = mockQueryParam("test", ParamPOJO.DataType.ENUM);
         mockJavaType(paramPOJO, "com.flipkart.poseidon.TestEnum");
+        ParamPOJO paramPOJO1 = mockHeaderParam("test1", ParamPOJO.DataType.ENUM);
+        mockJavaType(paramPOJO1, "com.flipkart.poseidon.TestEnum");
+        ParamPOJO paramPOJO2 = mockPathParam("test2", 2, ParamPOJO.DataType.ENUM);
+        mockJavaType(paramPOJO2, "com.flipkart.poseidon.TestEnum");
 
-        ParamPOJO[] paramPOJOs = new ParamPOJO[] { paramPOJO };
+        ParamPOJO[] paramPOJOs = new ParamPOJO[] { paramPOJO, paramPOJO1, paramPOJO2 };
         when(params.getRequired()).thenReturn(paramPOJOs);
         load(params);
 
         Map<String, String[]> parameterMap = new HashMap<>();
         parameterMap.put("test", new String[] { "XYZ" });
 
-        RequestContext.set(RequestConstants.URI, "/3/abc/xyz");
-        HttpServletRequest servletRequest = mockHttpServletRequest("/3/abc/xyz", parameterMap);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("test1", "ABC");
+
+        RequestContext.set(RequestConstants.URI, "/3/{test2}/xyz");
+        HttpServletRequest servletRequest = mockHttpServletRequest("/3/ABC/xyz", parameterMap, headers);
 
         PoseidonRequest request = new PoseidonRequest(servletRequest);
         new ParamValidationFilter(params, configuration).filterRequest(request, new PoseidonResponse());
 
         Map<String, Object> parsedParams = request.getAttribute(RequestConstants.PARAMS);
-        assertEquals(1, parsedParams.size());
+        assertEquals(3, parsedParams.size());
 
         Object test = parsedParams.get("test");
         assertTrue(test instanceof TestEnum);
         assertEquals(TestEnum.XYZ, test);
+
+        Object testPath = parsedParams.get("test2");
+        assertTrue(testPath instanceof TestEnum);
+        assertEquals(TestEnum.ABC, testPath);
+
+        Object testHeader = parsedParams.get("test1");
+        assertTrue(testHeader instanceof TestEnum);
+        assertEquals(TestEnum.ABC, testHeader);
     }
 
     @Test(expected = BadRequestException.class)
