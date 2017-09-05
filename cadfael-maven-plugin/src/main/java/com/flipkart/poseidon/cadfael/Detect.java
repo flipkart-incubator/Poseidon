@@ -44,6 +44,9 @@ public class Detect extends AbstractMojo {
     @Parameter
     private Set<NonVersionedArtifact> nativeArtifacts = new HashSet<>();
 
+    @Parameter(defaultValue = "false")
+    private boolean verifyProvidedScope;
+
     @Parameter
     private Set<NonVersionedArtifact> allowedDependencies = new HashSet<>();
 
@@ -60,11 +63,16 @@ public class Detect extends AbstractMojo {
             remoteRepositories.add(new RemoteRepository.Builder(repository.getId(), "default", repository.getUrl()).build());
         }
 
-        final Cadfael cadfael = Cadfael.builder(remoteRepositories)
+        final Cadfael.Builder cadfaelBuilder = Cadfael.builder(remoteRepositories)
                 .allowedArtifacts(allowedDependencies)
                 .rejectSnapshots()
-                .ignoreTestScope()
-                .ignoreProvidedScope().build();
+                .ignoreTestScope();
+
+        if (!verifyProvidedScope) {
+            cadfaelBuilder.ignoreProvidedScope();
+        }
+
+        final Cadfael cadfael = cadfaelBuilder.build();
 
         final List dependencies = project.getDependencies();
         getLog().info("Found " + dependencies.size() + " dependencies.");
