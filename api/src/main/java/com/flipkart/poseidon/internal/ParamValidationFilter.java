@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.internal;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonRequest;
@@ -100,22 +101,19 @@ public class ParamValidationFilter implements Filter {
                         // Optional param, value is not present but default is specified
                         value = defaultValue;
                     } else {
-                        value = parseParamValues(name, new String[] { attribute }, datatype, multivalue, param.getJavatype());
+                        value = parseParamValues(name, new String[] { attribute }, datatype, multivalue, param.getJavaType());
                     }
                 } else if(isBodyRequest) {
                     String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
                     if(!StringUtils.isEmpty(bodyString)) {
                         try {
-                            if ((param.getJavatype() == null || param.getJavatype().isEmpty()) &&
-                                    (param.getDatatype() == null)) {
+                            if (param.getJavaType() == null && param.getDatatype() == null) {
                                 value = bodyString;
                             } else {
-                                value = configuration.getObjectMapper().readValue(bodyString, Class.forName(param.getJavatype()));
+                                value = configuration.getObjectMapper().readValue(bodyString, param.getJavaType());
                             }
                         } catch (IOException e) {
                             logger.error("Error in reading body : {}", e.getMessage());
-                        } catch (ClassNotFoundException e) {
-                            logger.error("Error in finding class for body : {}", e.getMessage());
                         }
                     }
                     if(failOnMissingValue && value == null) {
@@ -144,7 +142,7 @@ public class ParamValidationFilter implements Filter {
                         // Optional param, value is not present but default is specified
                         value = defaultValue;
                     } else {
-                        value = parseParamValues(name, (String[]) attribute, datatype, multivalue, param.getJavatype());
+                        value = parseParamValues(name, (String[]) attribute, datatype, multivalue, param.getJavaType());
                     }
                 }
 
@@ -202,7 +200,7 @@ public class ParamValidationFilter implements Filter {
                         throw new BadRequestException("Missing path parameter : " + name);
                     }
 
-                    Object convertedValue = parseParamValues(name, new String[] { value }, datatype, false, param.getJavatype());
+                    Object convertedValue = parseParamValues(name, new String[] { value }, datatype, false, param.getJavaType());
                     if (internalName != null && !internalName.isEmpty()) {
                         parsedParams.put(internalName, convertedValue);
                     } else {
@@ -223,14 +221,14 @@ public class ParamValidationFilter implements Filter {
         return builder.toString();
     }
 
-    private Object parseParamValues(String name, String[] values, ParamPOJO.DataType datatype, boolean multivalue, String javatype) throws BadRequestException {
+    private Object parseParamValues(String name, String[] values, ParamPOJO.DataType datatype, boolean multivalue, JavaType javaType) throws BadRequestException {
         try {
             if (values != null) {
                 if (!multivalue && values.length > 1) {
                     throw new BadRequestException("Multiple values provided for parameter : " + name);
                 }
 
-                List parsedValues = getValues(values, datatype, javatype);
+                List parsedValues = getValues(values, datatype, javaType);
                 return multivalue ? parsedValues : parsedValues.get(0);
             }
 
@@ -240,7 +238,7 @@ public class ParamValidationFilter implements Filter {
         }
     }
 
-    private List getValues(String[] values, ParamPOJO.DataType datatype, String javatype) throws BadRequestException {
+    private List getValues(String[] values, ParamPOJO.DataType datatype, JavaType javaType) throws BadRequestException {
         switch (datatype) {
             case NUMBER:
                 return getDoubleValues(values);
@@ -249,7 +247,7 @@ public class ParamValidationFilter implements Filter {
             case BOOLEAN:
                 return getBooleanValues(values);
             case ENUM:
-                return getEnumValues(values, javatype);
+                return getEnumValues(values, javaType);
         }
 
         return getStringValues(values);
@@ -286,17 +284,14 @@ public class ParamValidationFilter implements Filter {
         return Arrays.asList(values);
     }
 
-    private List getEnumValues(String[] values, String javaType) throws BadRequestException {
+    private List getEnumValues(String[] values, JavaType javaType) throws BadRequestException {
         List enumValues = new ArrayList<>();
         for (String value : values) {
             try {
-                enumValues.add(configuration.getObjectMapper().convertValue(value, Class.forName(javaType)));
+                enumValues.add(configuration.getObjectMapper().convertValue(value, javaType));
             } catch (IllegalArgumentException e) {
                 logger.error("Wrong value passed for enum : {}", e.getMessage());
                 throw new BadRequestException("Wrong value passed for enum, javatype: " + javaType + " value: " + value);
-            } catch (ClassNotFoundException e) {
-                logger.error("Error in finding class for enum : {}", e.getMessage());
-                throw new UnsupportedOperationException("Error while finding class, javatype: " + javaType + " value: " + value);
             } catch (Exception e) {
                 logger.error("Error in reading enum : {}", e.getMessage());
                 throw new BadRequestException("Error in reading enum, javatype: " + javaType + " value: " + value);

@@ -78,8 +78,12 @@ public class ParamValidator {
                     }
                 }
 
-                if (!isNullOrEmpty(param.getJavatype()) && param.getDatatype() != null) {
-                    errors.add("Param: " + braced(param.getName()) + " cannot have both datatype and javatype");
+                if ((param.getDatatype() != null && param.getDatatype() == ParamPOJO.DataType.ENUM) && (param.getType() == null || isNullOrEmpty(param.getType().getType()))) {
+                    errors.add("Param: " + braced(param.getName()) + " does not have type defined for ENUM parameter");
+                }
+
+                if (!isNullOrEmpty(param.getJavatype()) && (param.getDatatype() != null && param.getDatatype() != ParamPOJO.DataType.ENUM)) {
+                    errors.add("Param: " + braced(param.getName()) + " cannot have both datatype and javatype except for ENUM types");
                 }
 
                 if (param.isBody() && param.getDatatype() != null) {
