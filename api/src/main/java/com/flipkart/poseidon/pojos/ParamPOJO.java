@@ -18,6 +18,8 @@ package com.flipkart.poseidon.pojos;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JavaType;
+import com.flipkart.poseidon.model.VariableModel;
 
 public class ParamPOJO {
 
@@ -37,12 +39,17 @@ public class ParamPOJO {
     private String separator;
     private boolean file;
     private boolean body = false;
+    @Deprecated
     private String javatype;
+    @JsonIgnore
+    private JavaType javaType;
     private boolean header = false;
     private boolean pathparam = false;
     private int position = 0;
     @JsonIgnore
     private int greedyPosition = 0;
+    private VariableModel type;
+
 
     public String getName() {
         return name;
@@ -72,6 +79,7 @@ public class ParamPOJO {
         return body;
     }
 
+    @Deprecated
     public String getJavatype() {
         return javatype;
     }
@@ -94,6 +102,18 @@ public class ParamPOJO {
 
     public String getSeparator() {
         return separator;
+    }
+
+    public JavaType getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(JavaType javaType) {
+        this.javaType = javaType;
+    }
+
+    public VariableModel getType() {
+        return type;
     }
 
     public static enum DataType {
