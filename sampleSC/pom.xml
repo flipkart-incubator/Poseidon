@@ -28,6 +28,27 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>com.flipkart.poseidon</groupId>
+                <artifactId>cadfael-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
+                <configuration>
+                    <nativeArtifacts>
+                        <com.flipkart.poseidon.cadfael.artifact.NonVersionedArtifact>
+                            <groupId>com.flipkart.poseidon</groupId>
+                            <artifactId>service-clients-core</artifactId>
+                        </com.flipkart.poseidon.cadfael.artifact.NonVersionedArtifact>
+                    </nativeArtifacts>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>cadfael</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.4.0</version>
