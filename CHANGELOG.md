@@ -4,6 +4,8 @@
 - Optionally view upstream cache candidates in debug APIs
 - DataType support for Headers and Path params
 - Maven plugin to block unwanted transitive dependencies in service clients
+- DataType no supports ENUM as an option
+- Generic types are now supported while defining a request body type in API definitions
 
 ## 5.3.0 (June 27, 2017)
 - Ability to define and consume additional fields for an endpoint to be used as meta information
