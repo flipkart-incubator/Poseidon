@@ -32,7 +32,6 @@
                 <artifactId>cadfael-maven-plugin</artifactId>
                 <version>${project.parent.version}</version>
                 <configuration>
-                    <repository>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</repository>
                     <nativeArtifacts>
                         <com.flipkart.poseidon.cadfael.artifact.NonVersionedArtifact>
                             <groupId>com.flipkart.poseidon</groupId>
