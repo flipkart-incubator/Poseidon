@@ -142,12 +142,23 @@ public class APIBuildable implements Buildable {
             if (param.getType() != null) {
                 javaType = constructJavaType(param.getType());
             } else if (!StringUtils.isNullOrEmpty(param.getJavatype())) {
-                javaType = constructJavaType(new VariableModel(param.getJavatype()));
+                javaType = constructJavaType(param.getJavatype());
             } else {
                 javaType = null;
             }
             param.setJavaType(javaType);
         }
+    }
+
+    private JavaType constructJavaType(String type) {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(type);
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException("Specify a known class " + type, e);
+        }
+
+        return configuration.getObjectMapper().getTypeFactory().constructType(clazz);
     }
 
     private JavaType constructJavaType(VariableModel variableModel) {
