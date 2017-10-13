@@ -64,6 +64,7 @@ public class DebugFilter implements Filter {
 
             String includeOnlyServices = httpServletRequest.getParameter("includeOnly");
             boolean disableServiceResponses = httpServletRequest.getParameterMap().containsKey("disableServiceResponses");
+            boolean enableCacheCandidates = httpServletRequest.getParameterMap().containsKey("enableCacheCandidates");
 
             Map<String, List<ServiceDebug>> callDebug = filterWantedServices(includeOnlyServices, ServiceContext.getDebugResponses());
             filterDisabledServices(httpServletRequest, callDebug);
@@ -76,7 +77,22 @@ public class DebugFilter implements Filter {
                 }
 
                 List<ServiceCallDebug> serviceCallDebugs = new ArrayList<>();
+                Map<String, ServiceCallDebug> cacheCandidates = new HashMap<>();
                 for (ServiceDebug serviceDebug : serviceDebugs) {
+                    if (enableCacheCandidates) {
+                        if (!serviceDebug.getProperties().getHttpMethod().equals("GET")) {
+                            String cacheKey = serviceDebug.getProperties().getHttpMethod() + serviceDebug.getProperties().getUri() + ObjectMapperHelper.getMapper().writeValueAsString(serviceDebug.getProperties().getRequestObject());
+                            ServiceCallDebug cached = cacheCandidates.get(cacheKey);
+                            if (cached != null) {
+                                cached.setCacheCandidates(cached.getCacheCandidates() + 1);
+                            } else {
+                                ServiceCallDebug serviceCallDebug = convertToServiceCallDebug(serviceDebug, disableServiceResponses);
+                                serviceCallDebugs.add(serviceCallDebug);
+                                cacheCandidates.put(cacheKey, serviceCallDebug);
+                            }
+                            continue;
+                        }
+                    }
                     ServiceCallDebug serviceCallDebug = convertToServiceCallDebug(serviceDebug, disableServiceResponses);
                     serviceCallDebugs.add(serviceCallDebug);
                 }

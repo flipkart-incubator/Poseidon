@@ -30,6 +30,7 @@ import java.util.Map;
         "errorIdentifier",
         "headersMap",
         "requestObject",
+        "cacheCandidates",
         "serviceResponse",
         "responseHeaders"
 })
@@ -42,6 +43,7 @@ public class ServiceCallDebug {
     private boolean success = true;
     private String errorIdentifier;
     private Map<String, String> responseHeaders;
+    private int cacheCandidates;
 
     public String getUri() {
         return uri;
@@ -105,5 +107,13 @@ public class ServiceCallDebug {
 
     public void setResponseHeaders(Map<String, String> responseHeaders) {
         this.responseHeaders = responseHeaders;
+    }
+
+    public int getCacheCandidates() {
+        return cacheCandidates;
+    }
+
+    public void setCacheCandidates(int cacheCandidates) {
+        this.cacheCandidates = cacheCandidates;
     }
 }

@@ -1,6 +1,11 @@
-## 5.4.0-SNAPSHOT (Jul 4, 2017)
+## 5.4.0-SNAPSHOT (Sep 5, 2017)
 - Throw original exceptions for service failures (de-serialization exceptions etc) without wrapping in other exceptions
 - Exposed an interface in Validator framework for user defined logic
+- Optionally view upstream cache candidates in debug APIs
+- DataType support for Headers and Path params
+- Maven plugin to block unwanted transitive dependencies in service clients
+- DataType supports ENUM as an option
+- Generic types are supported while defining a request body type in API definitions
 
 ## 5.3.0 (June 27, 2017)
 - Ability to define and consume additional fields for an endpoint to be used as meta information
