@@ -1,4 +1,4 @@
-## 5.4.0-SNAPSHOT (Sep 5, 2017)
+## 5.4.0 (Oct 13, 2017)
 - Throw original exceptions for service failures (de-serialization exceptions etc) without wrapping in other exceptions
 - Exposed an interface in Validator framework for user defined logic
 - Optionally view upstream cache candidates in debug APIs
