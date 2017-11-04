@@ -1,3 +1,6 @@
+## 5.4.1 (Nov 5, 2017)
+- [Bugfix] Stop stacktrace leak when gzip is not supported
+
 ## 5.4.0 (Oct 13, 2017)
 - Throw original exceptions for service failures (de-serialization exceptions etc) without wrapping in other exceptions
 - Exposed an interface in Validator framework for user defined logic
