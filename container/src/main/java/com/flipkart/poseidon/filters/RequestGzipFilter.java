@@ -44,12 +44,8 @@ public class RequestGzipFilter implements Filter {
                 && servletRequest.getHeader(HttpHeaders.CONTENT_ENCODING).contains("gzip");
         boolean requestTypeSupported = HttpMethod.POST.toString().equals(servletRequest.getMethod()) || HttpMethod.PUT.toString().equals(servletRequest.getMethod()) || HttpMethod.PATCH.toString().equals(servletRequest.getMethod());
         if (isGzipped && !requestTypeSupported) {
-            throw new IllegalStateException(new StringBuilder()
-                    .append(servletRequest.getMethod())
-                    .append(" is not supports gzipped body of parameters.")
-                    .append(" Only POST requests are currently supported.")
-                    .toString()
-            );
+            servletResponse.setStatus(500);
+            return;
         }
         if (isGzipped) {
             servletRequest = new GzippedInputStreamWrapper(servletRequest);
