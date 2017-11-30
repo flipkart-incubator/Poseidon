@@ -80,7 +80,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     public boolean requestCompressionEnabled = false;
     public boolean responseCompressionEnabled = false;
     private boolean requestCachingEnabled = false;
-    public boolean handleRedirects = true;
+    public boolean handleRedirect = true;
 
     private final static String colon = ":";
 
@@ -123,7 +123,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
 
         // create the pool object
         pool = new HttpConnectionPool(poolName,host,port,isSecure,connectionTimeout,operationTimeout + extraExecutionTime,
-                maxConnections,queueSize, timeToLiveInSecs, handleRedirects);
+                maxConnections,queueSize, timeToLiveInSecs, handleRedirect);
 
         // set appropriate headers
         if (!accept.isEmpty()) pool.setHeader("Accept", accept);
@@ -509,11 +509,11 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         return maxConnections;
     }
 
-    public boolean isHandleRedirects() {
-        return handleRedirects;
+    public boolean isHandleRedirect() {
+        return handleRedirect;
     }
 
-    public void setHandleRedirects(boolean handleRedirects) {
-        this.handleRedirects = handleRedirects;
+    public void setHandleRedirect(boolean handleRedirect) {
+        this.handleRedirect = handleRedirect;
     }
 }
