@@ -80,7 +80,7 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     public boolean requestCompressionEnabled = false;
     public boolean responseCompressionEnabled = false;
     private boolean requestCachingEnabled = false;
-    private boolean handleRedirects = true;
+    public boolean handleRedirects = true;
 
     private final static String colon = ":";
 
