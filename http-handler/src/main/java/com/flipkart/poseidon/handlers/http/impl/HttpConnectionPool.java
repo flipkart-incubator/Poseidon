@@ -56,6 +56,7 @@ public class HttpConnectionPool {
     private static final Integer defaultConnectionTimeout = 0;
     private static final Integer defaultOperationTimeout = 0;
     private static final Boolean defaultSecure = false;
+    private static final Boolean defaultHandleRedirects = true;
     private static final Integer defaultPort = 80;
 
     /* Strings */
@@ -79,6 +80,7 @@ public class HttpConnectionPool {
     private Semaphore processQueue;
     private boolean requestGzipEnabled;
     private boolean responseGzipEnabled;
+    private boolean handleRedirects;
 
 
     /** Add a value to headers */
@@ -95,10 +97,11 @@ public class HttpConnectionPool {
      * @param maxConnections
      * @param processQueueSize
      * @param timeToLiveInSecs
+     * @param handleRedirects
      */
     protected HttpConnectionPool(final String name , String host, Integer port, Boolean secure, Integer connectionTimeout,
                                  Integer operationTimeout, Integer maxConnections, Integer processQueueSize,
-                                 Integer timeToLiveInSecs) {
+                                 Integer timeToLiveInSecs, Boolean handleRedirects) {
         this.name = name;
         this.host = host;
         this.port = port;
@@ -110,6 +113,7 @@ public class HttpConnectionPool {
         }
         this.requestGzipEnabled = false;
         this.responseGzipEnabled = false;
+        this.handleRedirects = handleRedirects;
 
 
         // create scheme
@@ -143,11 +147,15 @@ public class HttpConnectionPool {
         HttpConnectionParams.setConnectionTimeout(httpParams, connectionTimeout);
         HttpConnectionParams.setSoTimeout(httpParams, operationTimeout);
 
+
         // create client pool
         this.client = new DefaultHttpClient(cm, httpParams);
 
         // policies (cookie)
         this.client.getParams().setParameter(ClientPNames.COOKIE_POLICY,CookiePolicy.IGNORE_COOKIES);
+
+        // Handle redirects
+        this.client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, this.handleRedirects);
 
         // adding gzip support for http client
         addGzipHeaderInRequestResponse();
@@ -174,12 +182,13 @@ public class HttpConnectionPool {
         Integer maxConnections = params.get("maxConnections") != null ? Integer.parseInt(params.get("maxConnections")) : defaultMaxConnections;
         Integer timeToLiveInSecs = params.get("timeToLiveInSecs") != null ? Integer.parseInt(params.get("timeToLiveInSecs")) : -1;
         Boolean secure = params.get("secure") != null ? Boolean.parseBoolean(params.get("secure")) : defaultSecure;
+        Boolean handleRedirects = params.get("handleRedirects") != null ? Boolean.parseBoolean(params.get("handleRedirects")) : defaultHandleRedirects;
         Integer processQueueSize = defaultProcessQueueSize;
         try {
             processQueueSize = Integer.parseInt(params.get("processQueueSize"));
         } catch (Exception e) {}
         //TODO: Exception quietly consumed
-        return new HttpConnectionPool(name, host, port, secure, connectionTimeout, operationTimeout, maxConnections, processQueueSize, timeToLiveInSecs);
+        return new HttpConnectionPool(name, host, port, secure, connectionTimeout, operationTimeout, maxConnections, processQueueSize, timeToLiveInSecs, handleRedirects);
     }
 
     /**
