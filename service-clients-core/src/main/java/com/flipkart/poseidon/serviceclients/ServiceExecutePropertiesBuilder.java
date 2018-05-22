@@ -30,11 +30,13 @@ public class ServiceExecutePropertiesBuilder {
         this.instance = new ServiceExecuteProperties();
     }
 
+    @Deprecated
     public ServiceExecutePropertiesBuilder setJavaType(JavaType javaType) {
         instance.setJavaType(javaType);
         return this;
     }
 
+    @Deprecated
     public ServiceExecutePropertiesBuilder setErrorType(JavaType errorType) {
         instance.setErrorType(errorType);
         return this;
@@ -65,8 +67,18 @@ public class ServiceExecutePropertiesBuilder {
         return this;
     }
 
+    @Deprecated
     public ServiceExecutePropertiesBuilder setRequestCachingEnabled(boolean requestCachingEnabled) {
         instance.setRequestCachingEnabled(requestCachingEnabled);
+        return this;
+    }
+
+    public ServiceExecutePropertiesBuilder setServiceResponseInfoMap(Map<String, ServiceResponseInfo> serviceResponseInfoMap) {
+        if (serviceResponseInfoMap == null) {
+            return this;
+        }
+
+        instance.setServiceResponseInfoMap(serviceResponseInfoMap);
         return this;
     }
 

@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -23,8 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +84,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Object requestObject = properties.getRequestObject();
         JavaType javaType = properties.getJavaType();
         JavaType errorType = properties.getErrorType();
+        Map<String, ServiceResponseInfo> serviceResponseInfoMap = properties.getServiceResponseInfoMap();
 
         if (commandName == null || commandName.isEmpty()) {
             commandName = getCommandName();
@@ -127,11 +131,18 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         TaskContext taskContext = TaskContextFactory.getTaskContext();
+
+        if (serviceResponseInfoMap.isEmpty()) {
+            serviceResponseInfoMap.put("200", new ServiceResponseInfo(javaType, null));
+            exceptions.forEach((status, errorClass) -> {
+                serviceResponseInfoMap.put(status, new ServiceResponseInfo(errorType, errorClass));
+            });
+        }
+
         ServiceResponseDecoder<T> serviceResponseDecoder =
                 new ServiceResponseDecoder<>(
-                        getObjectMapper(), javaType,
-                        errorType, logger,
-                        exceptions, ServiceContext.getCollectedHeaders());
+                        getObjectMapper(), logger,
+                        serviceResponseInfoMap, ServiceContext.getCollectedHeaders());
         Future<TaskResult> future = taskContext.executeAsyncCommand(commandName, payload,
                 params, serviceResponseDecoder);
 
@@ -165,6 +176,20 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         return injectedHeadersMap;
+    }
+
+    protected String encodeUrl(Object url) throws JsonProcessingException {
+        if (url == null) {
+            return "";
+        }
+
+        if (url instanceof String) {
+            return encodeUrl((String) url);
+        } else if (ClassUtils.isPrimitiveOrWrapper(url.getClass())) {
+            return String.valueOf(url);
+        } else {
+            return encodeUrl(objectMapper.writeValueAsString(url));
+        }
     }
 
     protected String encodeUrl(String url) {
@@ -248,6 +273,22 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     public <T> JavaType getErrorType(Class<T> clazz) {
         return objectMapper.getTypeFactory().constructType(clazz);
+    }
+
+    public JavaType constructJavaType(VariableModel variableModel) {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(variableModel.getType());
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException("Specify a known class " + variableModel.getType(), e);
+        }
+
+        JavaType[] javaTypes = new JavaType[variableModel.getTypes().length];
+        for (int i = 0; i < variableModel.getTypes().length; i++) {
+            javaTypes[i] = constructJavaType(variableModel.getTypes()[i]);
+        }
+
+        return objectMapper.getTypeFactory().constructParametrizedType(clazz, clazz, javaTypes);
     }
 
     @Override

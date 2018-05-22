@@ -21,9 +21,11 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.message.BasicHeader;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,8 +54,6 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ServiceResponseDecoder.class, StringUtils.class, IOUtils.class, JavaType.class})
 public class ServiceResponseDecoderTest {
-
-    ServiceResponseDecoder decoder;
     ObjectMapper mockMapper = spy(new ObjectMapper());
     JavaType mockJavaType = mock(JavaType.class);
     JavaType mockErrorType = mockMapper.getTypeFactory().constructType(new TypeReference<TestErrorResponse>() {
@@ -72,7 +72,6 @@ public class ServiceResponseDecoderTest {
     public void setUp() {
         mockLogger = mock(Logger.class);
         collectedHeaders = new HashMap<>();
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
     }
 
     /**
@@ -94,6 +93,7 @@ public class ServiceResponseDecoderTest {
         BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
         when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertEquals("success", response.getDataList().get(0));
         Mockito.verify(mockLogger, Mockito.never());
@@ -119,6 +119,7 @@ public class ServiceResponseDecoderTest {
         exception.expect(IOException.class);
         exception.expectMessage(equalTo("Response object de-serialization error"));
 
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertNotNull(response);
 
@@ -136,8 +137,9 @@ public class ServiceResponseDecoderTest {
         InputStream stream = mock(InputStream.class);
         String errorString = "{\"error\":\"testing error\"}";
 
-        Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
+        Map<String, Class<? extends ServiceClientException>> mockExceptions = new HashMap<>();
+        mockExceptions.put("404", ServiceClientException.class);
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -145,8 +147,6 @@ public class ServiceResponseDecoderTest {
         when(mockEntity.getContent()).thenReturn(stream);
         mockStatic(StringUtils.class);
         when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
-        when(mockExceptions.containsKey("404")).thenReturn(true);
-        when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
@@ -166,8 +166,9 @@ public class ServiceResponseDecoderTest {
         InputStream stream = mock(InputStream.class);
         String errorString = "{\"error\":\"testing error\"}";
 
-        Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, null, mockLogger, mockExceptions, new HashMap<>()));
+        Map<String, Class<? extends ServiceClientException>> mockExceptions = new HashMap<>();
+        mockExceptions.put("404", ServiceClientException.class);
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, null, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -175,8 +176,6 @@ public class ServiceResponseDecoderTest {
         when(mockEntity.getContent()).thenReturn(stream);
         mockStatic(StringUtils.class);
         when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
-        when(mockExceptions.containsKey("404")).thenReturn(true);
-        when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
@@ -196,8 +195,9 @@ public class ServiceResponseDecoderTest {
         InputStream stream = mock(InputStream.class);
         String errorString = "{\"nonsense\":\"testing error\"}";
 
-        Map mockExceptions = mock(Map.class);
-        decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
+        Map<String, Class<? extends ServiceClientException>> mockExceptions = new HashMap<>();
+        mockExceptions.put("404", ServiceClientException.class);
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger, mockExceptions, new HashMap<>()));
 
         when(mockStatusLine.getStatusCode()).thenReturn(404);
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -205,8 +205,6 @@ public class ServiceResponseDecoderTest {
         when(mockEntity.getContent()).thenReturn(stream);
         mockStatic(StringUtils.class);
         when(StringUtils.convertStreamToString(stream)).thenReturn(errorString);
-        when(mockExceptions.containsKey("404")).thenReturn(true);
-        when(mockExceptions.get("404")).thenReturn(ServiceClientException.class);
 
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertThat(response.getException(), instanceOf(ServiceClientException.class));
@@ -216,7 +214,7 @@ public class ServiceResponseDecoderTest {
     }
 
     /**
-     *  Service returned un known status line(not in expected statusLines)
+     *  Service returned unknown status line(not in expected statusLines)
      * @throws Exception
      */
     @Test
@@ -235,6 +233,7 @@ public class ServiceResponseDecoderTest {
         exceptions.put("default", ServiceClientException.class);
 
         try {
+            ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
             ServiceResponse response = decoder.decode(mockHttpResponse);
             fail("Decoder should throw exception for 5xx status, but didn't!");
         } catch(Exception e) {
@@ -243,6 +242,46 @@ public class ServiceResponseDecoderTest {
         Mockito.verify(mockLogger).error("Non 200 response statusCode: {} response: {}","500", "error");
 
     }
+
+    /**
+     *  Testing ServiceResponseDecoder with multiple configured ResponseClasses (Old Constructor)
+     * @throws Exception
+     */
+    @Test
+    public void testDecoderMultipleExceptionClassesOldConstructor() throws Exception {
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        HttpEntity mockEntity = mock(HttpEntity.class);
+        InputStream stream = mock(InputStream.class);
+
+        Map<String, Class<? extends ServiceClientException>> mockExceptions = new HashMap<>();
+        mockExceptions.put("400", ServiceClientExceptionTest.class);
+        mockExceptions.put("default", ServiceClientException.class);
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , mockExceptions, collectedHeaders));
+
+        when(mockStatusLine.getStatusCode()).thenReturn(500);
+        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockEntity.getContent()).thenReturn(stream);
+        mockStatic(StringUtils.class);
+        when(StringUtils.convertStreamToString(stream)).thenReturn("error");
+
+        try {
+            decoder.decode(mockHttpResponse);
+            fail("Decoder should throw exception for 5xx status, but didn't!");
+        } catch(Exception e) {
+            assertThat(e, instanceOf(ServiceClientException.class));
+        }
+
+        when(mockStatusLine.getStatusCode()).thenReturn(400);
+
+        ServiceResponse response = decoder.decode(mockHttpResponse);
+        assertEquals(response.getException().getClass(), ServiceClientExceptionTest.class);
+        assertNull(response.getException().getErrorResponse());
+        Mockito.verify(mockLogger).error("Non 200 response statusCode: {} response: {}","500", "error");
+
+    }
+
 
     @Test
     public void testHeaders() throws Exception {
@@ -264,6 +303,7 @@ public class ServiceResponseDecoderTest {
         BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
         when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertEquals("success", response.getDataList().get(0));
         assertEquals(2, response.getHeaders().size());
@@ -296,6 +336,7 @@ public class ServiceResponseDecoderTest {
         BDDMockito.when(IOUtils.toString(stream)).thenReturn("success");
         when(mockJavaType.getRawClass()).thenReturn(responseClass);
 
+        ServiceResponseDecoder decoder = spy(new ServiceResponseDecoder(mockMapper, mockJavaType, mockErrorType, mockLogger , exceptions, collectedHeaders));
         ServiceResponse response = decoder.decode(mockHttpResponse);
         assertEquals("success", response.getDataList().get(0));
         assertEquals(2, response.getHeaders().size());

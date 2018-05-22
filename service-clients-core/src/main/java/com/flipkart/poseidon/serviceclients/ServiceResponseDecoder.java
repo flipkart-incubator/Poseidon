@@ -37,23 +37,29 @@ import java.util.*;
  */
 public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceResponse<T>> {
     private final ObjectMapper objectMapper;
-    private final JavaType javaType;
-    private final JavaType errorType;
     private final Logger logger;
-    private final Map<String, Class<? extends ServiceClientException>> exceptions;
+    private final Map<String, ServiceResponseInfo> serviceResponseInfoMap = new HashMap<>();
     private final Map<String, Queue<String>> collectedHeaders;
     private final Map<String, List<String>> localCollectedHeaders = new HashMap<>();
 
+    @Deprecated
     public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions) {
         this(objectMapper, javaType, errorType, logger, exceptions, Collections.emptyMap());
     }
 
+    @Deprecated
     public ServiceResponseDecoder(ObjectMapper objectMapper, JavaType javaType, JavaType errorType, Logger logger, Map<String, Class<? extends ServiceClientException>> exceptions, Map<String, Queue<String>> collectedHeaders) {
+        this(objectMapper, logger, new HashMap<>(), collectedHeaders);
+        this.serviceResponseInfoMap.put("200", new ServiceResponseInfo(javaType, null));
+        exceptions.forEach((s, c) -> {
+            this.serviceResponseInfoMap.put(s, new ServiceResponseInfo(errorType, c));
+        });
+    }
+
+    public ServiceResponseDecoder(ObjectMapper objectMapper, Logger logger, Map<String, ServiceResponseInfo> serviceResponseInfoMap, Map<String, Queue<String>> collectedHeaders) {
         this.objectMapper = objectMapper;
-        this.javaType = javaType;
-        this.errorType = errorType;
         this.logger = logger;
-        this.exceptions = exceptions;
+        this.serviceResponseInfoMap.putAll(serviceResponseInfoMap);
         this.collectedHeaders = collectedHeaders;
     }
 
@@ -89,6 +95,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
             } else {
                 try {
                     // Don't deserialize a plain string response using jackson
+                    final JavaType javaType = serviceResponseInfoMap.get("200").getType();
                     if (String.class.isAssignableFrom(javaType.getRawClass())) {
                         return new ServiceResponse<T>((T) IOUtils.toString(httpResponse.getEntity().getContent()), headers);
                     }
@@ -108,6 +115,8 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
         } else {
             String serviceResponse = StringUtils.convertStreamToString(httpResponse.getEntity().getContent());
             Object errorResponse = null;
+            ServiceResponseInfo responseInfo = Optional.ofNullable(serviceResponseInfoMap.get(statusCodeString)).orElseGet(() -> serviceResponseInfoMap.get("default"));
+            JavaType errorType = responseInfo.getType();
             if (errorType != null) {
                 try {
                     errorResponse = objectMapper.readValue(serviceResponse, errorType);
@@ -115,12 +124,8 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                     logger.warn("Error while de-serializing non 200 response to given errorType statusCode:{} exception: {}", statusCodeString, e.getMessage());
                 }
             }
-            Class<? extends ServiceClientException> exceptionClass;
-            if (exceptions.containsKey(statusCodeString)) {
-                exceptionClass = exceptions.get(statusCodeString);
-            } else {
-                exceptionClass = exceptions.get("default");
-            }
+
+            Class<? extends ServiceClientException> exceptionClass = responseInfo.getExceptionClass();
 
             String exceptionMessage = statusCodeString + " " + serviceResponse;
             ServiceClientException serviceClientException = exceptionClass.getConstructor(String.class, Object.class).newInstance(exceptionMessage, errorResponse);
@@ -139,7 +144,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     @Override
     public ServiceResponse<T> decode(String stringResponse) throws Exception {
         try {
-            return new ServiceResponse<T>(objectMapper.<T>readValue(stringResponse, javaType), null);
+            return new ServiceResponse<T>(objectMapper.<T>readValue(stringResponse, serviceResponseInfoMap.get("200").getType()), null);
         } catch (IOException e) {
             logger.error("Error de-serializing response object", e);
             throw new Exception("Response object de-serialization error", e);
@@ -149,7 +154,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     @Override
     public ServiceResponse<T> decode(byte[] byteResponse) throws Exception {
         try {
-            return new ServiceResponse<T>(objectMapper.<T>readValue(byteResponse, javaType), null);
+            return new ServiceResponse<T>(objectMapper.<T>readValue(byteResponse, serviceResponseInfoMap.get("200").getType()), null);
         } catch (IOException e) {
             logger.error("Error de-serializing response object", e);
             throw new IOException("Response object de-serialization error", e);
@@ -158,6 +163,6 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
 
     @Override
     public ServiceResponse<T> decode(InputStream is) throws Exception {
-        return new ServiceResponse<T>(objectMapper.<T>readValue(is, javaType), null);
+        return new ServiceResponse<T>(objectMapper.<T>readValue(is, serviceResponseInfoMap.get("200").getType()), null);
     }
 }
