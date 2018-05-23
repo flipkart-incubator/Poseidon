@@ -1,3 +1,6 @@
+## 5.5.0 (May 23, 2018)
+- Added follow redirect option in SinglePoolHttpTaskHandler
+
 ## 5.4.1 (Nov 5, 2017)
 - [Bugfix] Stop stacktrace leak when gzip is not supported
 
