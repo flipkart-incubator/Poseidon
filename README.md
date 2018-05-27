@@ -17,11 +17,11 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 5.5.0             | May 23 2018      |    Added follow redirect option in SinglePoolHttpTaskHandler
 | Version 5.4.1             | Nov 05 2017      |    Bugfix to stop stacktrace leak
 | Version 5.4.0             | Oct 13 2017      |    Support for DataTypes in headers, path params and support for enums and generics in API definitions
 | Version 5.3.0             | Jun 27 2017      |    Ability to define and consume additional fields for an endpoint to be used as meta information
 | Version 5.2.0             | Jun 07 2017      |    Debug flag in APIs to list all service responses, collect response headers from all services
-| Version 5.1.0             | May 25 2017      |    Jetty 9.4.1, phantom 3.4.0, PATCH support, raw bytes in response
 
 ## Changelog
 
