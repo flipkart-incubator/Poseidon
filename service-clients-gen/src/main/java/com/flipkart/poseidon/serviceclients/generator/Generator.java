@@ -102,6 +102,7 @@ public class Generator {
     }
 
     private static void setVersion(String moduleVersion) {
+        moduleVersion = moduleVersion.trim();
         String[] versions = moduleVersion.replace("-SNAPSHOT", "").split("\\.");
         version = new Version();
         int number;
