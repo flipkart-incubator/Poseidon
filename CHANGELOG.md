@@ -1,3 +1,6 @@
+## 5.6.0 (--)
+- Support for multiple error types in ServiceResponseDecoder
+
 ## 5.5.1 (May 31, 2018)
 - Bugfix in code generation for missing patch version
 
