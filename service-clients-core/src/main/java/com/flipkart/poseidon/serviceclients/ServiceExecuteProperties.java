@@ -18,6 +18,7 @@ package com.flipkart.poseidon.serviceclients;
 
 import com.fasterxml.jackson.databind.JavaType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,6 +33,7 @@ public class ServiceExecuteProperties {
     private Object requestObject;
     private String commandName;
     private boolean requestCachingEnabled;
+    private Map<String, ServiceResponseInfo> serviceResponseInfoMap = new HashMap<>();
 
     public JavaType getJavaType() {
         return javaType;
@@ -95,5 +97,13 @@ public class ServiceExecuteProperties {
 
     public void setRequestCachingEnabled(boolean requestCachingEnabled) {
         this.requestCachingEnabled = requestCachingEnabled;
+    }
+
+    public Map<String, ServiceResponseInfo> getServiceResponseInfoMap() {
+        return serviceResponseInfoMap;
+    }
+
+    public void setServiceResponseInfoMap(Map<String, ServiceResponseInfo> serviceResponseInfoMap) {
+        this.serviceResponseInfoMap = serviceResponseInfoMap;
     }
 }
