@@ -401,16 +401,11 @@
     </repositories>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>fk-art-snapshot</id>
-            <name>libs-snapshot</name>
-            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-snapshots-local</url>
-        </snapshotRepository>
         <repository>
-            <id>fk-art-release</id>
-            <name>libs-rel</name>
-            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
+            <id>clojars</id>
+            <name>Clojars repository</name>
+            <url>https://clojars.org/repo</url>
         </repository>
     </distributionManagement>
-
+    
 </project>
