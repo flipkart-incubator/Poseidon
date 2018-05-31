@@ -1,3 +1,6 @@
+## 5.5.1 (May 31, 2018)
+- Bugfix in code generation for missing patch version
+
 ## 5.5.0 (May 23, 2018)
 - Added follow redirect option in SinglePoolHttpTaskHandler
 
