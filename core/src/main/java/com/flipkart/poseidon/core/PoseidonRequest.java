@@ -33,6 +33,11 @@ public class PoseidonRequest implements Request {
     private final ImmutableMap<String, Cookie> cookies;
     private final ImmutableMap<String, String> headers;
 
+    public PoseidonRequest(String url, ImmutableMap<String, Cookie> cookies, ImmutableMap<String, String> headers){
+        this.url = url;
+        this.cookies = cookies;
+        this.headers = headers;
+    }
 
     public PoseidonRequest(HttpServletRequest httpRequest) {
         this.url = httpRequest.getPathInfo();
