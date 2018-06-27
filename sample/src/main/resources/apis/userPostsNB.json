@@ -2,7 +2,7 @@
   "url": "/v1/userPostsNB",
   "httpMethod": "GET",
   "timeout": 10000,
-  "name": "userPosts",
+  "name": "userPostsNB",
   "async": true,
   "params": {
     "required": [
