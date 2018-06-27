@@ -28,6 +28,7 @@ import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.LegoSetException;
+import flipkart.lego.concurrency.api.NonBlockingDataSource;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -118,6 +119,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
     }
 
     public <T extends DataType> DataSource<T> wrapDataSource(DataSource<T> dataSource, Request request) {
+        if (dataSource instanceof NonBlockingDataSource) {
+            //startTrace, endTrace in ContextInducedBlock will be missed
+            return dataSource;
+        }
         return new ContextInducedDataSource<>(dataSource, request);
     }
 

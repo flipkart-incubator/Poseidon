@@ -45,6 +45,7 @@ public class PostsDataSource extends AbstractDataSource<PostsDataType> {
     @Override
     public PostsDataType call() throws Exception {
         try {
+            logger.info("Thread executing call - {}", Thread.currentThread().getName());
             String userId = request.getAttribute("userId");
             SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
             Posts posts = serviceClient.getAllPostsOfUser(userId).get();

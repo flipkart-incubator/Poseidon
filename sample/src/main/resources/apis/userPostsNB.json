@@ -1,0 +1,36 @@
+{
+  "url": "/v1/userPostsNB",
+  "httpMethod": "GET",
+  "timeout": 10000,
+  "name": "userPosts",
+  "async": true,
+  "params": {
+    "required": [
+      {
+        "name": "userId",
+        "datatype": "string"
+      }
+    ]
+  },
+  "tasks": {
+    "userDT": {
+      "name": "UserNBDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    },
+    "postsDT": {
+      "name": "PostsNBDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    }
+  },
+  "filters": [
+    "BotFilter_1.0.0"
+  ],
+  "response": {
+    "user": "{{$userDT}}",
+    "posts": "{{#$postsDT.posts}}"
+  }
+}

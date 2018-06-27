@@ -138,6 +138,8 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
     @Override
     public <T, S> TaskResult<T> execute(TaskContext taskContext, String command,
                                      TaskRequestWrapper<S> taskRequestWrapper,Decoder<T> decoder) throws RuntimeException {
+        logger.info("Thread executing execute - {}", Thread.currentThread().getName());
+
         Map<String, Object> params = taskRequestWrapper.getParams();
         byte[] data = (byte[]) taskRequestWrapper.getData();
 

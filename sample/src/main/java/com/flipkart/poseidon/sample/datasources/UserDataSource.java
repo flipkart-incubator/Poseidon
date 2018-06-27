@@ -41,6 +41,7 @@ public class UserDataSource extends AbstractDataSource<UserDataType> {
     @Override
     public UserDataType call() throws Exception {
         try {
+            logger.info("Thread executing call - {}", Thread.currentThread().getName());
             String userId = request.getAttribute("userId");
             SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
             UserList userList = serviceClient.getUser(userId).get();

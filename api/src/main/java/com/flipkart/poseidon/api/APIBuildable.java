@@ -21,6 +21,7 @@ import com.flipkart.hydra.task.Task;
 import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.internal.NonBlockingOrchestratorDataSource;
 import com.flipkart.poseidon.internal.OrchestratorDataSource;
 import com.flipkart.poseidon.internal.ParamValidationFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
@@ -67,8 +68,14 @@ public class APIBuildable implements Buildable {
     public Map<String, DataSource> getRequiredDataSources(Request request) throws InternalErrorException {
         Map<String, Object> initialParams = request.getAttribute(RequestConstants.PARAMS);
         mappedBeans = new ArrayList<>();
-        OrchestratorDataSource dataSource = new OrchestratorDataSource(legoSet, initialParams,
-                tasks, pojo.getResponse(), getMappers(), mappedBeans);
+        DataSource dataSource;
+        if (pojo.isAsync()) {
+            dataSource = new NonBlockingOrchestratorDataSource(legoSet, initialParams,
+                    tasks, pojo.getResponse(), getMappers(), mappedBeans);
+        } else {
+            dataSource = new OrchestratorDataSource(legoSet, initialParams,
+                    tasks, pojo.getResponse(), getMappers(), mappedBeans);
+        }
         Map<String, DataSource> dataSourceMap = new HashMap<>();
         dataSourceMap.put(RESPONSE_KEY, legoSet.wrapDataSource(dataSource, request));
         return dataSourceMap;

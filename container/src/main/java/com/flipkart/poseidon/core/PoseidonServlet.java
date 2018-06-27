@@ -174,6 +174,8 @@ public class PoseidonServlet extends HttpServlet {
     }
 
     private void buildResponse(PoseidonRequest request, PoseidonResponse poseidonResponse, HttpServletResponse httpResponse) throws BadRequestException, ElementNotFoundException, InternalErrorException, ProcessingException, IOException {
+        logger.info("Thread executing buildResponse - {}", Thread.currentThread().getName());
+
         application.handleRequest(request, poseidonResponse);
 
         setHeaders(poseidonResponse, httpResponse);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Flipkart Internet, pvt ltd.
+ * Copyright 2016 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 
 package com.flipkart.poseidon.internal;
 
-import com.flipkart.hydra.dispatcher.DefaultDispatcher;
-import com.flipkart.hydra.dispatcher.Dispatcher;
 import com.flipkart.hydra.task.Task;
-import com.flipkart.poseidon.datasources.AbstractDataSource;
+import com.flipkart.poseidon.datasources.AbstractNonBlockingDataSource;
 import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.model.annotations.Trace;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
+import flipkart.lego.concurrency.api.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,32 +31,40 @@ import java.util.Map;
 import java.util.Set;
 
 @Trace(false)
-public class OrchestratorDataSource extends AbstractDataSource {
-
+public class NonBlockingOrchestratorDataSource extends AbstractNonBlockingDataSource<Object, DataType>  {
     private final Map<String, Object> initialParams;
     private final Map<String, Task> tasks;
     private final Object responseContext;
     private final Set<Mapper> mappers;
     private List<Object> mappedBeans;
 
-    private static final Logger logger = LoggerFactory.getLogger(OrchestratorDataSource.class);
+    private APIComposer composer;
+    private NonBlockingDispatcher dispatcher;
 
-    public OrchestratorDataSource(LegoSet legoSet, Map<String, Object> initialParams, Map<String, Task> tasks, Object responseContext, Set<Mapper> mappers, List<Object> mappedBeans) {
+    private static final Logger logger = LoggerFactory.getLogger(NonBlockingOrchestratorDataSource.class);
+
+    public NonBlockingOrchestratorDataSource(LegoSet legoSet, Map<String, Object> initialParams, Map<String, Task> tasks, Object responseContext, Set<Mapper> mappers, List<Object> mappedBeans) {
         super(legoSet, null);
         this.initialParams = initialParams;
         this.tasks = tasks;
         this.responseContext = responseContext;
         this.mappers = mappers;
         this.mappedBeans = mappedBeans;
+        this.dispatcher = new NonBlockingDispatcher();
     }
 
     @Override
-    public DataType call() throws Exception {
-        logger.info("Thread executing call - {}", Thread.currentThread().getName());
-        APIComposer composer = new APIComposer(responseContext, initialParams, mappers, mappedBeans);
-        Dispatcher dispatcher = new DefaultDispatcher(this.legoset.getDataSourceExecutor());
-        Object response = dispatcher.execute(initialParams, tasks, composer);
+    public Promise<Object> callAsync() throws Exception {
+        logger.info("Thread executing callAsync - {}", Thread.currentThread().getName());
 
+        composer = new APIComposer(responseContext, initialParams, mappers, mappedBeans);
+        return dispatcher.execute(initialParams, tasks, composer);
+    }
+
+    @Override
+    public DataType map(Object response) throws Exception {
+        logger.info("Thread executing map - {}", Thread.currentThread().getName());
+        response = dispatcher.map(composer);
         if (response == null) {
             return null;
         }
@@ -71,7 +78,7 @@ public class OrchestratorDataSource extends AbstractDataSource {
             return new ListDataType<>((List) response);
         }
         if (response instanceof byte[]) {
-        	return new ByteArrayDataType((byte[]) response);
+            return new ByteArrayDataType((byte[]) response);
         }
         throw new Exception("Unsupported response type");
     }
