@@ -276,6 +276,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
     }
 
     public JavaType constructJavaType(VariableModel variableModel) {
+        if (variableModel == null) {
+            return null;
+        }
+
         Class<?> clazz;
         try {
             clazz = Class.forName(variableModel.getType());
