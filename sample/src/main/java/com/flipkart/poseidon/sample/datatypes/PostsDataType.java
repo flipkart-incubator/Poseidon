@@ -16,17 +16,11 @@
 
 package com.flipkart.poseidon.sample.datatypes;
 
-import com.flipkart.poseidon.model.annotations.Description;
-import com.flipkart.poseidon.model.annotations.Name;
-import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Name("PostsDataType")
-@Version(major = 1, minor = 0, patch = 0)
-@Description("List of posts created by users")
 public class PostsDataType implements DataType {
     private List<PostDataType> posts = new ArrayList<>();
 
