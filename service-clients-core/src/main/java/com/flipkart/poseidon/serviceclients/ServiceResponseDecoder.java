@@ -96,6 +96,10 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                 try {
                     // Don't deserialize a plain string response using jackson
                     final JavaType javaType = serviceResponseInfoMap.get("200").getType();
+                    if (javaType == null) {
+                        return new ServiceResponse<T>((T) null, headers);
+                    }
+
                     if (String.class.isAssignableFrom(javaType.getRawClass())) {
                         return new ServiceResponse<T>((T) IOUtils.toString(httpResponse.getEntity().getContent()), headers);
                     }
