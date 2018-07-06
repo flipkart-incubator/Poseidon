@@ -145,7 +145,7 @@
             <dependency>
                 <groupId>com.flipkart.hydra</groupId>
                 <artifactId>hydra-dispatcher</artifactId>
-                <version>1.2</version>
+                <version>1.3</version>
             </dependency>
             <!-- Flipkart -->
 
