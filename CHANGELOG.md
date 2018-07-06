@@ -1,5 +1,5 @@
 ## 5.6.0 (June 28, 2018)
-- Support for multiple error types in ServiceResponseDecoder
+- Support for multiple error types in ServiceResponseDecoder 
 
 ## 5.5.1 (May 31, 2018)
 - Bugfix in code generation for missing patch version
