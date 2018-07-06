@@ -47,7 +47,7 @@ public class CommentsDataSource extends AbstractDataSource<PostWithCommentsDataT
         try {
             int index = request.getAttribute("index");
             PostDataType post = request.getAttribute("post");
-            logger.info("Index: {}, PostDataType: {}", index, post);
+            logger.info("Index: {}, Post Id: {}", index, post.getPostId());
 
             // Fetch comments through service client
             SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
