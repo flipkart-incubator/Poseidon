@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Flipkart Internet, pvt ltd.
+ * Copyright 2018 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,25 @@ package com.flipkart.poseidon.sample.datatypes;
 
 import flipkart.lego.api.entities.DataType;
 
-public class UserDataType implements DataType {
-    private int userId;
-    private String userName;
-    private String emailId;
+import java.util.List;
 
-    public int getUserId() {
-        return userId;
+public class PostWithCommentsDataType implements DataType {
+    private PostDataType post;
+    private List<CommentDataType> comments;
+
+    public PostDataType getPost() {
+        return post;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setPost(PostDataType post) {
+        this.post = post;
     }
 
-    public String getUserName() {
-        return userName;
+    public List<CommentDataType> getComments() {
+        return comments;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
+    public void setComments(List<CommentDataType> comments) {
+        this.comments = comments;
     }
 }

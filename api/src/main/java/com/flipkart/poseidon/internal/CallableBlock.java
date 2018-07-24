@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Flipkart Internet, pvt ltd.
+ * Copyright 2018 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.sample.datatypes;
+package com.flipkart.poseidon.internal;
 
-import flipkart.lego.api.entities.DataType;
+import flipkart.lego.api.entities.Block;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.Callable;
 
-public class PostsDataType implements DataType {
-    private List<PostDataType> posts = new ArrayList<>();
-
-    public List<PostDataType> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<PostDataType> posts) {
-        this.posts = posts;
-    }
+public interface CallableBlock<T> extends Callable<T>, Block {
 }

@@ -10,7 +10,7 @@
     <parent>
         <artifactId>poseidon</artifactId>
         <groupId>com.flipkart.poseidon</groupId>
-        <version>5.6.0.NBDS-SNAPSHOT</version>
+        <version>5.7.0.NBDS-SNAPSHOT</version>
     </parent>
 
     <artifactId>sampleSC</artifactId>
@@ -63,7 +63,7 @@
                         <configuration>
                             <mainClass>com.flipkart.poseidon.serviceclients.generator.Generator</mainClass>
                             <commandlineArgs>${project.basedir} ${project.version}
-                                Post.json,Posts.json,Geo.json,BaseAddress.json,Address.json,Company.json,User.json,UserList.json
+                                Comment.json,Comments.json,Post.json,Posts.json,Geo.json,BaseAddress.json,Address.json,Company.json,User.json,UserList.json
                             </commandlineArgs>
                             <sourceRoot>${project.build.directory}/generated-sources</sourceRoot>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>

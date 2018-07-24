@@ -1,0 +1,9 @@
+{
+  "type" : "object",
+  "additionalProperties": false,
+  "description": "Comments POJO. Ex: http://jsonplaceholder.typicode.com/posts/1/comments",
+  "extends" : {
+    "type": "object",
+    "javaType": "java.util.ArrayList<Comment>"
+  }
+}
