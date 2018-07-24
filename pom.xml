@@ -135,12 +135,12 @@
             <dependency>
                 <groupId>com.flipkart.lego</groupId>
                 <artifactId>model</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0.NBDS-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.flipkart.lego</groupId>
                 <artifactId>core</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0.NBDS-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.flipkart.hydra</groupId>
