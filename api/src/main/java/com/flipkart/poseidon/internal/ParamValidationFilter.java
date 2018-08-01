@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -244,6 +245,8 @@ public class ParamValidationFilter implements Filter {
                 return getDoubleValues(values);
             case INTEGER:
                 return getIntegerValues(values);
+            case LONG:
+                return getLongValues(values);
             case BOOLEAN:
                 return getBooleanValues(values);
             case ENUM:
@@ -269,6 +272,10 @@ public class ParamValidationFilter implements Filter {
         }
 
         return integerValues;
+    }
+
+    private List<Long> getLongValues(String[] values) {
+        return Arrays.stream(values).map(Long::parseLong).collect(Collectors.toList());
     }
 
     private List<Boolean> getBooleanValues(String[] values) {
