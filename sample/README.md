@@ -52,7 +52,7 @@ Start reading the code from
  2. [DataSources](src/main/java/com/flipkart/poseidon/sample/datasources)
  3. [DataTypes](src/main/java/com/flipkart/poseidon/sample/datatypes/)
  4. [Filters](src/main/java/com/flipkart/poseidon/sample/api/filters/BotFilter.java)
- 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client), corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/Service.java)
+ 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client), sample [client](https://github.com/flipkart-incubator/Poseidon/blob/master/sampleSC/src/main/resources/idl/service/SampleService.json), corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/ServiceIDL.java)
 
 ### Bootstrapping
 
