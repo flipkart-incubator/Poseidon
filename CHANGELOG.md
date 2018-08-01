@@ -1,5 +1,6 @@
 ## 5.7.0 (WIP)
 - Loop over DataSource bug fixes and sample
+- LONG support in API parameter
 
 ## 5.6.0 (June 28, 2018)
 - Support for multiple error types in ServiceResponseDecoder 
