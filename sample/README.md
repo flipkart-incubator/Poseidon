@@ -48,11 +48,11 @@ It demonstrates the following capabilities of Poseidon
 ## How it does
 
 Start reading the code from
- 1. [API file](src/main/resources/apis/userPosts.json) definition and keep drilling down to 
+ 1. [API file](src/main/resources/apis/userPosts.json) definition, corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/api/src/main/java/com/flipkart/poseidon/pojos/EndpointPOJO.java) and keep drilling down to 
  2. [DataSources](src/main/java/com/flipkart/poseidon/sample/datasources)
  3. [DataTypes](src/main/java/com/flipkart/poseidon/sample/datatypes/)
  4. [Filters](src/main/java/com/flipkart/poseidon/sample/api/filters/BotFilter.java)
- 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client).
+ 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client), corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/Service.java)
 
 ### Bootstrapping
 
