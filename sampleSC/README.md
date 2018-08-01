@@ -14,7 +14,7 @@ Models are defined using [JSON Schema](http://json-schema.org/) and POJOs are ge
 
 ### Contracts
 
-Service contracts are defined using a custom [JSON schema](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/ServiceIDL.java). Example is [here](src/main/resources/idl/service/SampleService.json) which corresponds to the API to get [user details](http://jsonplaceholder.typicode.com/users/1) and to get [all posts](http://jsonplaceholder.typicode.com/posts?userId=1) of the user.
+Service contracts are defined using a custom [JSON schema](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/ServiceIDL.java). Example is [here](src/main/resources/idl/service/SampleService.json) which corresponds to the API to get [user details](http://jsonplaceholder.typicode.com/users/1) and to get [all posts](http://jsonplaceholder.typicode.com/posts?userId=1) of the user. Service client framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/ServiceIDL.java).
 
 We use declarative way of specifying service contracts for reasons mentioned [here](https://github.com/flipkart-incubator/Poseidon/wiki/Service-Clients), but still we don't block hand-written service client implementations.
 
