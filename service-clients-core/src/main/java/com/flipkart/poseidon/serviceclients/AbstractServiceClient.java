@@ -185,7 +185,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
         if (url instanceof String) {
             return encodeUrl((String) url);
-        } else if (ClassUtils.isPrimitiveOrWrapper(url.getClass())) {
+        } else if (ClassUtils.isPrimitiveOrWrapper(url.getClass()) || url.getClass().isEnum()) {
             return String.valueOf(url);
         } else {
             return encodeUrl(objectMapper.writeValueAsString(url));
