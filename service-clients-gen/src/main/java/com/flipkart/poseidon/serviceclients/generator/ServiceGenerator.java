@@ -428,7 +428,13 @@ public class ServiceGenerator {
             }
 
             if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
+                matcher = PARAMETERS_PATTERN.matcher(endPoint.getCommandName());
+                if (matcher.find()) {
+                    String paramName = matcher.group(1);
+                    builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(paramName));
+                } else {
+                    builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
+                }
             }
 
             if (endPoint.isRequestCachingEnabled()) {
