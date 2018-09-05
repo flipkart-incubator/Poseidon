@@ -265,6 +265,7 @@ public class ServiceGenerator {
         String uri = (baseUri + endPointUri).replaceAll("//", "/");
         Set<String> argsList = new LinkedHashSet<>();
         Set<String> argsListQueryParams = new LinkedHashSet<>();
+        String commandNameParam = "";
 
         Matcher matcher = PARAMETERS_PATTERN.matcher(uri);
         while (matcher.find()) {
@@ -294,6 +295,14 @@ public class ServiceGenerator {
             }
             block.decl(jCodeModel.ref("String"), "uri", invocation);
         }
+
+        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+            matcher = PARAMETERS_PATTERN.matcher(endPoint.getCommandName());
+            if (matcher.find()) {
+                commandNameParam = matcher.group(1);
+            }
+        }
+
         if (endPoint.getParameters() != null) {
             for (String paramName : endPoint.getParameters()) {
                 Parameter parameter = serviceIdl.getParameters().get(paramName);
@@ -305,7 +314,7 @@ public class ServiceGenerator {
                     }
                 }
 
-                if (argsList.contains(paramName))
+                if (argsList.contains(paramName) || paramName.equals(commandNameParam))
                     continue;
 
                 argsListQueryParams.add(paramName);
@@ -428,10 +437,8 @@ public class ServiceGenerator {
             }
 
             if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                matcher = PARAMETERS_PATTERN.matcher(endPoint.getCommandName());
-                if (matcher.find()) {
-                    String paramName = matcher.group(1);
-                    builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(paramName));
+                if (commandNameParam != null && !commandNameParam.isEmpty()) {
+                    builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(commandNameParam));
                 } else {
                     builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
                 }
