@@ -27,6 +27,7 @@ public class EndPoint {
     private String httpMethod;
     private String uri;
     private String commandName;
+    private boolean dynamicCommandName;
     private Map<String, String> headers;
     private String[] parameters;
     private boolean requestCachingEnabled;
@@ -138,6 +139,14 @@ public class EndPoint {
         this.responseMergerClass = responseMergerClass;
     }
 
+    public boolean isDynamicCommandName() {
+        return dynamicCommandName;
+    }
+
+    public void setDynamicCommandName(boolean dynamicCommandName) {
+        this.dynamicCommandName = dynamicCommandName;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || !(object instanceof EndPoint)) {
@@ -155,6 +164,9 @@ public class EndPoint {
             return false;
         }
         if (!Objects.equals(commandName, endPoint.getCommandName())) {
+            return false;
+        }
+        if (!Objects.equals(dynamicCommandName, endPoint.isDynamicCommandName())) {
             return false;
         }
         if (!Objects.equals(headers, endPoint.getHeaders())) {

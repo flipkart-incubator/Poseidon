@@ -296,7 +296,7 @@ public class ServiceGenerator {
             block.decl(jCodeModel.ref("String"), "uri", invocation);
         }
 
-        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty() && endPoint.isDynamicCommandName()) {
             matcher = PARAMETERS_PATTERN.matcher(endPoint.getCommandName());
             if (matcher.find()) {
                 commandNameParam = matcher.group(1);
