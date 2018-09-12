@@ -403,13 +403,12 @@ public class ServiceGenerator {
             }
         }
 
-        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-            block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
-        } else {
-            block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
-        }
-
         if (endPoint.isIncludeMetaInfo()) {
+            if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+                block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
+            } else {
+                block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
+            }
             JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER).invoke("get").arg("commandName"));
             block._if(JExpr.ref(META_INFO_PARAMETER).invoke("containsKey").arg("commandName"))._then()
                     .assign(JExpr.ref(COMMAND_NAME_VAR_NAME), invocation);
@@ -470,7 +469,11 @@ public class ServiceGenerator {
                 builderInvocation = builderInvocation.invoke("setRequestObject").arg(JExpr.ref(requestObjectName));
             }
 
-            builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
+            if (endPoint.isIncludeMetaInfo()) {
+                builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
+            } else if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+                builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
+            }
 
             if (endPoint.isRequestCachingEnabled()) {
                 builderInvocation = builderInvocation.invoke("setRequestCachingEnabled").arg(JExpr.lit(true));
