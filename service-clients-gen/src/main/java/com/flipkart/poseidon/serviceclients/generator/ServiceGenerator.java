@@ -115,7 +115,7 @@ public class ServiceGenerator {
         }
     }
 
-    private void generateMetaInfo(ServiceIDL serviceIdl) throws Exception{
+    public void generateMetaInfo(ServiceIDL serviceIdl) throws Exception{
         for (Map.Entry<String, EndPoint> entry : serviceIdl.getEndPoints().entrySet()) {
             if (entry.getValue().isIncludeMetaInfo()) {
                 addMetaInfoAsParameter(serviceIdl);
@@ -410,8 +410,7 @@ public class ServiceGenerator {
                 block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
             }
             JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER).invoke("get").arg("commandName"));
-            block._if(JExpr.ref(META_INFO_PARAMETER).invoke("containsKey").arg("commandName"))._then()
-                    .assign(JExpr.ref(COMMAND_NAME_VAR_NAME), invocation);
+            block._if(JExpr.ref(META_INFO_PARAMETER).invoke("containsKey").arg("commandName"))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), invocation);
         }
 
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
@@ -518,8 +517,6 @@ public class ServiceGenerator {
 
     public void generateInterface(ServiceIDL serviceIdl, JCodeModel jCodeModel, String destinationFolder) throws Exception {
         JDefinedClass serviceInterface = jCodeModel._class(getFullInterfaceName(serviceIdl), ClassType.INTERFACE);
-
-        generateMetaInfo(serviceIdl);
 
         addClassComments(serviceIdl, serviceInterface);
 

@@ -233,6 +233,7 @@ public class Generator {
         serviceIdl.setExplicit(true);
         String destinationFolder = modulePath + DESTINATION_JAVA_FOLDER.replace('.', File.separatorChar);
 
+        ServiceGenerator.getInstance().generateMetaInfo(serviceIdl);
         ServiceGenerator.getInstance().generateInterface(serviceIdl, jCodeModel, destinationFolder);
         ServiceGenerator.getInstance().generateImpl(serviceIdl, jCodeModel, destinationFolder);
 
