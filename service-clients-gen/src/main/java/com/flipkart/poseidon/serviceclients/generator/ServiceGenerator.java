@@ -336,6 +336,9 @@ public class ServiceGenerator {
                     }
                 }
 
+                if (argsList.contains(paramName))
+                    continue;
+
                 argsListQueryParams.add(paramName);
             }
         }
