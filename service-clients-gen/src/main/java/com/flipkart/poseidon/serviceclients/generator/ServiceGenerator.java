@@ -54,6 +54,8 @@ public class ServiceGenerator {
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("\\{parameters\\.(.*?)\\}");
     private static final String REQUEST_OBJECT_VAR_NAME = "requestObject";
     private static final String REQUEST_OBJECT_LOOP_VAR_NAME = "requestObject1";
+    private static final String META_INFO_PARAMETER = "_metaInfo";
+    private static final String COMMAND_NAME_VAR_NAME = "_commandName";
 
     private ServiceGenerator() {}
 
@@ -111,6 +113,29 @@ public class ServiceGenerator {
                 paramComment.append(description);
             }
         }
+    }
+
+    private void generateMetaInfo(ServiceIDL serviceIdl) throws Exception{
+        for (Map.Entry<String, EndPoint> entry : serviceIdl.getEndPoints().entrySet()) {
+            if (entry.getValue().isIncludeMetaInfo()) {
+                addMetaInfoAsParameter(serviceIdl);
+                break;
+            }
+        }
+    }
+
+    private void addMetaInfoAsParameter(ServiceIDL serviceIDL) throws Exception{
+        for (String parameterName : serviceIDL.getParameters().keySet()) {
+            if (META_INFO_PARAMETER.equals(parameterName)) {
+                throw new Exception("_metaInfo as parameter name is restricted for internal usage of poseidon.");
+            }
+        }
+
+        Parameter metaInfoParameter = new Parameter();
+        metaInfoParameter.setType("java.util.Map<String,Object>");
+        metaInfoParameter.setDescription(new String[] { "Map which has all meta info for a method overrides" });
+
+        serviceIDL.getParameters().put(META_INFO_PARAMETER, metaInfoParameter);
     }
 
     private void addClassComments(ServiceIDL serviceIdl, JDefinedClass jDefinedClass) {
@@ -194,6 +219,11 @@ public class ServiceGenerator {
             for (String paramName : parameters) {
                 generateMethodParam(serviceIdl, jCodeModel, method, methodComment, paramName);
             }
+
+            if (endPoint.isIncludeMetaInfo()) {
+                generateMethodParam(serviceIdl, jCodeModel, method, methodComment, META_INFO_PARAMETER);
+            }
+
             Map<String, String> headersMap = getAllHeaders(serviceIdl, endPoint);
             for (Map.Entry<String, String> headerMapEntry: headersMap.entrySet()) {
                 String value = headerMapEntry.getValue();
@@ -265,7 +295,6 @@ public class ServiceGenerator {
         String uri = (baseUri + endPointUri).replaceAll("//", "/");
         Set<String> argsList = new LinkedHashSet<>();
         Set<String> argsListQueryParams = new LinkedHashSet<>();
-        String commandNameParam = "";
 
         Matcher matcher = PARAMETERS_PATTERN.matcher(uri);
         while (matcher.find()) {
@@ -296,13 +325,6 @@ public class ServiceGenerator {
             block.decl(jCodeModel.ref("String"), "uri", invocation);
         }
 
-        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty() && endPoint.isDynamicCommandName()) {
-            matcher = PARAMETERS_PATTERN.matcher(endPoint.getCommandName());
-            if (matcher.find()) {
-                commandNameParam = matcher.group(1);
-            }
-        }
-
         if (endPoint.getParameters() != null) {
             for (String paramName : endPoint.getParameters()) {
                 Parameter parameter = serviceIdl.getParameters().get(paramName);
@@ -313,9 +335,6 @@ public class ServiceGenerator {
                         block.add(jCodeModel.ref(Validate.class).staticInvoke("notNull").arg(JExpr.ref(paramName)).arg(paramName + " can not be null"));
                     }
                 }
-
-                if (argsList.contains(paramName) || paramName.equals(commandNameParam))
-                    continue;
 
                 argsListQueryParams.add(paramName);
             }
@@ -381,6 +400,18 @@ public class ServiceGenerator {
             }
         }
 
+        if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+            block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
+        } else {
+            block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
+        }
+
+        if (endPoint.isIncludeMetaInfo()) {
+            JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER).invoke("get").arg("commandName"));
+            block._if(JExpr.ref(META_INFO_PARAMETER).invoke("containsKey").arg("commandName"))._then()
+                    .assign(JExpr.ref(COMMAND_NAME_VAR_NAME), invocation);
+        }
+
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
             // If responseObject contains generic types, use TypeReference. Else use Class of the responseObject.
             // http://wiki.fasterxml.com/JacksonDataBinding
@@ -436,13 +467,7 @@ public class ServiceGenerator {
                 builderInvocation = builderInvocation.invoke("setRequestObject").arg(JExpr.ref(requestObjectName));
             }
 
-            if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                if (commandNameParam != null && !commandNameParam.isEmpty()) {
-                    builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(commandNameParam));
-                } else {
-                    builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
-                }
-            }
+            builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
 
             if (endPoint.isRequestCachingEnabled()) {
                 builderInvocation = builderInvocation.invoke("setRequestCachingEnabled").arg(JExpr.lit(true));
@@ -487,6 +512,8 @@ public class ServiceGenerator {
 
     public void generateInterface(ServiceIDL serviceIdl, JCodeModel jCodeModel, String destinationFolder) throws Exception {
         JDefinedClass serviceInterface = jCodeModel._class(getFullInterfaceName(serviceIdl), ClassType.INTERFACE);
+
+        generateMetaInfo(serviceIdl);
 
         addClassComments(serviceIdl, serviceInterface);
 
