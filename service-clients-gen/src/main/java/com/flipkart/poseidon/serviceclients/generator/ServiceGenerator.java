@@ -54,8 +54,9 @@ public class ServiceGenerator {
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("\\{parameters\\.(.*?)\\}");
     private static final String REQUEST_OBJECT_VAR_NAME = "requestObject";
     private static final String REQUEST_OBJECT_LOOP_VAR_NAME = "requestObject1";
-    private static final String META_INFO_PARAMETER = "_metaInfo";
+    private static final String META_INFO_PARAMETER_NAME = "_metaInfo";
     private static final String COMMAND_NAME_VAR_NAME = "_commandName";
+    private static final String META_INFO_COMMAND_NAME_VAR_NAME = "_metaInfoCommandName";
 
     private ServiceGenerator() {}
 
@@ -126,7 +127,7 @@ public class ServiceGenerator {
 
     private void addMetaInfoAsParameter(ServiceIDL serviceIDL) throws Exception{
         for (String parameterName : serviceIDL.getParameters().keySet()) {
-            if (META_INFO_PARAMETER.equals(parameterName)) {
+            if (META_INFO_PARAMETER_NAME.equals(parameterName)) {
                 throw new Exception("_metaInfo as parameter name is restricted for internal usage of poseidon.");
             }
         }
@@ -135,7 +136,7 @@ public class ServiceGenerator {
         metaInfoParameter.setType("java.util.Map<String,Object>");
         metaInfoParameter.setDescription(new String[] { "Map which has all meta info for a method overrides" });
 
-        serviceIDL.getParameters().put(META_INFO_PARAMETER, metaInfoParameter);
+        serviceIDL.getParameters().put(META_INFO_PARAMETER_NAME, metaInfoParameter);
     }
 
     private void addClassComments(ServiceIDL serviceIdl, JDefinedClass jDefinedClass) {
@@ -221,7 +222,7 @@ public class ServiceGenerator {
             }
 
             if (endPoint.isIncludeMetaInfo()) {
-                generateMethodParam(serviceIdl, jCodeModel, method, methodComment, META_INFO_PARAMETER);
+                generateMethodParam(serviceIdl, jCodeModel, method, methodComment, META_INFO_PARAMETER_NAME);
             }
 
             Map<String, String> headersMap = getAllHeaders(serviceIdl, endPoint);
@@ -403,14 +404,15 @@ public class ServiceGenerator {
             }
         }
 
-        if (endPoint.isIncludeMetaInfo()) {
+        if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfoMeta() != null && endPoint.getMetaInfoMeta().isDynamicCommandName()) {
             if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
                 block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
             } else {
                 block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
             }
-            JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER).invoke("get").arg("commandName"));
-            block._if(JExpr.ref(META_INFO_PARAMETER).invoke("containsKey").arg("commandName"))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), invocation);
+            JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER_NAME).invoke("get").arg("commandName"));
+            block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
+            block._if(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME).ne(JExpr._null()))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME));
         }
 
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
@@ -468,7 +470,7 @@ public class ServiceGenerator {
                 builderInvocation = builderInvocation.invoke("setRequestObject").arg(JExpr.ref(requestObjectName));
             }
 
-            if (endPoint.isIncludeMetaInfo()) {
+            if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfoMeta() != null && endPoint.getMetaInfoMeta().isDynamicCommandName()) {
                 builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
             } else if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
                 builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());

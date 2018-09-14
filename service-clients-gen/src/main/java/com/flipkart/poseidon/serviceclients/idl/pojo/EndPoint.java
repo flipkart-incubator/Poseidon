@@ -28,6 +28,7 @@ public class EndPoint {
     private String uri;
     private String commandName;
     private boolean includeMetaInfo;
+    private EndPointMetaInfoMeta metaInfoMeta;
     private Map<String, String> headers;
     private String[] parameters;
     private boolean requestCachingEnabled;
@@ -147,6 +148,14 @@ public class EndPoint {
         this.includeMetaInfo = includeMetaInfo;
     }
 
+    public EndPointMetaInfoMeta getMetaInfoMeta() {
+        return metaInfoMeta;
+    }
+
+    public void setMetaInfoMeta(EndPointMetaInfoMeta metaInfoMeta) {
+        this.metaInfoMeta = metaInfoMeta;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || !(object instanceof EndPoint)) {
@@ -167,6 +176,9 @@ public class EndPoint {
             return false;
         }
         if (!Objects.equals(includeMetaInfo, endPoint.isIncludeMetaInfo())) {
+            return false;
+        }
+        if (!Objects.equals(metaInfoMeta, endPoint.getMetaInfoMeta())) {
             return false;
         }
         if (!Objects.equals(headers, endPoint.getHeaders())) {
