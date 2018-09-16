@@ -5,7 +5,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 /**
  * Created by jagannadha.raju on 14/09/18.
  */
-public class EndPointMetaInfoMeta {
+public class EndpointMetaInfo {
     private boolean dynamicCommandName;
 
     public boolean isDynamicCommandName() {
@@ -20,9 +20,9 @@ public class EndPointMetaInfoMeta {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        if (!(o instanceof EndPointMetaInfoMeta)) return false;
+        if (!(o instanceof EndpointMetaInfo)) return false;
 
-        EndPointMetaInfoMeta that = (EndPointMetaInfoMeta) o;
+        EndpointMetaInfo that = (EndpointMetaInfo) o;
 
         return new EqualsBuilder()
                 .append(dynamicCommandName, that.dynamicCommandName)

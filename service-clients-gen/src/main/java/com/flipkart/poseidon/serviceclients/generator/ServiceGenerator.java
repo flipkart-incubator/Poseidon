@@ -404,15 +404,17 @@ public class ServiceGenerator {
             }
         }
 
-        if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfoMeta() != null && endPoint.getMetaInfoMeta().isDynamicCommandName()) {
-            if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
-            } else {
-                block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
+        if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfo() != null) {
+            if (endPoint.getMetaInfo().isDynamicCommandName()) {
+                if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
+                    block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
+                } else {
+                    block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
+                }
+                JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER_NAME).invoke("get").arg("commandName"));
+                block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
+                block._if(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME).ne(JExpr._null()))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME));
             }
-            JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER_NAME).invoke("get").arg("commandName"));
-            block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
-            block._if(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME).ne(JExpr._null()))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME));
         }
 
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
@@ -470,7 +472,7 @@ public class ServiceGenerator {
                 builderInvocation = builderInvocation.invoke("setRequestObject").arg(JExpr.ref(requestObjectName));
             }
 
-            if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfoMeta() != null && endPoint.getMetaInfoMeta().isDynamicCommandName()) {
+            if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfo() != null && endPoint.getMetaInfo().isDynamicCommandName()) {
                 builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
             } else if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
                 builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());

@@ -28,7 +28,7 @@ public class EndPoint {
     private String uri;
     private String commandName;
     private boolean includeMetaInfo;
-    private EndPointMetaInfoMeta metaInfoMeta;
+    private EndpointMetaInfo metaInfo;
     private Map<String, String> headers;
     private String[] parameters;
     private boolean requestCachingEnabled;
@@ -148,12 +148,12 @@ public class EndPoint {
         this.includeMetaInfo = includeMetaInfo;
     }
 
-    public EndPointMetaInfoMeta getMetaInfoMeta() {
-        return metaInfoMeta;
+    public EndpointMetaInfo getMetaInfo() {
+        return metaInfo;
     }
 
-    public void setMetaInfoMeta(EndPointMetaInfoMeta metaInfoMeta) {
-        this.metaInfoMeta = metaInfoMeta;
+    public void setMetaInfo(EndpointMetaInfo metaInfo) {
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -178,7 +178,7 @@ public class EndPoint {
         if (!Objects.equals(includeMetaInfo, endPoint.isIncludeMetaInfo())) {
             return false;
         }
-        if (!Objects.equals(metaInfoMeta, endPoint.getMetaInfoMeta())) {
+        if (!Objects.equals(metaInfo, endPoint.getMetaInfo())) {
             return false;
         }
         if (!Objects.equals(headers, endPoint.getHeaders())) {
