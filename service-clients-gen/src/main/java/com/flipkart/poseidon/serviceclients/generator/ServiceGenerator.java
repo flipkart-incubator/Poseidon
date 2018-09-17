@@ -55,7 +55,6 @@ public class ServiceGenerator {
     private static final String REQUEST_OBJECT_VAR_NAME = "requestObject";
     private static final String REQUEST_OBJECT_LOOP_VAR_NAME = "requestObject1";
     private static final String META_INFO_PARAMETER_NAME = "_metaInfo";
-    private static final String COMMAND_NAME_VAR_NAME = "_commandName";
     private static final String META_INFO_COMMAND_NAME_VAR_NAME = "_metaInfoCommandName";
 
     private ServiceGenerator() {}
@@ -344,6 +343,14 @@ public class ServiceGenerator {
             }
         }
 
+        if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfo() != null) {
+            if (endPoint.getMetaInfo().isDynamicCommandName()) {
+                JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER_NAME).invoke("get").arg("commandName"));
+                block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
+                block.add(jCodeModel.ref(Validate.class).staticInvoke("notNull").arg(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME)).arg(META_INFO_COMMAND_NAME_VAR_NAME + " can not be null"));
+            }
+        }
+
         if (!argsListQueryParams.isEmpty()) {
             JInvocation invocation = jCodeModel.ref(Arrays.class).staticInvoke("asList");
             for (String arg : argsListQueryParams) {
@@ -404,19 +411,6 @@ public class ServiceGenerator {
             }
         }
 
-        if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfo() != null) {
-            if (endPoint.getMetaInfo().isDynamicCommandName()) {
-                if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
-                    block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.lit(endPoint.getCommandName()));
-                } else {
-                    block.decl(jCodeModel.ref("String"), COMMAND_NAME_VAR_NAME, JExpr.invoke("getCommandName"));
-                }
-                JInvocation invocation = jCodeModel.ref("String").staticInvoke("valueOf").arg(JExpr.ref(META_INFO_PARAMETER_NAME).invoke("get").arg("commandName"));
-                block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
-                block._if(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME).ne(JExpr._null()))._then().assign(JExpr.ref(COMMAND_NAME_VAR_NAME), JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME));
-            }
-        }
-
         if (endPoint.getResponseObject() != null && !endPoint.getResponseObject().isEmpty()) {
             // If responseObject contains generic types, use TypeReference. Else use Class of the responseObject.
             // http://wiki.fasterxml.com/JacksonDataBinding
@@ -473,7 +467,7 @@ public class ServiceGenerator {
             }
 
             if (endPoint.isIncludeMetaInfo() && endPoint.getMetaInfo() != null && endPoint.getMetaInfo().isDynamicCommandName()) {
-                builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(COMMAND_NAME_VAR_NAME));
+                builderInvocation = builderInvocation.invoke("setCommandName").arg(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME));
             } else if (endPoint.getCommandName() != null && !endPoint.getCommandName().isEmpty()) {
                 builderInvocation = builderInvocation.invoke("setCommandName").arg(endPoint.getCommandName());
             }
