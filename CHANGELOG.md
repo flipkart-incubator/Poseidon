@@ -1,4 +1,4 @@
-## 5.7.0 (WIP)
+## 5.7.0 (Sep 19, 2018)
 - Loop over DataSource bug fixes and sample
 - LONG support in API parameter
 - Upgrade hibernate-validator to 5.4.2.Final
