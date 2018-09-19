@@ -2,6 +2,7 @@
 - Loop over DataSource bug fixes and sample
 - LONG support in API parameter
 - Upgrade hibernate-validator to 5.4.2.Final
+- Adding metaInfo map to service clients endpoints to consume dynamic parameters like commandName.
 
 ## 5.6.0 (June 28, 2018)
 - Support for multiple error types in ServiceResponseDecoder 
