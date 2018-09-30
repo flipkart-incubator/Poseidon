@@ -71,11 +71,6 @@ public class ParamValidationFilter implements Filter {
             parsedParams.putAll(validateParams(poseidonRequest, params.getRequired(), true));
             parsedParams.putAll(validateParams(poseidonRequest, params.getOptional(), false));
         }
-
-        if (request instanceof PoseidonAsyncRequest) {
-            parsedParams.put(RequestConstants.IS_ASYNC, true);
-        }
-
         poseidonRequest.setAttribute(RequestConstants.PARAMS, parsedParams);
     }
 
