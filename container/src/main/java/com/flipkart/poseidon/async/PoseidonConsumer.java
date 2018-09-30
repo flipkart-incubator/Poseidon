@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import static com.flipkart.poseidon.constants.RequestConstants.BODY;
+import static com.flipkart.poseidon.constants.RequestConstants.BODY_BYTES;
 import static com.flipkart.poseidon.constants.RequestConstants.METHOD;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -31,22 +32,7 @@ public abstract class PoseidonConsumer {
     public final AsyncConsumerResult consume(AsyncConsumerRequest consumerRequest) {
         PoseidonRequest request = new PoseidonAsyncRequest(consumerRequest.getUrl(), Collections.emptyMap(), Collections.emptyMap(), consumerRequest.getParameters());
         request.setAttribute(METHOD, consumerRequest.getHttpMethod());
-
-        try {
-            final String requestBodyString;
-            if (consumerRequest.getPayload() == null) {
-                requestBodyString = null;
-            } else if (consumerRequest.getPayload() instanceof String) {
-                requestBodyString = (String) consumerRequest.getPayload();
-            } else {
-                requestBodyString = configuration.getObjectMapper().writeValueAsString(consumerRequest.getPayload());
-            }
-
-            request.setAttribute(BODY, requestBodyString);
-        } catch (Throwable throwable) {
-            logger.error("Exception while processing async request", throwable);
-            return new AsyncConsumerResult(AsyncResultState.SIDELINE);
-        }
+        request.setAttribute(BODY_BYTES, consumerRequest.getPayload());
 
         try {
             PoseidonResponse response = new PoseidonResponse();

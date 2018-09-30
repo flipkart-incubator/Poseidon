@@ -28,7 +28,7 @@ public class AsyncConsumerRequest {
     // TODO: 29/09/18 Move to EndpointPOJO::name as the identifier in a major release
     private final String url;
     private final HttpMethod httpMethod;
-    private final Object payload;
+    private final byte[] payload;
     private final Map<String, String[]> parameters;
 
     @ConstructorProperties({
@@ -37,7 +37,7 @@ public class AsyncConsumerRequest {
             "payload",
             "parameters"
     })
-    public AsyncConsumerRequest(String url, HttpMethod httpMethod, Object payload, Map<String, String[]> parameters) {
+    public AsyncConsumerRequest(String url, HttpMethod httpMethod, byte[] payload, Map<String, String[]> parameters) {
         this.url = url;
         this.httpMethod = httpMethod;
         this.payload = payload;
@@ -52,7 +52,7 @@ public class AsyncConsumerRequest {
         return httpMethod;
     }
 
-    public Object getPayload() {
+    public byte[] getPayload() {
         return payload;
     }
 
