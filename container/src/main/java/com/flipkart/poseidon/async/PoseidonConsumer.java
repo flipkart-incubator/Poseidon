@@ -5,13 +5,10 @@ import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.core.PoseidonAsyncRequest;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
-import com.flipkart.poseidon.core.PoseidonServlet;
 import org.slf4j.Logger;
 
 import java.util.Collections;
-import java.util.HashMap;
 
-import static com.flipkart.poseidon.constants.RequestConstants.BODY;
 import static com.flipkart.poseidon.constants.RequestConstants.BODY_BYTES;
 import static com.flipkart.poseidon.constants.RequestConstants.METHOD;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -37,11 +34,7 @@ public abstract class PoseidonConsumer {
         try {
             PoseidonResponse response = new PoseidonResponse();
             this.application.handleRequest(request, response);
-            if (response.getStatusCode() / 100 == 2) {
-                return new AsyncConsumerResult(AsyncResultState.SUCCESS);
-            } else {
-                return new AsyncConsumerResult(AsyncResultState.SIDELINE);
-            }
+            return new AsyncConsumerResult(AsyncResultState.SUCCESS);
         } catch (Throwable throwable) {
             logger.error("Unexpected exception while consuming async event", throwable);
             return new AsyncConsumerResult(AsyncResultState.FAILURE);
