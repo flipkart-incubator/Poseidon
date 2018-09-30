@@ -17,6 +17,8 @@
 package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.datasources.DataSourceRequest;
+import com.flipkart.poseidon.datasources.RequestAttribute;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.helper.AnnotationHelper;
 import com.flipkart.poseidon.helper.CallableNameHelper;
@@ -108,7 +110,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
                             Object[] initParams = new Object[constructor.getParameterCount()];
                             initParams[0] = this;
-                            resolveInjectableConstructorDependencies(constructor, initParams, 1);
+                            resolveInjectableConstructorDependencies(constructor, initParams, 1, new DataSourceRequest());
                             filter = constructor.newInstance(initParams);
                         }
                     } catch (NoSuchMethodException e) {
@@ -160,7 +162,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
                 Object[] initParams = new Object[dataSourceConstructor.getParameterCount()];
                 initParams[0] = this;
                 initParams[1] = request;
-                resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2);
+                resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2, request);
 
                 dataSource = dataSourceConstructor.newInstance(initParams);
             }
@@ -231,17 +233,23 @@ public abstract class PoseidonLegoSet implements LegoSet {
         this.context = context;
     }
 
-    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset) throws MissingInformationException {
+    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Request request) throws MissingInformationException {
         for (int i = offset; i < constructor.getParameterCount(); i++) {
-            final Qualifier qualifier = constructor.getParameters()[i].getAnnotation(Qualifier.class);
-            String beanName = null;
-            if (qualifier != null && !StringUtils.isNullOrEmpty(qualifier.value())) {
-                beanName = qualifier.value();
-            }
+            final RequestAttribute requestAttribute = constructor.getParameters()[i].getAnnotation(RequestAttribute.class);
+            if (requestAttribute != null) {
+                final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructor.getParameters()[i].getName() : requestAttribute.value();
+                initParams[i] = request.getAttribute(attributeName);
+            } else {
+                final Qualifier qualifier = constructor.getParameters()[i].getAnnotation(Qualifier.class);
+                String beanName = null;
+                if (qualifier != null && !StringUtils.isNullOrEmpty(qualifier.value())) {
+                    beanName = qualifier.value();
+                }
 
-            initParams[i] = beanName == null ? context.getBean(constructor.getParameterTypes()[i]) : context.getBean(beanName, constructor.getParameterTypes()[i]);
-            if (initParams[i] == null) {
-                throw new MissingInformationException("Unmet dependency for constructor " + constructor.getName() + ": " + constructor.getParameterTypes()[i].getCanonicalName());
+                initParams[i] = beanName == null ? context.getBean(constructor.getParameterTypes()[i]) : context.getBean(beanName, constructor.getParameterTypes()[i]);
+                if (initParams[i] == null) {
+                    throw new MissingInformationException("Unmet dependency for constructor " + constructor.getName() + ": " + constructor.getParameterTypes()[i].getCanonicalName());
+                }
             }
         }
     }
