@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.helper.AnnotationHelper;
 import com.flipkart.poseidon.helper.CallableNameHelper;
 import com.flipkart.poseidon.helper.ClassPathHelper;
@@ -24,16 +25,22 @@ import com.flipkart.poseidon.mappers.Mapper;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.model.exception.MissingInformationException;
+import com.flipkart.poseidon.model.exception.PoseidonFailureException;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.*;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.LegoSetException;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 
+import javax.inject.Inject;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -46,15 +53,17 @@ public abstract class PoseidonLegoSet implements LegoSet {
     private static Map<String, Mapper> mappers = new HashMap<>();
     private Map<String, Buildable> buildableMap = new HashMap<>();
     private ExecutorService dataSourceExecutor;
+    private ApplicationContext context;
 
-    {
+    public void init() {
         try {
             Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(ClassLoader.getSystemClassLoader(), getPackagesToScan());
             for (ClassPath.ClassInfo classInfo : classInfos) {
                 bucketize(classInfo);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Unable to load lego-blocks into their containers", e);
+            throw new PoseidonFailureException("Unable to load lego-blocks into their containers", e);
         }
     }
 
@@ -63,7 +72,17 @@ public abstract class PoseidonLegoSet implements LegoSet {
             Class klass = Class.forName(aClass.getName());
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
-                    Constructor<DataSource<? extends DataType>> constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
+                    final List<Constructor<?>> injectableConstructors = findInjectableConstructors(klass);
+                    Constructor<DataSource<? extends DataType>> constructor;
+                    if (injectableConstructors.isEmpty()) {
+                        constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
+                    } else {
+                        constructor = (Constructor<DataSource<? extends DataType>>) injectableConstructors.get(0);
+                        if (constructor.getParameterCount() < 2 || constructor.getParameterTypes()[0] != LegoSet.class || constructor.getParameterTypes()[1] != Request.class) {
+                            throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet and Request as the first two parameter");
+                        }
+                    }
+
                     Optional<String> id = getBlockId(klass);
                     if (!id.isPresent()) {
                         throw new MissingInformationException();
@@ -77,8 +96,21 @@ public abstract class PoseidonLegoSet implements LegoSet {
                 } else if (Filter.class.isAssignableFrom(klass)) {
                     Filter filter;
                     try {
-                        Constructor<Filter> constructor = klass.getDeclaredConstructor(LegoSet.class);
-                        filter = constructor.newInstance(this);
+                        final List<Constructor<?>> injectableConstructors = findInjectableConstructors(klass);
+                        if (injectableConstructors.isEmpty()) {
+                            Constructor<Filter> constructor = klass.getDeclaredConstructor(LegoSet.class);
+                            filter = constructor.newInstance(this);
+                        } else {
+                            Constructor<Filter> constructor = (Constructor<Filter>) injectableConstructors.get(0);
+                            if (constructor.getParameterCount() < 1 || constructor.getParameterTypes()[0] != LegoSet.class) {
+                                throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet as the first parameter");
+                            }
+
+                            Object[] initParams = new Object[constructor.getParameterCount()];
+                            initParams[0] = this;
+                            resolveInjectableConstructorDependencies(constructor, initParams, 1);
+                            filter = constructor.newInstance(initParams);
+                        }
                     } catch (NoSuchMethodException e) {
                         filter = (Filter) klass.newInstance();
                     }
@@ -90,7 +122,17 @@ public abstract class PoseidonLegoSet implements LegoSet {
             }
         } catch (Throwable t) {
             logger.error("Unable to instantiate " + aClass.getName(), t);
+            throw new PoseidonFailureException("Unable to instantiate " + aClass.getName(), t);
         }
+    }
+
+    private List<Constructor<?>> findInjectableConstructors(Class klass) {
+        final Constructor<?>[] declaredConstructors = klass.getDeclaredConstructors();
+        final List<Constructor<?>> injectableConstructors = Arrays.stream(declaredConstructors).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+        if (injectableConstructors.size() > 1) {
+            throw new UnsupportedOperationException(klass.getName() + " has more than one injectable constructor");
+        }
+        return injectableConstructors;
     }
 
     private Optional<String> getBlockId(Class klass) {
@@ -110,7 +152,18 @@ public abstract class PoseidonLegoSet implements LegoSet {
         }
 
         try {
-            DataSource<? extends DataType> dataSource = dataSources.get(id).newInstance(this, request);
+            final Constructor<DataSource<? extends DataType>> dataSourceConstructor = dataSources.get(id);
+            DataSource<? extends DataType> dataSource;
+            if (dataSourceConstructor.getParameterCount() == 2) {
+                dataSource = dataSourceConstructor.newInstance(this, request);
+            } else {
+                Object[] initParams = new Object[dataSourceConstructor.getParameterCount()];
+                initParams[0] = this;
+                initParams[1] = request;
+                resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2);
+
+                dataSource = dataSourceConstructor.newInstance(initParams);
+            }
             return wrapDataSource((DataSource<T>) dataSource, request);
         } catch (Exception e) {
             throw new LegoSetException("Unable to instantiate DataSource for provided id = " + id, e);
@@ -172,5 +225,24 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
     public ExecutorService getDataSourceExecutor() {
         return dataSourceExecutor;
+    }
+
+    public void setContext(ApplicationContext context) {
+        this.context = context;
+    }
+
+    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset) throws MissingInformationException {
+        for (int i = offset; i < constructor.getParameterCount(); i++) {
+            final Qualifier qualifier = constructor.getParameters()[i].getAnnotation(Qualifier.class);
+            String beanName = null;
+            if (qualifier != null && !StringUtils.isNullOrEmpty(qualifier.value())) {
+                beanName = qualifier.value();
+            }
+
+            initParams[i] = beanName == null ? context.getBean(constructor.getParameterTypes()[i]) : context.getBean(beanName, constructor.getParameterTypes()[i]);
+            if (initParams[i] == null) {
+                throw new MissingInformationException("Unmet dependency for constructor " + constructor.getName() + ": " + constructor.getParameterTypes()[i].getCanonicalName());
+            }
+        }
     }
 }

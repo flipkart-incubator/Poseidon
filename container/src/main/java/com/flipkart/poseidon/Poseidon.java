@@ -55,6 +55,7 @@ import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.trpr.platform.runtime.impl.bootstrap.spring.Bootstrap;
 
@@ -82,12 +83,14 @@ public class Poseidon {
     private final Application application;
     private final ExecutorService dataSourceES;
     private final ExecutorService filterES;
+    private final ApplicationContext context;
     private Server server;
 
     @Autowired
-    public Poseidon(Configuration configuration, Application application) {
+    public Poseidon(Configuration configuration, Application application, ApplicationContext context) {
         this.configuration = configuration;
         this.application = application;
+        this.context = context;
 
         dataSourceES = Executors.newCachedThreadPool();
         filterES = Executors.newCachedThreadPool();
@@ -147,7 +150,7 @@ public class Poseidon {
             }
 
             server.setHandler(getHandlers());
-            application.init(dataSourceES, filterES);
+            application.init(dataSourceES, filterES, context);
             initializeMetricReporters();
 
             server.start();
