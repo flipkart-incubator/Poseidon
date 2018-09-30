@@ -39,6 +39,7 @@ import org.springframework.context.ApplicationContext;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -51,6 +52,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
     private static final Logger logger = getLogger(PoseidonLegoSet.class);
     private static Map<String, Constructor<DataSource<? extends DataType>>> dataSources = new HashMap<>();
     private static Map<String, ServiceClient> serviceClients = new HashMap<>();
+    private static Map<String, ServiceClient> serviceClientsByName = new HashMap<>();
     private static Map<String, Filter> filters = new HashMap<>();
     private static Map<String, Mapper> mappers = new HashMap<>();
     private Map<String, Buildable> buildableMap = new HashMap<>();
@@ -72,55 +74,27 @@ public abstract class PoseidonLegoSet implements LegoSet {
     private void bucketize(ClassPath.ClassInfo aClass) {
         try {
             Class klass = Class.forName(aClass.getName());
+            List<Class<ServiceClient>> serviceClientClasses = new ArrayList<>();
+            List<Class<Filter>> filterClasses = new ArrayList<>();
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
-                    final List<Constructor<?>> injectableConstructors = findInjectableConstructors(klass);
-                    Constructor<DataSource<? extends DataType>> constructor;
-                    if (injectableConstructors.isEmpty()) {
-                        constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
-                    } else {
-                        constructor = (Constructor<DataSource<? extends DataType>>) injectableConstructors.get(0);
-                        if (constructor.getParameterCount() < 2 || constructor.getParameterTypes()[0] != LegoSet.class || constructor.getParameterTypes()[1] != Request.class) {
-                            throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet and Request as the first two parameter");
-                        }
-                    }
-
-                    Optional<String> id = getBlockId(klass);
-                    if (!id.isPresent()) {
-                        throw new MissingInformationException();
-                    }
-                    dataSources.put(id.get(), constructor);
+                    processDataSource(klass);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
-                    Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    ServiceClient serviceClient = constructor.newInstance();
-                    serviceClients.put(getBlockId(klass).orElseThrow(MissingInformationException::new), serviceClient);
+                    serviceClientClasses.add(klass);
                 } else if (Filter.class.isAssignableFrom(klass)) {
-                    Filter filter;
-                    try {
-                        final List<Constructor<?>> injectableConstructors = findInjectableConstructors(klass);
-                        if (injectableConstructors.isEmpty()) {
-                            Constructor<Filter> constructor = klass.getDeclaredConstructor(LegoSet.class);
-                            filter = constructor.newInstance(this);
-                        } else {
-                            Constructor<Filter> constructor = (Constructor<Filter>) injectableConstructors.get(0);
-                            if (constructor.getParameterCount() < 1 || constructor.getParameterTypes()[0] != LegoSet.class) {
-                                throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet as the first parameter");
-                            }
-
-                            Object[] initParams = new Object[constructor.getParameterCount()];
-                            initParams[0] = this;
-                            resolveInjectableConstructorDependencies(constructor, initParams, 1, new DataSourceRequest());
-                            filter = constructor.newInstance(initParams);
-                        }
-                    } catch (NoSuchMethodException e) {
-                        filter = (Filter) klass.newInstance();
-                    }
-                    filters.put(getBlockId(klass).orElseThrow(MissingInformationException::new), filter);
+                    filterClasses.add(klass);
                 } else if (Mapper.class.isAssignableFrom(klass)) {
                     Mapper mapper = (Mapper) klass.newInstance();
                     mappers.put(getBlockId(klass).orElseThrow(MissingInformationException::new), mapper);
                 }
+            }
+
+            for (Class<ServiceClient> serviceClientClass : serviceClientClasses) {
+                processServiceClient(serviceClientClass);
+            }
+
+            for (Class<Filter> filterClass : filterClasses) {
+                processFilter(filterClass);
             }
         } catch (Throwable t) {
             logger.error("Unable to instantiate " + aClass.getName(), t);
@@ -128,9 +102,65 @@ public abstract class PoseidonLegoSet implements LegoSet {
         }
     }
 
-    private List<Constructor<?>> findInjectableConstructors(Class klass) {
-        final Constructor<?>[] declaredConstructors = klass.getDeclaredConstructors();
-        final List<Constructor<?>> injectableConstructors = Arrays.stream(declaredConstructors).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+    private void processDataSource(Class<DataSource<? extends DataType>> klass) throws NoSuchMethodException, MissingInformationException {
+        final List<Constructor<DataSource<? extends DataType>>> injectableConstructors = findInjectableConstructors(klass);
+        Constructor<DataSource<? extends DataType>> constructor;
+        if (injectableConstructors.isEmpty()) {
+            constructor = klass.getDeclaredConstructor(LegoSet.class, Request.class);
+        } else {
+            constructor = injectableConstructors.get(0);
+            if (constructor.getParameterCount() < 2 || constructor.getParameterTypes()[0] != LegoSet.class || constructor.getParameterTypes()[1] != Request.class) {
+                throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet and Request as the first two parameter");
+            }
+        }
+
+        Optional<String> id = getBlockId(klass);
+        if (!id.isPresent()) {
+            throw new MissingInformationException();
+        }
+        dataSources.put(id.get(), constructor);
+    }
+
+    private void processServiceClient(Class<ServiceClient> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MissingInformationException {
+        Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        ServiceClient serviceClient = constructor.newInstance();
+        serviceClients.put(getBlockId(klass).orElseThrow(MissingInformationException::new), serviceClient);
+        for (Class<?> interfaceClass : klass.getInterfaces()) {
+            if (ServiceClient.class.isAssignableFrom(interfaceClass)) {
+                serviceClientsByName.put(interfaceClass.getName(), serviceClient);
+            }
+        }
+        serviceClientsByName.put(klass.getName(), serviceClient);
+    }
+
+    private void processFilter(Class<Filter> klass) throws IllegalAccessException, InvocationTargetException, InstantiationException, MissingInformationException, ElementNotFoundException {
+        Filter filter;
+        try {
+            final List<Constructor<Filter>> injectableConstructors = findInjectableConstructors(klass);
+            if (injectableConstructors.isEmpty()) {
+                Constructor<Filter> constructor = klass.getDeclaredConstructor(LegoSet.class);
+                filter = constructor.newInstance(this);
+            } else {
+                Constructor<Filter> constructor = injectableConstructors.get(0);
+                if (constructor.getParameterCount() < 1 || constructor.getParameterTypes()[0] != LegoSet.class) {
+                    throw new UnsupportedOperationException("The injectable constructor of " + klass.getName() + " must have LegoSet as the first parameter");
+                }
+
+                Object[] initParams = new Object[constructor.getParameterCount()];
+                initParams[0] = this;
+                resolveInjectableConstructorDependencies(constructor, initParams, 1, new DataSourceRequest());
+                filter = constructor.newInstance(initParams);
+            }
+        } catch (NoSuchMethodException e) {
+            filter = klass.newInstance();
+        }
+        filters.put(getBlockId(klass).orElseThrow(MissingInformationException::new), filter);
+    }
+
+    private <T> List<Constructor<T>> findInjectableConstructors(Class<T> klass) {
+        final Constructor<T>[] declaredConstructors = (Constructor<T>[]) klass.getDeclaredConstructors();
+        final List<Constructor<T>> injectableConstructors = Arrays.stream(declaredConstructors).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
         if (injectableConstructors.size() > 1) {
             throw new UnsupportedOperationException(klass.getName() + " has more than one injectable constructor");
         }
@@ -233,12 +263,19 @@ public abstract class PoseidonLegoSet implements LegoSet {
         this.context = context;
     }
 
-    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Request request) throws MissingInformationException {
+    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Request request) throws MissingInformationException, ElementNotFoundException {
         for (int i = offset; i < constructor.getParameterCount(); i++) {
             final RequestAttribute requestAttribute = constructor.getParameters()[i].getAnnotation(RequestAttribute.class);
+            final com.flipkart.poseidon.datasources.ServiceClient serviceClientAttribute = constructor.getParameters()[i].getAnnotation(com.flipkart.poseidon.datasources.ServiceClient.class);
             if (requestAttribute != null) {
                 final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructor.getParameters()[i].getName() : requestAttribute.value();
                 initParams[i] = request.getAttribute(attributeName);
+            } else if (serviceClientAttribute != null) {
+                ServiceClient serviceClient = serviceClientsByName.get(constructor.getParameterTypes()[i].getName());
+                if (serviceClient == null) {
+                    throw new ElementNotFoundException("Unable to find ServiceClient for class = " + constructor.getParameterTypes()[i]);
+                }
+                initParams[i] = serviceClient;
             } else {
                 final Qualifier qualifier = constructor.getParameters()[i].getAnnotation(Qualifier.class);
                 String beanName = null;
