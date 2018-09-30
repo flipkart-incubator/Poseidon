@@ -105,13 +105,24 @@ public class ParamValidationFilter implements Filter {
                         value = parseParamValues(name, new String[] { attribute }, datatype, multivalue, param.getJavaType());
                     }
                 } else if(isBodyRequest) {
-                    String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
+                    final String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
+                    final byte[] bodyBytes = poseidonRequest.getAttribute(RequestConstants.BODY_BYTES);
                     if(!StringUtils.isEmpty(bodyString)) {
                         try {
                             if (param.getJavaType() == null && param.getDatatype() == null) {
                                 value = bodyString;
                             } else {
                                 value = configuration.getObjectMapper().readValue(bodyString, param.getJavaType());
+                            }
+                        } catch (IOException e) {
+                            logger.error("Error in reading body : {}", e.getMessage());
+                        }
+                    } else if (bodyBytes != null && bodyBytes.length > 0) {
+                        try {
+                            if (param.getJavaType() == null && param.getDatatype() == null) {
+                                value = configuration.getObjectMapper().writeValueAsString(bodyBytes);
+                            } else {
+                                value = configuration.getObjectMapper().readValue(bodyBytes, param.getJavaType());
                             }
                         } catch (IOException e) {
                             logger.error("Error in reading body : {}", e.getMessage());
