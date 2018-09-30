@@ -19,6 +19,7 @@ package com.flipkart.poseidon.internal;
 import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.constants.RequestConstants;
+import com.flipkart.poseidon.core.PoseidonAsyncRequest;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.model.annotations.Description;
@@ -70,6 +71,11 @@ public class ParamValidationFilter implements Filter {
             parsedParams.putAll(validateParams(poseidonRequest, params.getRequired(), true));
             parsedParams.putAll(validateParams(poseidonRequest, params.getOptional(), false));
         }
+
+        if (request instanceof PoseidonAsyncRequest) {
+            parsedParams.put(RequestConstants.IS_ASYNC, true);
+        }
+
         poseidonRequest.setAttribute(RequestConstants.PARAMS, parsedParams);
     }
 
