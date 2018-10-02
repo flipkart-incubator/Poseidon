@@ -167,9 +167,9 @@ public abstract class PoseidonLegoSet implements LegoSet {
         return injectableConstructors;
     }
 
-    private Optional<String> getBlockId(Class klass) {
-        Optional<String> optionalName = Optional.ofNullable((Name) klass.getDeclaredAnnotation(Name.class)).map(Name::value);
-        Optional<String> optionalVersion = Optional.ofNullable((Version) klass.getDeclaredAnnotation(Version.class)).map(AnnotationHelper::constructVersion);
+    public Optional<String> getBlockId(Class<?> klass) {
+        Optional<String> optionalName = Optional.ofNullable(klass.getDeclaredAnnotation(Name.class)).map(Name::value);
+        Optional<String> optionalVersion = Optional.ofNullable(klass.getDeclaredAnnotation(Version.class)).map(AnnotationHelper::constructVersion);
         String id = CallableNameHelper.versionedName(optionalName.orElse(klass.getSimpleName()), optionalVersion.orElse(""));
         return optionalVersion.isPresent() ? Optional.of(id) : Optional.empty();
     }
