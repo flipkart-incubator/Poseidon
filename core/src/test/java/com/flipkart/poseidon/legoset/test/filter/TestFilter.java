@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Flipkart Internet, pvt ltd.
+ * Copyright 2017 Flipkart Internet, pvt ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,42 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.legoset.test;
+package com.flipkart.poseidon.legoset.test.filter;
 
-import com.flipkart.poseidon.datasources.AbstractDataSource;
 import com.flipkart.poseidon.datasources.ServiceClient;
+import com.flipkart.poseidon.filters.AbstractFilter;
 import com.flipkart.poseidon.legoset.PoseidonLegoSetTest;
 import com.flipkart.poseidon.legoset.test.client.TestClient;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
-import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
+import flipkart.lego.api.entities.Response;
+import flipkart.lego.api.exceptions.BadRequestException;
+import flipkart.lego.api.exceptions.InternalErrorException;
+import flipkart.lego.api.exceptions.ProcessingException;
 
 import javax.inject.Inject;
 
 /**
- * Created by shrey.garg on 19/05/16.
+ * Created by shrey.garg on 04/10/18.
  */
-@Name(PoseidonLegoSetTest.PROPER_INJECTABLE_DS_NAME)
+@Name(PoseidonLegoSetTest.TEST_FILTER)
 @Version(major = 4, minor = 1, patch = 6)
-public class InjectableProperDataSource extends AbstractDataSource {
+public class TestFilter extends AbstractFilter {
 
     @Inject
-    public InjectableProperDataSource(LegoSet legoset, Request request, String injected, @ServiceClient TestClient testClient) {
-        super(legoset, request);
+    public TestFilter(LegoSet legoSet, @ServiceClient TestClient testClient) {
+        super(legoSet);
     }
 
     @Override
-    public DataType call() throws Exception {
-        return null;
+    public void filterRequest(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
+
+    }
+
+    @Override
+    public void filterResponse(Request request, Response response) throws InternalErrorException, BadRequestException, ProcessingException {
+
     }
 }

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.flipkart.poseidon.legoset.test;
+package com.flipkart.poseidon.legoset.fail.test;
 
 import com.flipkart.poseidon.datasources.AbstractDataSource;
-import com.flipkart.poseidon.datasources.ServiceClient;
 import com.flipkart.poseidon.legoset.PoseidonLegoSetTest;
-import com.flipkart.poseidon.legoset.test.client.TestClient;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
@@ -33,11 +31,11 @@ import javax.inject.Inject;
  */
 @Name(PoseidonLegoSetTest.PROPER_INJECTABLE_DS_NAME)
 @Version(major = 4, minor = 1, patch = 6)
-public class InjectableProperDataSource extends AbstractDataSource {
+public class InjectableImproperDataSource extends AbstractDataSource {
 
     @Inject
-    public InjectableProperDataSource(LegoSet legoset, Request request, String injected, @ServiceClient TestClient testClient) {
-        super(legoset, request);
+    public InjectableImproperDataSource(String injected) {
+        super(null, null);
     }
 
     @Override

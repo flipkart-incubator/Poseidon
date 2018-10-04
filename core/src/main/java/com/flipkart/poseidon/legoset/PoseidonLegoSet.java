@@ -62,20 +62,29 @@ public abstract class PoseidonLegoSet implements LegoSet {
     public void init() {
         try {
             Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(ClassLoader.getSystemClassLoader(), getPackagesToScan());
+
+            List<Class<ServiceClient>> serviceClientClasses = new ArrayList<>();
+            List<Class<Filter>> filterClasses = new ArrayList<>();
             for (ClassPath.ClassInfo classInfo : classInfos) {
-                bucketize(classInfo);
+                bucketize(classInfo, serviceClientClasses, filterClasses);
             }
-        } catch (IOException e) {
+
+            for (Class<ServiceClient> serviceClientClass : serviceClientClasses) {
+                processServiceClient(serviceClientClass);
+            }
+
+            for (Class<Filter> filterClass : filterClasses) {
+                processFilter(filterClass);
+            }
+        } catch (IOException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | MissingInformationException | ElementNotFoundException e) {
             logger.error("Unable to load lego-blocks into their containers", e);
             throw new PoseidonFailureException("Unable to load lego-blocks into their containers", e);
         }
     }
 
-    private void bucketize(ClassPath.ClassInfo aClass) {
+    private void bucketize(ClassPath.ClassInfo aClass, List<Class<ServiceClient>> serviceClientClasses, List<Class<Filter>> filterClasses) {
         try {
             Class klass = Class.forName(aClass.getName());
-            List<Class<ServiceClient>> serviceClientClasses = new ArrayList<>();
-            List<Class<Filter>> filterClasses = new ArrayList<>();
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
                     processDataSource(klass);
@@ -87,14 +96,6 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     Mapper mapper = (Mapper) klass.newInstance();
                     mappers.put(getBlockId(klass).orElseThrow(MissingInformationException::new), mapper);
                 }
-            }
-
-            for (Class<ServiceClient> serviceClientClass : serviceClientClasses) {
-                processServiceClient(serviceClientClass);
-            }
-
-            for (Class<Filter> filterClass : filterClasses) {
-                processFilter(filterClass);
             }
         } catch (Throwable t) {
             logger.error("Unable to instantiate " + aClass.getName(), t);
@@ -149,7 +150,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
                 Object[] initParams = new Object[constructor.getParameterCount()];
                 initParams[0] = this;
-                resolveInjectableConstructorDependencies(constructor, initParams, 1, new DataSourceRequest());
+                resolveInjectableConstructorDependencies(constructor, initParams, 1, Optional.empty());
                 filter = constructor.newInstance(initParams);
             }
         } catch (NoSuchMethodException e) {
@@ -192,7 +193,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
                 Object[] initParams = new Object[dataSourceConstructor.getParameterCount()];
                 initParams[0] = this;
                 initParams[1] = request;
-                resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2, request);
+                resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2, Optional.ofNullable(request));
 
                 dataSource = dataSourceConstructor.newInstance(initParams);
             }
@@ -263,13 +264,13 @@ public abstract class PoseidonLegoSet implements LegoSet {
         this.context = context;
     }
 
-    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Request request) throws MissingInformationException, ElementNotFoundException {
+    private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Optional<Request> request) throws MissingInformationException, ElementNotFoundException {
         for (int i = offset; i < constructor.getParameterCount(); i++) {
             final RequestAttribute requestAttribute = constructor.getParameters()[i].getAnnotation(RequestAttribute.class);
             final com.flipkart.poseidon.datasources.ServiceClient serviceClientAttribute = constructor.getParameters()[i].getAnnotation(com.flipkart.poseidon.datasources.ServiceClient.class);
             if (requestAttribute != null) {
                 final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructor.getParameters()[i].getName() : requestAttribute.value();
-                initParams[i] = request.getAttribute(attributeName);
+                initParams[i] = request.map(r -> r.getAttribute(attributeName)).orElse(null);
             } else if (serviceClientAttribute != null) {
                 ServiceClient serviceClient = serviceClientsByName.get(constructor.getParameterTypes()[i].getName());
                 if (serviceClient == null) {

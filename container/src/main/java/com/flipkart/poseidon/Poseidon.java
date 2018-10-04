@@ -38,9 +38,9 @@ import com.flipkart.poseidon.core.RewriteRule;
 import com.flipkart.poseidon.filters.HystrixContextFilter;
 import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
+import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
-import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.*;
@@ -51,11 +51,12 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.trpr.platform.runtime.impl.bootstrap.spring.Bootstrap;
 
@@ -75,7 +76,7 @@ import static javax.servlet.DispatcherType.REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class Poseidon {
+public class Poseidon implements ApplicationContextAware {
 
     public static final Logger STARTUP_LOGGER = getLogger("PoseidonStartupLogger");
 
@@ -83,14 +84,13 @@ public class Poseidon {
     private final Application application;
     private final ExecutorService dataSourceES;
     private final ExecutorService filterES;
-    private final ApplicationContext context;
+    private ApplicationContext context;
     private Server server;
 
     @Autowired
-    public Poseidon(Configuration configuration, Application application, ApplicationContext context) {
+    public Poseidon(Configuration configuration, Application application) {
         this.configuration = configuration;
         this.application = application;
-        this.context = context;
 
         dataSourceES = Executors.newCachedThreadPool();
         filterES = Executors.newCachedThreadPool();
@@ -291,5 +291,10 @@ public class Poseidon {
                 }
             }
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 }

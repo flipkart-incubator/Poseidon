@@ -16,11 +16,14 @@
 
 package com.flipkart.poseidon.legoset;
 
+import com.flipkart.poseidon.datasources.DataSourceRequest;
 import com.flipkart.poseidon.helper.CallableNameHelper;
+import com.flipkart.poseidon.legoset.test.filter.TestFilter;
 import com.flipkart.poseidon.model.exception.MissingInformationException;
+import com.flipkart.poseidon.model.exception.PoseidonFailureException;
+import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -43,8 +46,11 @@ public class PoseidonLegoSetTest {
     public static final String PROPER_DS_NAME = "ThisIsProper";
     public static final String PROPER_INJECTABLE_DS_NAME = "ThisIsProperInjectable";
     public static final String QUALIFIER_INJECTABLE_DS_NAME = "ThisIsQualifierInjectable";
+    public static final String TEST_SERVICE_CLIENT = "TestClient";
+    public static final String TEST_FILTER = "TestFilter";
 
-    ApplicationContext context = mock(ApplicationContext.class);
+    private final ApplicationContext context = mock(ApplicationContext.class);
+    private final Request request = new DataSourceRequest();
 
     @Test
     public void testVariousDataSourceStyles() throws Exception {
@@ -53,8 +59,8 @@ public class PoseidonLegoSetTest {
         legoSet.setContext(context);
         legoSet.init();
 
-        legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_DS_NAME, "4.1.6"), null);
-        legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), null);
+        legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_DS_NAME, "4.1.6"), request);
+        legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), request);
 
         try {
             legoSet.getDataSource(NAMED_DS_NAME, null);
@@ -72,7 +78,7 @@ public class PoseidonLegoSetTest {
         legoSet.init();
 
         try {
-            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), null);
+            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), request);
         } catch (Exception e) {
             throw e.getCause();
         }
@@ -86,7 +92,7 @@ public class PoseidonLegoSetTest {
         legoSet.init();
 
         try {
-            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), null);
+            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), request);
         } catch (Exception e) {
             throw e.getCause();
         }
@@ -100,7 +106,7 @@ public class PoseidonLegoSetTest {
         legoSet.init();
 
         try {
-            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), null);
+            legoSet.getDataSource(CallableNameHelper.versionedName(PROPER_INJECTABLE_DS_NAME, "4.1.6"), request);
         } catch (Exception e) {
             throw e.getCause();
         }
@@ -114,7 +120,7 @@ public class PoseidonLegoSetTest {
         legoSet.init();
 
         try {
-            legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), null);
+            legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), request);
         } catch (Exception e) {
             throw e.getCause();
         }
@@ -127,13 +133,44 @@ public class PoseidonLegoSetTest {
         legoSet.setContext(context);
         legoSet.init();
 
-        legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), null);
+        legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), request);
+    }
+
+    @Test
+    public void testInjectionFilter() throws Exception {
+        when(context.getBean(any(Class.class))).thenReturn("injected");
+        TestLegoSet legoSet = new TestLegoSet();
+        legoSet.setContext(context);
+        legoSet.init();
+
+        legoSet.getFilter(legoSet.getBlockId(TestFilter.class).get());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testInjectableDataSourceNoLegoSet() throws Throwable {
+        when(context.getBean(any(Class.class))).thenReturn(null);
+        TestFailLegoSet legoSet = new TestFailLegoSet();
+        legoSet.setContext(context);
+
+        try {
+            legoSet.init();
+        } catch (PoseidonFailureException e) {
+            assertEquals("The injectable constructor of com.flipkart.poseidon.legoset.fail.test.InjectableImproperDataSource must have LegoSet and Request as the first two parameter", e.getCause().getMessage());
+            throw e.getCause();
+        }
     }
 
     private static class TestLegoSet extends PoseidonLegoSet {
         @Override
         public List<String> getPackagesToScan() {
             return Arrays.asList("com.flipkart.poseidon.legoset.test");
+        }
+    }
+
+    private static class TestFailLegoSet extends PoseidonLegoSet {
+        @Override
+        public List<String> getPackagesToScan() {
+            return Arrays.asList("com.flipkart.poseidon.legoset.fail.test");
         }
     }
 }
