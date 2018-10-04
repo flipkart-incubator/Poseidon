@@ -1,3 +1,8 @@
+## 5.8.0 (W.I.P.)
+- Support for Async Interface
+- Dependency Injection framework for Spring managed beans, Request attributes and ServiceClients
+- Application will now fail to startup in case of any failures while processing lego blocks
+
 ## 5.7.0 (Sep 19, 2018)
 - Loop over DataSource bug fixes and sample
 - LONG support in API parameter

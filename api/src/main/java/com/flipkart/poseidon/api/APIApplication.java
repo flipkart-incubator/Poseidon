@@ -26,6 +26,7 @@ import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
 import flipkart.lego.engine.Lego;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
 
 import java.util.concurrent.ExecutorService;
@@ -47,10 +48,17 @@ public class APIApplication implements Application {
     }
 
     @Override
-    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) {
+    public final void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context) {
         lego = new Lego(legoSet, datasourceTPE, filterTPE);
         legoSet.setDataSourceExecutor(datasourceTPE);
+        legoSet.setContext(context);
         apiManager.init();
+        legoSet.init();
+        this.init(datasourceTPE, filterTPE);
+    }
+
+    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) {
+
     }
 
     @Override
