@@ -24,7 +24,7 @@ import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.sample.datatypes.CommentDataType;
 import com.flipkart.poseidon.sample.datatypes.PostDataType;
 import com.flipkart.poseidon.sample.datatypes.PostWithCommentsDataType;
-import com.flipkart.poseidon.serviceclients.sampleSC.v1.*;
+import com.flipkart.poseidon.serviceclients.sampleSC.v5.*;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
 import org.slf4j.Logger;

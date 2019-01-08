@@ -121,6 +121,14 @@
                 <version>4.3</version>
             </dependency>
 
+            <!--Poseidon-->
+            <dependency>
+                <groupId>com.flipkart.poseidon</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!--Poseidon-->
+
             <!-- Flipkart -->
             <dependency>
                 <groupId>com.flipkart.phantom</groupId>
