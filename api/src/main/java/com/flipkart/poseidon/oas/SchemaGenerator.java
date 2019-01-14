@@ -64,6 +64,10 @@ public class SchemaGenerator {
     private static final Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
 
     public static void main(String[] args) throws IOException, NoSuchMethodException {
+        if (args.length < 3) {
+            throw new UnsupportedOperationException("Correct Usage: <api-dir> <schema-target> <datasource-packages-csv>");
+        }
+
         final List<String> validConfigs = new ArrayList<>();
         final List<EndpointPOJO> pojos = new ArrayList<>();
 
