@@ -27,6 +27,7 @@ import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
 import com.flipkart.poseidon.utils.ApiHelper;
+import com.flipkart.poseidon.validator.BlocksValidator;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.TypeToken;
 import flipkart.lego.api.entities.DataSource;
@@ -42,6 +43,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springframework.http.HttpMethod;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -52,6 +54,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 
@@ -77,6 +80,13 @@ public class SchemaGenerator {
         final Path apiFile = apiDir.resolve("ServiceResource.json");
         final Path modelsDir = genDir.resolve("models");
 
+        if (Files.exists(modelsDir)) {
+            Files.walk(modelsDir)
+                    .sorted(Comparator.reverseOrder())
+                    .peek(System.out::println)
+                    .forEach(deleteIfExists);
+        }
+
         try {
             APIManager.scanAndAdd(dir, validConfigs);
             for (String config : validConfigs) {
@@ -86,7 +96,10 @@ public class SchemaGenerator {
             throw new UnsupportedOperationException("Error while reading EndpointPOJO", e);
         }
 
-        fetchDataSources(args[2].split(","));
+        final String[] datasourcePackages = args[2].split(",");
+        BlocksValidator.main(datasourcePackages);
+
+        fetchDataSources(datasourcePackages);
 
         OpenAPI openAPI = new OpenAPI();
         Info info = new Info();
@@ -467,4 +480,12 @@ public class SchemaGenerator {
         }
 
     }
+
+    private static final Consumer<Path> deleteIfExists = p -> {
+        try {
+            Files.deleteIfExists(p);
+        } catch (Exception e) {
+            System.out.println("Error while deleting model dir: " + e.getMessage());
+        }
+    };
 }
