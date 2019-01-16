@@ -15,11 +15,6 @@
 
     <artifactId>sample</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0-SNAPSHOT</version>
-
-    <properties>
-        <sampleSC.version>1.0.0-SNAPSHOT</sampleSC.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -31,7 +26,7 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>sampleSC</artifactId>
-            <version>${sampleSC.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
