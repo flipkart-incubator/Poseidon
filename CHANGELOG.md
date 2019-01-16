@@ -2,6 +2,7 @@
 - Support for Async Interface
 - Dependency Injection framework for Spring managed beans, Request attributes and ServiceClients
 - Application will now fail to startup in case of any failures while processing lego blocks
+- Optional plugin to generate OAS 3.0 schemas from Poseidon API specifications
 
 ## 5.7.0 (Sep 19, 2018)
 - Loop over DataSource bug fixes and sample
