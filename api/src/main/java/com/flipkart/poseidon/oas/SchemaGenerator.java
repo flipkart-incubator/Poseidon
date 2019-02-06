@@ -55,6 +55,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 
@@ -72,7 +73,7 @@ public class SchemaGenerator {
         }
 
         final List<String> validConfigs = new ArrayList<>();
-        final List<EndpointPOJO> pojos = new ArrayList<>();
+        List<EndpointPOJO> pojos = new ArrayList<>();
 
         final Path dir = Paths.get(args[0]);
         final Path genDir = Paths.get(args[1]);
@@ -92,6 +93,7 @@ public class SchemaGenerator {
             for (String config : validConfigs) {
                 pojos.add(getMapper().readValue(config, EndpointPOJO.class));
             }
+            pojos = pojos.stream().sorted(Comparator.comparing(EndpointPOJO::getName)).collect(Collectors.toList());
         } catch (Exception e) {
             throw new UnsupportedOperationException("Error while reading EndpointPOJO", e);
         }
