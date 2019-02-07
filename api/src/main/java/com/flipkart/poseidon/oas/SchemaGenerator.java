@@ -235,7 +235,7 @@ public class SchemaGenerator {
         schema.type("object");
         final Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && superclass != Object.class) {
-            schema.allOf(Collections.singletonList(createReference(superclass, clazz, referencedClasses)));
+            schema.allOf(Collections.singletonList(createReference(superclass, null, referencedClasses)));
         }
 
         final Field[] declaredFields = clazz.getDeclaredFields();
