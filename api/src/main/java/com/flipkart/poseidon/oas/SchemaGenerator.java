@@ -43,8 +43,10 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.springframework.http.HttpMethod;
 
-import java.io.File;
+import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -66,6 +68,11 @@ public class SchemaGenerator {
     private static final Map<String, JavaType> modelTypes = new HashMap<>();
     private static final Set<String> globalModelSet = new HashSet<>();
     private static final Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
+
+    private static final List<Class<? extends Annotation>> nonNullAnnotations = Arrays.asList(
+            NotNull.class,
+            Nonnull.class
+    );
 
     public static void main(String[] args) throws IOException, NoSuchMethodException {
         if (args.length < 3) {
@@ -233,6 +240,7 @@ public class SchemaGenerator {
 
         ComposedSchema schema = new ComposedSchema();
         schema.type("object");
+        schema.addExtension("x-create-builder", true);
         final Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && superclass != Object.class) {
             schema.allOf(Collections.singletonList(createReference(superclass, null, referencedClasses)));
@@ -241,6 +249,9 @@ public class SchemaGenerator {
         final Field[] declaredFields = clazz.getDeclaredFields();
         for (Field field : declaredFields) {
             schema.addProperties(field.getName(), processField(clazz, field.getType(), field.getGenericType(), referencedClasses));
+            if (isRequiredProperty(field)) {
+                schema.addRequiredItem(field.getName());
+            }
         }
 
         if (globalSetSize < globalModelSet.size()) {
@@ -257,6 +268,16 @@ public class SchemaGenerator {
         }
 
         return schema;
+    }
+
+    private static boolean isRequiredProperty(Field field) {
+        for (Class<? extends Annotation> nonNullAnnotation : nonNullAnnotations) {
+            if (field.isAnnotationPresent(nonNullAnnotation)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static Schema<?> processType(Type type, Path modelsDir) {
