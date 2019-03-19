@@ -17,7 +17,6 @@
 package com.flipkart.poseidon.legoset;
 
 import com.flipkart.poseidon.core.PoseidonRequest;
-import com.flipkart.poseidon.datasources.DataSourceRequest;
 import com.flipkart.poseidon.datasources.RequestAttribute;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.helper.AnnotationHelper;
@@ -180,24 +179,29 @@ public abstract class PoseidonLegoSet implements LegoSet {
     }
 
     public <T extends DataType> DataSource<T> getDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
+        DataSource<? extends DataType> dataSource = getBasicDataSource(id, request);
+        return wrapDataSource((DataSource<T>) dataSource, request);
+    }
+
+    public <T extends DataType> DataSource<T> getBasicDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
         if (!dataSources.containsKey(id)) {
             throw new ElementNotFoundException("Unable to find DataSource for provided id = " + id);
         }
 
         try {
             final Constructor<DataSource<? extends DataType>> dataSourceConstructor = dataSources.get(id);
-            DataSource<? extends DataType> dataSource;
+            DataSource<T> dataSource;
             if (dataSourceConstructor.getParameterCount() == 2) {
-                dataSource = dataSourceConstructor.newInstance(this, request);
+                dataSource = (DataSource<T>) dataSourceConstructor.newInstance(this, request);
             } else {
                 Object[] initParams = new Object[dataSourceConstructor.getParameterCount()];
                 initParams[0] = this;
                 initParams[1] = request;
                 resolveInjectableConstructorDependencies(dataSourceConstructor, initParams, 2, Optional.ofNullable(request));
 
-                dataSource = dataSourceConstructor.newInstance(initParams);
+                dataSource = (DataSource<T>) dataSourceConstructor.newInstance(initParams);
             }
-            return wrapDataSource((DataSource<T>) dataSource, request);
+            return dataSource;
         } catch (Exception e) {
             throw new LegoSetException("Unable to instantiate DataSource for provided id = " + id, e);
         }

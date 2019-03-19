@@ -57,7 +57,7 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     protected <Q extends DataType> Q executeSync(String dsId, Map<String, Object> requestMap) throws Exception {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
         dataSourceRequest.setAttributes(requestMap);
-        DataSource<Q> dataSource = this.legoset.getDataSource(dsId, dataSourceRequest);
+        DataSource<Q> dataSource = this.legoset.getBasicDataSource(dsId, dataSourceRequest);
         return dataSource.call();
     }
 
