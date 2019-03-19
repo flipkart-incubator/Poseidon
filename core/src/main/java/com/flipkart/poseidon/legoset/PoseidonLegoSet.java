@@ -179,7 +179,6 @@ public abstract class PoseidonLegoSet implements LegoSet {
     }
 
     public <T extends DataType> DataSource<T> getDataSource(String id, Request request) throws LegoSetException, ElementNotFoundException {
-        final Constructor<DataSource<? extends DataType>> dataSourceConstructor = dataSources.get(id);
         DataSource<? extends DataType> dataSource = getBasicDataSource(id, request);
         return wrapDataSource((DataSource<T>) dataSource, request);
     }
