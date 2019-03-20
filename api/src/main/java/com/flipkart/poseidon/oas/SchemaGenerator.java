@@ -68,6 +68,7 @@ public class SchemaGenerator {
     private static final Map<String, JavaType> modelTypes = new HashMap<>();
     private static final Set<String> globalModelSet = new HashSet<>();
     private static final Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
+    private static final Set<String> noBuilderClasses = new HashSet<>();
 
     private static final List<Class<? extends Annotation>> nonNullAnnotations = Arrays.asList(
             NotNull.class,
@@ -93,6 +94,10 @@ public class SchemaGenerator {
                     .sorted(Comparator.reverseOrder())
                     .peek(System.out::println)
                     .forEach(deleteIfExists);
+        }
+
+        if (args.length == 4) {
+            noBuilderClasses.addAll(Arrays.asList(args[3].split(",")));
         }
 
         try {
@@ -240,7 +245,11 @@ public class SchemaGenerator {
 
         ComposedSchema schema = new ComposedSchema();
         schema.type("object");
-        schema.addExtension("x-create-builder", true);
+
+        if (!noBuilderClasses.contains(clazz.getName())) {
+            schema.addExtension("x-create-builder", true);
+        }
+
         final Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && superclass != Object.class) {
             schema.allOf(Collections.singletonList(createReference(superclass, null, referencedClasses)));
