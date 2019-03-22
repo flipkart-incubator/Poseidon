@@ -257,6 +257,10 @@ public class SchemaGenerator {
 
         final Field[] declaredFields = clazz.getDeclaredFields();
         for (Field field : declaredFields) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
             schema.addProperties(field.getName(), processField(clazz, field.getType(), field.getGenericType(), referencedClasses));
             if (isRequiredProperty(field)) {
                 schema.addRequiredItem(field.getName());
