@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.oas;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
 import com.flipkart.poseidon.api.APIManager;
 import com.flipkart.poseidon.helper.ClassPathHelper;
@@ -255,6 +257,8 @@ public class SchemaGenerator {
             schema.allOf(Collections.singletonList(createReference(superclass, null, referencedClasses)));
         }
 
+        handleJsonSubTypes(clazz, schema, referencedClasses);
+
         final Field[] declaredFields = clazz.getDeclaredFields();
         for (Field field : declaredFields) {
             if (Modifier.isStatic(field.getModifiers())) {
@@ -281,6 +285,19 @@ public class SchemaGenerator {
         }
 
         return schema;
+    }
+
+    private static void handleJsonSubTypes(Class<?> clazz, ComposedSchema schema, Map<String, Class<?>> referencedClasses) {
+        final JsonTypeInfo typeInfo = clazz.getAnnotation(JsonTypeInfo.class);
+        final JsonSubTypes subTypes = clazz.getAnnotation(JsonSubTypes.class);
+
+        if (typeInfo != null && subTypes != null) {
+            schema.discriminator(new Discriminator().propertyName(typeInfo.property()));
+
+            for (JsonSubTypes.Type type : subTypes.value()) {
+                schema.addOneOfItem(createReference(type.value(), null, referencedClasses));
+            }
+        }
     }
 
     private static boolean isRequiredProperty(Field field) {
