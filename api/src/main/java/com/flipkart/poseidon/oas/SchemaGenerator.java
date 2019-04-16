@@ -254,7 +254,7 @@ public class SchemaGenerator {
 
         final Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && superclass != Object.class) {
-            schema.allOf(Collections.singletonList(createReference(superclass, clazz, referencedClasses)));
+            schema.allOf(Collections.singletonList(createReference(superclass, null, referencedClasses)));
         }
 
         handleJsonSubTypes(clazz, schema, referencedClasses);
@@ -295,7 +295,7 @@ public class SchemaGenerator {
             schema.discriminator(new Discriminator().propertyName(typeInfo.property()));
 
             for (JsonSubTypes.Type type : subTypes.value()) {
-                schema.addOneOfItem(createReference(type.value(), clazz, referencedClasses));
+                schema.addOneOfItem(createReference(type.value(), null, referencedClasses));
             }
         }
     }
