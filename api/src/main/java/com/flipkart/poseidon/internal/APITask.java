@@ -51,7 +51,7 @@ public class APITask extends DefaultMultiTask {
             return getDataSource(values);
         } else {
             try {
-                return new DataSourceCallable(legoSet, executor, name, loopComposer, composer, values);
+                return new ContextInducedCallable(new DataSourceCallable(legoSet, executor, name, loopComposer, composer, values));
             } catch (NoSuchMethodException | ComposerEvaluationException e) {
                 throw new BadCallableException("Unable to execute callable", e);
             }

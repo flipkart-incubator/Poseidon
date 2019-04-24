@@ -185,7 +185,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
         if (url instanceof String) {
             return encodeUrl((String) url);
-        } else if (ClassUtils.isPrimitiveOrWrapper(url.getClass())) {
+        } else if (ClassUtils.isPrimitiveOrWrapper(url.getClass()) || url.getClass().isEnum()) {
             return String.valueOf(url);
         } else {
             return encodeUrl(objectMapper.writeValueAsString(url));
@@ -276,6 +276,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
     }
 
     public JavaType constructJavaType(VariableModel variableModel) {
+        if (variableModel == null) {
+            return null;
+        }
+
         Class<?> clazz;
         try {
             clazz = Class.forName(variableModel.getType());

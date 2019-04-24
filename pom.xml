@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>5.6.0-SRK-SNAPSHOT</version>
+    <version>5.8.0-SNAPSHOT</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>
@@ -121,6 +121,14 @@
                 <version>4.3</version>
             </dependency>
 
+            <!--Poseidon-->
+            <dependency>
+                <groupId>com.flipkart.poseidon</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!--Poseidon-->
+
             <!-- Flipkart -->
             <dependency>
                 <groupId>com.flipkart.phantom</groupId>
@@ -145,7 +153,7 @@
             <dependency>
                 <groupId>com.flipkart.hydra</groupId>
                 <artifactId>hydra-dispatcher</artifactId>
-                <version>1.2</version>
+                <version>1.3</version>
             </dependency>
             <!-- Flipkart -->
 
@@ -197,9 +205,24 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
-                <version>4.2.0.Final</version>
+                <version>5.4.2.Final</version>
             </dependency>
             <!-- Spring -->
 

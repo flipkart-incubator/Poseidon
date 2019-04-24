@@ -1,5 +1,19 @@
-## 5.6.0 (--)
-- Support for multiple error types in ServiceResponseDecoder
+## 5.8.0 (W.I.P.)
+- Support for Async Interface
+- Dependency Injection framework for Spring managed beans, Request attributes and ServiceClients
+- Application will now fail to startup in case of any failures while processing lego blocks
+- Optional plugin to generate OAS 3.0 schemas from Poseidon API specifications
+- Addded a method for executing a datasource synchronously by using a datasource id
+- [Bugfix] Fixed an issue where optional query parameters would fail if only the parameter name was passed
+
+## 5.7.0 (Sep 19, 2018)
+- Loop over DataSource bug fixes and sample
+- LONG support in API parameter
+- Upgrade hibernate-validator to 5.4.2.Final
+- Adding metaInfo map to service clients endpoints to consume dynamic parameters like commandName.
+
+## 5.6.0 (June 28, 2018)
+- Support for multiple error types in ServiceResponseDecoder 
 
 ## 5.5.1 (May 31, 2018)
 - Bugfix in code generation for missing patch version

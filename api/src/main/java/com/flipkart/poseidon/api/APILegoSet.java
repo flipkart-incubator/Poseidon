@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.api;
 
 import com.flipkart.poseidon.constants.RequestConstants;
+import com.flipkart.poseidon.core.PoseidonAsyncRequest;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.RequestContext;
 import com.flipkart.poseidon.ds.trie.KeyWrapper;
@@ -101,6 +102,7 @@ public abstract class APILegoSet extends PoseidonLegoSet {
             RequestContext.set(ENDPOINT_NAME, pojo.getName());
             RequestContext.set(API_ANNOTATIONS, pojo.getProperties());
             RequestContext.set(ENDPOINT_METHOD, pojo.getHttpMethod());
+            RequestContext.set(IS_ASYNC, request instanceof PoseidonAsyncRequest);
             ServiceContext.set(ENDPOINT_NAME, pojo.getName());
 
             String name = pojo.getName();

@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -79,7 +80,7 @@ public class ParamValidationFilter implements Filter {
 
     private Map<String, Object> validateParams(PoseidonRequest poseidonRequest, ParamPOJO[] params, boolean failOnMissingValue) throws BadRequestException {
         Map<String, Object> parsedParams = new HashMap<>(); //Initial params that will be passed to hydra to START processing
-        if(params != null) {
+        if (params != null) {
             final List<ParamPOJO> pathParams = new ArrayList<>();
             for (ParamPOJO param : params) {
                 String name = param.getName();
@@ -92,7 +93,7 @@ public class ParamValidationFilter implements Filter {
                 boolean isHeader = param.isHeader();
                 boolean isPathParam = param.isPathparam();
                 Object value = null;
-                if(isHeader) {
+                if (isHeader) {
                     String attribute = poseidonRequest.getHeader(name);
                     if (failOnMissingValue && attribute == null) {
                         throw new BadRequestException("Missing header : " + name);
@@ -103,9 +104,10 @@ public class ParamValidationFilter implements Filter {
                     } else {
                         value = parseParamValues(name, new String[] { attribute }, datatype, multivalue, param.getJavaType());
                     }
-                } else if(isBodyRequest) {
-                    String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
-                    if(!StringUtils.isEmpty(bodyString)) {
+                } else if (isBodyRequest) {
+                    final String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
+                    final byte[] bodyBytes = poseidonRequest.getAttribute(RequestConstants.BODY_BYTES);
+                    if (!StringUtils.isEmpty(bodyString)) {
                         try {
                             if (param.getJavaType() == null && param.getDatatype() == null) {
                                 value = bodyString;
@@ -115,8 +117,18 @@ public class ParamValidationFilter implements Filter {
                         } catch (IOException e) {
                             logger.error("Error in reading body : {}", e.getMessage());
                         }
+                    } else if (bodyBytes != null && bodyBytes.length > 0) {
+                        try {
+                            if (param.getJavaType() == null && param.getDatatype() == null) {
+                                value = configuration.getObjectMapper().writeValueAsString(bodyBytes);
+                            } else {
+                                value = configuration.getObjectMapper().readValue(bodyBytes, param.getJavaType());
+                            }
+                        } catch (IOException e) {
+                            logger.error("Error in reading body : {}", e.getMessage());
+                        }
                     }
-                    if(failOnMissingValue && value == null) {
+                    if (failOnMissingValue && value == null) {
                         throw new BadRequestException("Request Body is either missing or invalid for : " + name);
                     }
                 } else if (isPathParam) {
@@ -244,6 +256,8 @@ public class ParamValidationFilter implements Filter {
                 return getDoubleValues(values);
             case INTEGER:
                 return getIntegerValues(values);
+            case LONG:
+                return getLongValues(values);
             case BOOLEAN:
                 return getBooleanValues(values);
             case ENUM:
@@ -256,6 +270,10 @@ public class ParamValidationFilter implements Filter {
     private List<Double> getDoubleValues(String[] values) {
         List<Double> doubleValues = new ArrayList<>();
         for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
+
             doubleValues.add(Double.parseDouble(value));
         }
 
@@ -265,15 +283,27 @@ public class ParamValidationFilter implements Filter {
     private List<Integer> getIntegerValues(String[] values) {
         List<Integer> integerValues = new ArrayList<>();
         for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
+
             integerValues.add(Integer.parseInt(value));
         }
 
         return integerValues;
     }
 
+    private List<Long> getLongValues(String[] values) {
+        return Arrays.stream(values).filter(StringUtils::isNotEmpty).map(Long::parseLong).collect(Collectors.toList());
+    }
+
     private List<Boolean> getBooleanValues(String[] values) {
         List<Boolean> booleanValues = new ArrayList<>();
         for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
+
             booleanValues.add(Boolean.parseBoolean(value));
         }
 
@@ -284,9 +314,13 @@ public class ParamValidationFilter implements Filter {
         return Arrays.asList(values);
     }
 
-    private List getEnumValues(String[] values, JavaType javaType) throws BadRequestException {
-        List enumValues = new ArrayList<>();
+    private List<?> getEnumValues(String[] values, JavaType javaType) throws BadRequestException {
+        List<?> enumValues = new ArrayList<>();
         for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
+
             try {
                 enumValues.add(configuration.getObjectMapper().convertValue(value, javaType));
             } catch (IllegalArgumentException e) {

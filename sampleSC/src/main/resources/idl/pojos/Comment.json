@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Comment for a post. Ex: http://jsonplaceholder.typicode.com/comments/1",
+  "properties": {
+    "postId": {
+      "type": "integer",
+      "description": "Post id"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Comment id"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of commenting user"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email of commenting user"
+    },
+    "body": {
+      "type": "string",
+      "description": "Comment by user"
+    }
+  }
+}

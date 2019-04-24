@@ -23,12 +23,13 @@ import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
+import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.ExecutorService;
 
 public interface Application {
 
-    void init(ExecutorService datasourceTPE, ExecutorService filterTPE);
+    void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context);
 
     void handleRequest(PoseidonRequest req, PoseidonResponse resp) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException;
 

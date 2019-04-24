@@ -22,6 +22,7 @@ import com.flipkart.hydra.task.entities.WrapperCallable;
 import com.flipkart.hydra.task.exception.BadCallableException;
 import com.flipkart.poseidon.datasources.DataSourceRequest;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
+import com.flipkart.poseidon.model.annotations.Trace;
 import com.google.common.util.concurrent.ListenableFuture;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
@@ -34,7 +35,8 @@ import java.util.concurrent.ExecutorService;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
-public class DataSourceCallable extends WrapperCallable {
+@Trace(false)
+public class DataSourceCallable extends WrapperCallable implements CallableBlock<Object> {
 
     private final PoseidonLegoSet legoSet;
     private final String dataSourceName;

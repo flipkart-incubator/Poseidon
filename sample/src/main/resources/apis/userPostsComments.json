@@ -1,0 +1,41 @@
+{
+  "url": "/v1/userPostsComments",
+  "httpMethod": "GET",
+  "timeout": 10000,
+  "name": "userPostsComments",
+  "params": {
+    "required": [
+      {
+        "name": "userId",
+        "datatype": "string"
+      }
+    ]
+  },
+  "tasks": {
+    "userDT": {
+      "name": "UserDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    },
+    "postsDT": {
+      "name": "PostsDS_1.0.0",
+      "context": {
+        "userId": "{{$userId}}"
+      }
+    },
+    "postsWithCommentsDT": {
+      "name": "CommentsDS_1.0.0",
+      "loopOver": "{{$postsDT.posts}}",
+      "context": {
+        "index": "{{$__key}}",
+        "post": "{{$__value}}"
+      }
+    }
+  },
+  "filters": ["BotFilter_1.0.0"],
+  "response": {
+    "user": "{{$userDT}}",
+    "postsWithComments": "{{$postsWithCommentsDT}}"
+  }
+}

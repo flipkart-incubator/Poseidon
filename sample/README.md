@@ -8,8 +8,9 @@ Poseidon Sample helps as a reference to build new applications using Poseidon.
 1. Build and install sample using maven
 ```mvn clean install```
 2. Start sample application using ```sudo ./run.sh```
-3. Access the [API](http://localhost:21000/v1/userPosts?userId=1) that internally aggregates data from a dummy http upstream service.![API Response](docs/APIResponse.png)
-4. Access another simple [API](http://localhost:21000/v1/arithmetic/add?num1=10&num2=5) that just provides arithmetic operations.![API Response](docs/SimpleAPIResponse.png)
+3. Access a sample [API](http://localhost:21000/v1/userPosts?userId=1) that internally aggregates data from a dummy http upstream service by fetching user details and posts of that user.![API Response](docs/APIResponse.png)
+4. Access a complex [API](http://localhost:21000/v1/userPostsComments?userId=1) that fetches user details, posts of that user and then comments for each of those posts .![API Response](docs/PostsWithCommentsAPIResponse.png) 
+5. Access another simple [API](http://localhost:21000/v1/arithmetic/add?num1=10&num2=5) that just provides arithmetic operations.![API Response](docs/SimpleAPIResponse.png)
 
 ## To run from IDE
 
@@ -47,11 +48,11 @@ It demonstrates the following capabilities of Poseidon
 ## How it does
 
 Start reading the code from
- 1. [API file](src/main/resources/apis/userPosts.json) definition and keep drilling down to 
+ 1. [API file](src/main/resources/apis/userPosts.json) definition, corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/api/src/main/java/com/flipkart/poseidon/pojos/EndpointPOJO.java) and keep drilling down to 
  2. [DataSources](src/main/java/com/flipkart/poseidon/sample/datasources)
  3. [DataTypes](src/main/java/com/flipkart/poseidon/sample/datatypes/)
  4. [Filters](src/main/java/com/flipkart/poseidon/sample/api/filters/BotFilter.java)
- 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client).
+ 5. [ServiceClients](https://github.com/flipkart-incubator/Poseidon/tree/master/sampleSC#poseidon-sample-service-client), sample [client](https://github.com/flipkart-incubator/Poseidon/blob/master/sampleSC/src/main/resources/idl/service/SampleService.json), corresponding framework [POJO](https://github.com/flipkart-incubator/Poseidon/blob/master/service-clients-gen/src/main/java/com/flipkart/poseidon/serviceclients/idl/pojo/ServiceIDL.java)
 
 ### Bootstrapping
 

@@ -27,6 +27,8 @@ public class EndPoint {
     private String httpMethod;
     private String uri;
     private String commandName;
+    private boolean includeMetaInfo;
+    private EndpointMetaInfo metaInfo;
     private Map<String, String> headers;
     private String[] parameters;
     private boolean requestCachingEnabled;
@@ -138,6 +140,22 @@ public class EndPoint {
         this.responseMergerClass = responseMergerClass;
     }
 
+    public boolean isIncludeMetaInfo() {
+        return includeMetaInfo;
+    }
+
+    public void setIncludeMetaInfo(boolean includeMetaInfo) {
+        this.includeMetaInfo = includeMetaInfo;
+    }
+
+    public EndpointMetaInfo getMetaInfo() {
+        return metaInfo;
+    }
+
+    public void setMetaInfo(EndpointMetaInfo metaInfo) {
+        this.metaInfo = metaInfo;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || !(object instanceof EndPoint)) {
@@ -155,6 +173,12 @@ public class EndPoint {
             return false;
         }
         if (!Objects.equals(commandName, endPoint.getCommandName())) {
+            return false;
+        }
+        if (!Objects.equals(includeMetaInfo, endPoint.isIncludeMetaInfo())) {
+            return false;
+        }
+        if (!Objects.equals(metaInfo, endPoint.getMetaInfo())) {
             return false;
         }
         if (!Objects.equals(headers, endPoint.getHeaders())) {

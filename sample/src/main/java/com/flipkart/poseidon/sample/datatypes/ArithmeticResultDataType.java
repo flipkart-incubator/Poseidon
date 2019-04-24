@@ -16,17 +16,11 @@
 
 package com.flipkart.poseidon.sample.datatypes;
 
-import com.flipkart.poseidon.model.annotations.Description;
-import com.flipkart.poseidon.model.annotations.Name;
-import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
 /**
  * Created by mohan.pandian on 16/01/17.
  */
-@Name("ArithmeticResultDataType")
-@Version(major = 1, minor = 0, patch = 0)
-@Description("Arithmetic Result")
 public class ArithmeticResultDataType implements DataType {
     private Float result;
 

@@ -32,6 +32,19 @@
         </property>
     </bean>
 
+    <bean class="com.flipkart.poseidon.handlers.http.impl.SinglePoolHttpTaskHandler">
+        <property name="poolName" value="commentsService"/>
+        <property name="host" value="jsonplaceholder.typicode.com"/>
+        <property name="port" value="80"/>
+        <property name="connectionTimeout" value="5000"/>
+        <property name="operationTimeout" value="5000"/>
+        <property name="timeToLiveInSecs" value="60"/>
+        <property name="concurrentPoolSizeParams">
+            <map>
+                <entry key="postsServiceHttpRequest" value="10"/>
+            </map>
+        </property>
+    </bean>
     <!--
     Comes from phantom's sample-task-proxy which just performs
     arithmetic operations and returns the result

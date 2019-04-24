@@ -16,14 +16,8 @@
 
 package com.flipkart.poseidon.sample.datatypes;
 
-import com.flipkart.poseidon.model.annotations.Description;
-import com.flipkart.poseidon.model.annotations.Name;
-import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataType;
 
-@Name("PostDataType")
-@Version(major = 1, minor = 0, patch = 0)
-@Description("Post created by an User")
 public class PostDataType implements DataType {
     private int userId;
     private int postId;
