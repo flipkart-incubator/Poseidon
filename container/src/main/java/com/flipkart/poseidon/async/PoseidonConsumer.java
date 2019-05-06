@@ -19,13 +19,19 @@ package com.flipkart.poseidon.async;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.HeaderConfiguration;
+import com.flipkart.poseidon.constants.RequestConstants;
 import com.flipkart.poseidon.core.PoseidonAsyncRequest;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
 import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.helpers.MetricsHelper;
+import com.flipkart.poseidon.metrics.Metrics;
 import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
 import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.google.common.collect.ImmutableMap;
+import com.netflix.hystrix.HystrixRequestLog;
+import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -65,17 +71,21 @@ public abstract class PoseidonConsumer {
             request.setAttribute(BODY_BYTES, consumerRequest.getPayload());
         }
 
+        HystrixRequestContext hystrixRequestContext = HystrixRequestContext.initializeContext();
         initAllContext(request);
 
+        PoseidonResponse response = null;
         try {
-            PoseidonResponse response = new PoseidonResponse();
+            response = new PoseidonResponse();
             this.application.handleRequest(request, response);
             return new AsyncConsumerResult(AsyncResultState.SUCCESS);
         } catch (Throwable throwable) {
             logger.error("Unexpected exception while consuming async event", throwable);
             return new AsyncConsumerResult(AsyncResultState.FAILURE);
         } finally {
-            shutdownAllContext();
+            ingestResponseBasedMetrics(response);
+            logFailedHystrixCommands(consumerRequest);
+            shutdownAllContext(hystrixRequestContext);
         }
     }
 
@@ -86,7 +96,7 @@ public abstract class PoseidonConsumer {
     }
 
     private void setContext(PoseidonRequest request) {
-        RequestContext.set(METHOD, request.getAttribute(METHOD));
+        RequestContext.set(METHOD, request.getAttribute(METHOD).toString());
         RequestContext.set(SOURCE_ADDRESS, request.getUrl());
 
         if (configuration.getHeadersConfiguration() != null && configuration.getHeadersConfiguration().getGlobalHeaders() != null) {
@@ -111,9 +121,32 @@ public abstract class PoseidonConsumer {
         }
     }
 
-    private void shutdownAllContext() {
+    private void shutdownAllContext(HystrixRequestContext hystrixRequestContext) {
         RequestContext.shutDown();
         ServiceContext.shutDown();
+        hystrixRequestContext.shutdown();
         MDC.clear();
+    }
+
+    private void ingestResponseBasedMetrics(PoseidonResponse response) {
+        if (!StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
+            String status = (response.getStatusCode() / 100) + "XX";
+            Metrics.getRegistry()
+                    .counter(MetricsHelper.getStatusCodeMetricsName(RequestContext.get(ENDPOINT_NAME), RequestContext.get(RequestConstants.METHOD), status))
+                    .inc();
+        }
+    }
+
+    private void logFailedHystrixCommands(AsyncConsumerRequest request) {
+        String url = request.getUrl();
+        Map<String, String> globalHeaders = RequestContext.get(HEADERS);
+
+        HystrixRequestLog.getCurrentRequest().getAllExecutedCommands().stream().filter(
+                command -> command.isResponseTimedOut() || command.isFailedExecution() || command.isResponseShortCircuited() || command.isResponseRejected()
+        ).forEach(
+                command -> logger.error("URL: {}. Global headers: {}. Command: {}. Events: {}. Exception: {}",
+                        url, globalHeaders, command.getCommandKey().name(), command.getExecutionEvents(),
+                        command.getFailedExecutionException() == null ? "" : command.getFailedExecutionException().getMessage())
+        );
     }
 }
