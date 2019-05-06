@@ -18,15 +18,25 @@ package com.flipkart.poseidon.async;
 
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
+import com.flipkart.poseidon.api.HeaderConfiguration;
 import com.flipkart.poseidon.core.PoseidonAsyncRequest;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.core.PoseidonResponse;
+import com.flipkart.poseidon.core.RequestContext;
+import com.flipkart.poseidon.serviceclients.ServiceClientConstants;
+import com.flipkart.poseidon.serviceclients.ServiceContext;
+import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
-import static com.flipkart.poseidon.constants.RequestConstants.BODY_BYTES;
-import static com.flipkart.poseidon.constants.RequestConstants.METHOD;
+import static com.flipkart.poseidon.constants.RequestConstants.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -43,9 +53,19 @@ public abstract class PoseidonConsumer {
     }
 
     public final AsyncConsumerResult consume(AsyncConsumerRequest consumerRequest) {
-        PoseidonRequest request = new PoseidonAsyncRequest(consumerRequest.getUrl(), Collections.emptyMap(), Collections.emptyMap(), consumerRequest.getParameters());
+        Map<String, String> caseInsensitiveHeaders = Optional.ofNullable(consumerRequest.getHeaders()).orElse(Collections.emptyMap()).entrySet().stream().collect(Collectors.toMap(
+                e -> e.getKey().toLowerCase(),
+                Map.Entry::getValue
+        ));
+
+        PoseidonRequest request = new PoseidonAsyncRequest(consumerRequest.getUrl(), Collections.emptyMap(), caseInsensitiveHeaders, consumerRequest.getParameters());
         request.setAttribute(METHOD, consumerRequest.getHttpMethod());
-        request.setAttribute(BODY_BYTES, consumerRequest.getPayload());
+
+        if (consumerRequest.getPayload() != null) {
+            request.setAttribute(BODY_BYTES, consumerRequest.getPayload());
+        }
+
+        initAllContext(request);
 
         try {
             PoseidonResponse response = new PoseidonResponse();
@@ -54,6 +74,46 @@ public abstract class PoseidonConsumer {
         } catch (Throwable throwable) {
             logger.error("Unexpected exception while consuming async event", throwable);
             return new AsyncConsumerResult(AsyncResultState.FAILURE);
+        } finally {
+            shutdownAllContext();
         }
+    }
+
+    private void initAllContext(PoseidonRequest request) {
+        RequestContext.initialize();
+        ServiceContext.initialize(configuration.getResponseHeadersToCollect());
+        setContext(request);
+    }
+
+    private void setContext(PoseidonRequest request) {
+        RequestContext.set(METHOD, request.getAttribute(METHOD));
+        RequestContext.set(SOURCE_ADDRESS, request.getUrl());
+
+        if (configuration.getHeadersConfiguration() != null && configuration.getHeadersConfiguration().getGlobalHeaders() != null) {
+            Map<String, String> headers = new HashMap<>();
+            for (HeaderConfiguration headerConfiguration : configuration.getHeadersConfiguration().getGlobalHeaders()) {
+                String value = request.getHeader(headerConfiguration.getName());
+                if (value == null) {
+                    value = headerConfiguration.getDefaultValue();
+                }
+                if (value != null) {
+                    headers.put(headerConfiguration.getName(), value);
+                }
+            }
+
+            ImmutableMap<String, String> immutableHeaders = ImmutableMap.copyOf(headers);
+            ServiceContext.set(ServiceClientConstants.HEADERS, immutableHeaders);
+            ServiceContext.set(ServiceClientConstants.COMMANDS, new ConcurrentLinkedQueue<String>());
+            ServiceContext.set(ServiceClientConstants.COLLECT_COMMANDS, configuration.collectServiceClientCommandNames());
+            ServiceContext.set(ServiceClientConstants.THROW_ORIGINAL, configuration.throwOriginalExceptionsForNonUpstreamFailures());
+            RequestContext.set(HEADERS, immutableHeaders);
+            MDC.setContextMap(immutableHeaders);
+        }
+    }
+
+    private void shutdownAllContext() {
+        RequestContext.shutDown();
+        ServiceContext.shutDown();
+        MDC.clear();
     }
 }
