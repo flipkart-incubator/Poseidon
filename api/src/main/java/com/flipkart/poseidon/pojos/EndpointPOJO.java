@@ -34,6 +34,7 @@ public class EndpointPOJO {
      * Metrics are named like "poseidon.api.<name>.<httpMethod>"
      */
     private String name;
+    private String version;
     private boolean deprecated;
     private ParamsPOJO params;
     private Map<String, TaskPOJO> tasks;
@@ -90,5 +91,9 @@ public class EndpointPOJO {
 
     public Map<String, Object> getProperties() {
         return properties;
+    }
+
+    public String getVersion() {
+        return version;
     }
 }
