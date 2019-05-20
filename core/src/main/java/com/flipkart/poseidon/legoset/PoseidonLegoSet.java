@@ -121,16 +121,25 @@ public abstract class PoseidonLegoSet implements LegoSet {
         dataSources.put(id.get(), constructor);
     }
 
-    private void processServiceClient(Class<ServiceClient> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MissingInformationException {
-        Constructor<ServiceClient> constructor = klass.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        ServiceClient serviceClient = constructor.newInstance();
+    private void processServiceClient(Class<ServiceClient> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MissingInformationException, ElementNotFoundException {
+        final List<Constructor<ServiceClient>> injectableConstructors = findInjectableConstructors(klass);
+        final Constructor<ServiceClient> constructor;
+        final ServiceClient serviceClient;
+        if (injectableConstructors.isEmpty()) {
+            constructor = klass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            serviceClient = constructor.newInstance();
+        } else {
+            serviceClient = context.getAutowireCapableBeanFactory().createBean(klass);
+        }
+
         serviceClients.put(getBlockId(klass).orElseThrow(MissingInformationException::new), serviceClient);
         for (Class<?> interfaceClass : klass.getInterfaces()) {
             if (ServiceClient.class.isAssignableFrom(interfaceClass)) {
                 serviceClientsByName.put(interfaceClass.getName(), serviceClient);
             }
         }
+
         serviceClientsByName.put(klass.getName(), serviceClient);
     }
 
