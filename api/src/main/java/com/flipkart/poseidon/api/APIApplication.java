@@ -57,7 +57,7 @@ public class APIApplication implements Application {
         this.init(datasourceTPE, filterTPE);
     }
 
-    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) throws Exception{
+    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) throws Exception {
 
     }
 
