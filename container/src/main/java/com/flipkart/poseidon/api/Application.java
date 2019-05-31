@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 
 public interface Application {
 
-    void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context) throws Exception;
+    void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context);
 
     void handleRequest(PoseidonRequest req, PoseidonResponse resp) throws ElementNotFoundException, BadRequestException, ProcessingException, InternalErrorException;
 
