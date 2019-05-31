@@ -407,49 +407,28 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>fk-art-snapshot</id>
-            <name>libs-snapshot</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
-        </snapshotRepository>
-        <repository>
-            <id>fk-art-release</id>
-            <name>libs-rel</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
-        </repository>
-    </distributionManagement>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>fk-art-snapshot</id>
-            <name>Flipkart-Artifactory</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>fk-art-release</id>
-            <name>Flipkart-Artifactory</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <repositories>
         <repository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <id>fk-art-snapshot</id>
-            <name>Flipkart-Artifactory</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
+            <id>clojars</id>
+            <name>Clojars Maven Repository</name>
+            <url>http://clojars.org/repo/</url>
         </repository>
         <repository>
+            <id>maven-central</id>
+            <name>Maven Central Repo</name>
+            <url>http://repo1.maven.org/maven2/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>fk-art-release</id>
-            <name>Flipkart-Artifactory</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
     </repositories>
-    
+
+    <distributionManagement>
+        <repository>
+            <id>clojars</id>
+            <name>Clojars repository</name>
+            <url>https://clojars.org/repo</url>
+        </repository>
+    </distributionManagement>
+
 </project>
