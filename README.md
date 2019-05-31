@@ -17,6 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 5.8.0             | May 31 2019      |    Support for byte[] in ServiceResponseDecoder
 | Version 5.6.0             | Jun 28 2018      |    Multiple error types in ServiceResponseDecoder
 | Version 5.5.0             | May 23 2018      |    Added follow redirect option in SinglePoolHttpTaskHandler
 | Version 5.4.1             | Nov 05 2017      |    Bugfix to stop stacktrace leak
