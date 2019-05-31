@@ -1,4 +1,5 @@
-## 5.8.0 (W.I.P.)
+## 5.8.0 
+- Support for byte[] in service client response.
 - Support for Async Interface
 - Dependency Injection framework for Spring managed beans, Request attributes and ServiceClients
 - Application will now fail to startup in case of any failures while processing lego blocks
