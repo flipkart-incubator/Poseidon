@@ -48,7 +48,7 @@ public class APIApplication implements Application {
     }
 
     @Override
-    public final void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context) {
+    public final void init(ExecutorService datasourceTPE, ExecutorService filterTPE, ApplicationContext context) throws Exception {
         lego = new Lego(legoSet, datasourceTPE, filterTPE);
         legoSet.setDataSourceExecutor(datasourceTPE);
         legoSet.setContext(context);
@@ -57,7 +57,7 @@ public class APIApplication implements Application {
         this.init(datasourceTPE, filterTPE);
     }
 
-    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) {
+    public void init(ExecutorService datasourceTPE, ExecutorService filterTPE) throws Exception{
 
     }
 
