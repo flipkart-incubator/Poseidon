@@ -77,6 +77,21 @@ public class SchemaGenerator {
             Nonnull.class
     );
 
+    private static final Map<String, OpenAPI> versionedOpenAPIs = new HashMap<>();
+    private static String serviceName = null;
+
+    private static OpenAPI resolveVersionedAPI(String version) {
+        final String resolvedVersion = Optional.ofNullable(version).orElse("1.0");
+        return versionedOpenAPIs.computeIfAbsent(resolvedVersion, v -> {
+            OpenAPI openAPI = new OpenAPI();
+            Info info = new Info();
+            info.title(Optional.ofNullable(serviceName).orElse("Service") + "Resource");
+            info.version(v);
+            openAPI.info(info);
+            return openAPI;
+        });
+    }
+
     public static void main(String[] args) throws IOException, NoSuchMethodException {
         if (args.length < 3) {
             throw new UnsupportedOperationException("Correct Usage: <api-dir> <schema-target> <datasource-packages-csv>");
@@ -87,8 +102,6 @@ public class SchemaGenerator {
 
         final Path dir = Paths.get(args[0]);
         final Path genDir = Paths.get(args[1]);
-        final Path apiDir = genDir.resolve("apis/v1");
-        final Path apiFile = apiDir.resolve("ServiceResource.json");
         final Path modelsDir = genDir.resolve("models");
 
         if (Files.exists(modelsDir)) {
@@ -98,8 +111,12 @@ public class SchemaGenerator {
                     .forEach(deleteIfExists);
         }
 
-        if (args.length == 4) {
+        if (args.length >= 4) {
             noBuilderClasses.addAll(Arrays.asList(args[3].split(",")));
+        }
+
+        if (args.length == 5) {
+            serviceName = args[4];
         }
 
         try {
@@ -117,13 +134,7 @@ public class SchemaGenerator {
 
         fetchDataSources(datasourcePackages);
 
-        OpenAPI openAPI = new OpenAPI();
-        Info info = new Info();
-        info.title("ServiceResource");
-        info.version("1.0");
-        openAPI.info(info);
-
-        final Map<String, Map<PathItem.HttpMethod, Operation>> paths = new LinkedHashMap<>();
+        final Map<String, Map<String, Map<PathItem.HttpMethod, Operation>>> paths = new LinkedHashMap<>();
         for (EndpointPOJO endpointPOJO : pojos) {
             final Operation operation = new Operation();
             final ParamsPOJO paramsPOJO = endpointPOJO.getParams();
@@ -180,19 +191,28 @@ public class SchemaGenerator {
 
             operation.responses(responses);
             operation.operationId(endpointPOJO.getName());
-            paths.computeIfAbsent(endpointPOJO.getUrl(), s -> new LinkedHashMap<>()).put(getHttpMethod(endpointPOJO.getHttpMethod()), operation);
+            paths.computeIfAbsent(endpointPOJO.getVersion(), v -> new LinkedHashMap<>())
+                    .computeIfAbsent(endpointPOJO.getUrl(), s -> new LinkedHashMap<>()).put(getHttpMethod(endpointPOJO.getHttpMethod()), operation);
         }
 
-        paths.forEach((k, v) -> {
-            final PathItem pathItem = new PathItem();
-            pathItem.addExtension("x-old-path", k);
-            v.forEach(pathItem::operation);
-            openAPI.path(k, pathItem);
+        paths.forEach((version, pathsMap) -> {
+            final OpenAPI openAPI = resolveVersionedAPI(version);
+            pathsMap.forEach((k, v) -> {
+                final PathItem pathItem = new PathItem();
+                pathItem.addExtension("x-old-path", k);
+                v.forEach(pathItem::operation);
+                openAPI.path(k, pathItem);
+            });
         });
 
-        final byte[] apiBytes = Json.mapper().writerWithDefaultPrettyPrinter().writeValueAsBytes(openAPI);
-        Files.createDirectories(apiFile.getParent());
-        Files.write(apiFile, apiBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        for (OpenAPI openAPI : versionedOpenAPIs.values()) {
+            final byte[] apiBytes = Json.mapper().writerWithDefaultPrettyPrinter().writeValueAsBytes(openAPI);
+
+            final Path apiDir = genDir.resolve("apis/v" + openAPI.getInfo().getVersion().charAt(0));
+            final Path apiFile = apiDir.resolve(Optional.ofNullable(serviceName).orElse("Service") + "Resource.json");
+            Files.createDirectories(apiFile.getParent());
+            Files.write(apiFile, apiBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
 
         modelTypes.forEach((k, v) -> {
             try {

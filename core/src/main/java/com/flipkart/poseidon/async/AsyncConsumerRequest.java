@@ -30,18 +30,21 @@ public class AsyncConsumerRequest {
     private final HttpMethod httpMethod;
     private final byte[] payload;
     private final Map<String, String[]> parameters;
+    private final Map<String, String> headers;
 
     @ConstructorProperties({
             "url",
             "httpMethod",
             "payload",
-            "parameters"
+            "parameters",
+            "headers"
     })
-    public AsyncConsumerRequest(String url, HttpMethod httpMethod, byte[] payload, Map<String, String[]> parameters) {
+    public AsyncConsumerRequest(String url, HttpMethod httpMethod, byte[] payload, Map<String, String[]> parameters, Map<String, String> headers) {
         this.url = url;
         this.httpMethod = httpMethod;
         this.payload = payload;
         this.parameters = parameters;
+        this.headers = headers;
     }
 
     public String getUrl() {
@@ -58,5 +61,9 @@ public class AsyncConsumerRequest {
 
     public Map<String, String[]> getParameters() {
         return parameters;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 }
