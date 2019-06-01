@@ -19,25 +19,27 @@ package com.flipkart.poseidon.validator;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
+import flipkart.lego.api.entities.DataSource;
 
 import java.util.*;
 
-import static com.flipkart.poseidon.validator.ValidatorUtils.braced;
-import static com.flipkart.poseidon.validator.ValidatorUtils.isNullOrEmpty;
-import static com.flipkart.poseidon.validator.ValidatorUtils.stripBraces;
+import static com.flipkart.poseidon.validator.ValidatorUtils.*;
 
 /**
  * Created by shrey.garg on 06/07/16.
  */
 public class TaskValidator {
-    public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params) {
+    public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();
             if (isNullOrEmpty(task.getName())) {
                 errors.add("No datasource defined for Task: " + braced(taskName));
+            } else if (datasources.get(task.getName()) == null && validateDataSources) {
+                errors.add("Datasource used does not exist for Task: " + braced(taskName));
             }
+
             Map<String, Object> context = Optional.ofNullable(task.getContext()).orElse(new HashMap<>());
             for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
                 Object contextEntryValue = contextEntry.getValue();
