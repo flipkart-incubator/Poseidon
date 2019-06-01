@@ -17,6 +17,7 @@
 package com.flipkart.poseidon.validator;
 
 import com.flipkart.poseidon.pojos.EndpointPOJO;
+import flipkart.lego.api.entities.DataSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ import java.util.Map;
  * Created by shrey.garg on 06/07/16.
  */
 public class EndpointValidator {
-    public static List<String> validate(EndpointPOJO pojo) {
+    public static List<String> validate(EndpointPOJO pojo, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> pojoErrors = new ArrayList<>();
 
         try {
@@ -38,7 +39,7 @@ public class EndpointValidator {
             }
 
             if (pojo.getTasks() != null) {
-                pojoErrors.addAll(TaskValidator.validate(pojo.getTasks(), pojo.getParams()));
+                pojoErrors.addAll(TaskValidator.validate(pojo.getTasks(), pojo.getParams(), datasources, validateDataSources));
             }
         } catch (Exception e) {
             e.printStackTrace();
