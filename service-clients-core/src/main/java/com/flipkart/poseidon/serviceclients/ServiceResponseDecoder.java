@@ -110,6 +110,9 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
                     if (String.class.isAssignableFrom(javaType.getRawClass())) {
                         return new ServiceResponse<T>((T) IOUtils.toString(httpResponse.getEntity().getContent()), headers);
                     }
+                    if (byte[].class.isAssignableFrom(javaType.getRawClass())) {
+                        return new ServiceResponse<T>((T) IOUtils.toByteArray(httpResponse.getEntity().getContent()), headers);
+                    }
                     return new ServiceResponse<T>(objectMapper.<T>readValue(httpResponse.getEntity().getContent(), javaType), headers);
                 } catch (JsonMappingException e) {
                     if (e.getMessage().contains("No content to map due to end-of-input")) {
