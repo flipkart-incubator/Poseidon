@@ -216,6 +216,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
         }
     }
 
+    public boolean doesDataSourceExist(String dsId) {
+        return dataSources.get(dsId) != null;
+    }
+
     public <T extends DataType> DataSource<T> wrapDataSource(DataSource<T> dataSource, Request request) {
         return new ContextInducedDataSource<>(dataSource, request);
     }

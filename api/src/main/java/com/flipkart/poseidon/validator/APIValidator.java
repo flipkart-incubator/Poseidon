@@ -18,10 +18,15 @@ package com.flipkart.poseidon.validator;
 
 import com.flipkart.poseidon.api.APIManager;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
+import com.flipkart.poseidon.helper.ClassPathHelper;
+import com.flipkart.poseidon.legoset.PoseidonLegoSet;
 import com.flipkart.poseidon.pojos.EndpointPOJO;
+import com.google.common.reflect.ClassPath;
+import flipkart.lego.api.entities.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -39,8 +44,12 @@ public class APIValidator {
     public static void main(String[] args) {
         Path dir = Paths.get(args[0]);
         CustomValidator customValidator = null;
+
+        boolean validateDataSources = false;
+        List<String> packagesToScan = new ArrayList<>();
+
         if (args.length > 1) {
-            if (!StringUtils.isNullOrEmpty(args[1])) {
+            if (!StringUtils.isNullOrEmpty(args[1].trim())) {
                 try {
                     final Class<?> customValidatorClass = Class.forName(args[1]);
                     if (!CustomValidator.class.isAssignableFrom(customValidatorClass)) {
@@ -57,6 +66,12 @@ public class APIValidator {
                     System.exit(-1);
                 }
             }
+
+            if (args.length > 2) {
+                validateDataSources = true;
+                final String[] datasourcePackages = args[2].split(",");
+                packagesToScan = Arrays.asList(datasourcePackages);
+            }
         }
 
         List<String> validConfigs = new ArrayList<>();
@@ -66,9 +81,22 @@ public class APIValidator {
                 pojos.add(getMapper().readValue(config, EndpointPOJO.class));
             }
 
+            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), packagesToScan);
+            Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
+            for (ClassPath.ClassInfo classInfo : classInfos) {
+                Class clazz = Class.forName(classInfo.getName());
+                if (Modifier.isAbstract(clazz.getModifiers())) {
+                    continue;
+                }
+
+                if (DataSource.class.isAssignableFrom(clazz)) {
+                    datasources.put(PoseidonLegoSet.getBlockId(clazz).get(), clazz);
+                }
+            }
+
             Map<String, List<String>> errors = new HashMap<>();
             for (EndpointPOJO pojo : pojos) {
-                List<String> pojoErrors = EndpointValidator.validate(pojo);
+                List<String> pojoErrors = EndpointValidator.validate(pojo, datasources, validateDataSources);
 
                 if (customValidator != null) {
                     pojoErrors.addAll(customValidator.validate(pojo));
@@ -85,6 +113,7 @@ public class APIValidator {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(-1);
         }
     }
 }

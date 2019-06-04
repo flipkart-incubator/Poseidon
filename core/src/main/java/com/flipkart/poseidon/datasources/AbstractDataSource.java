@@ -35,32 +35,32 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         this.request = request;
     }
 
-    protected <Q extends DataType> Future<Q> execute(String dsId, Map<String, Object> requestMap) throws Exception {
+    public <Q extends DataType> Future<Q> execute(String dsId, Map<String, Object> requestMap) throws Exception {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
         dataSourceRequest.setAttributes(requestMap);
         return execute(dsId, dataSourceRequest);
     }
 
-    protected <Q extends DataType> Future<Q> execute(AbstractDataSource<Q> dataSource) throws Exception {
+    public <Q extends DataType> Future<Q> execute(AbstractDataSource<Q> dataSource) throws Exception {
         return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
     }
 
-    protected <Q extends DataType> Future<Q> execute(String dsId, Request request) throws Exception {
+    public <Q extends DataType> Future<Q> execute(String dsId, Request request) throws Exception {
         DataSource<Q> dataSource = this.legoset.getDataSource(dsId, request);
         return this.legoset.getDataSourceExecutor().submit(dataSource);
     }
 
-    protected <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
+    public <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
         return dataSource.call();
     }
 
-    protected <Q extends DataType> Q executeSync(String dsId, Map<String, Object> requestMap) throws Exception {
+    public <Q extends DataType> Q executeSync(String dsId, Map<String, Object> requestMap) throws Exception {
         DataSourceRequest dataSourceRequest = new DataSourceRequest();
         dataSourceRequest.setAttributes(requestMap);
         return executeSync(dsId, dataSourceRequest);
     }
 
-    protected <Q extends DataType> Q executeSync(String dsId, Request request) throws Exception {
+    public <Q extends DataType> Q executeSync(String dsId, Request request) throws Exception {
         DataSource<Q> dataSource = this.legoset.getBasicDataSource(dsId, request);
         return dataSource.call();
     }
