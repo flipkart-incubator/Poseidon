@@ -19,6 +19,7 @@ package com.flipkart.poseidon.validator;
 import com.flipkart.poseidon.helper.ClassPathHelper;
 import com.google.common.reflect.ClassPath;
 import flipkart.lego.api.entities.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +34,29 @@ public class BlocksValidator {
 
     public static void main(String[] args) {
         try {
+            final String customValidatorClass = System.getProperty("poseidon.validator.block.custom");
+            CustomBlocksValidator customValidator = null;
+            if (StringUtils.isNotEmpty(customValidatorClass)) {
+                try {
+                    final Class<?> aClass = Class.forName(customValidatorClass);
+                    final Object constructedInstance = aClass.newInstance();
+                    if (constructedInstance instanceof CustomBlocksValidator) {
+                        customValidator = (CustomBlocksValidator) constructedInstance;
+                    } else {
+                        throw new IllegalArgumentException("Wrong class supplied");
+                    }
+                } catch (Exception e) {
+                    logger.error("Wrong CustomBlockValidator passed", e);
+                    System.exit(-1);
+                }
+            }
+
+
             Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
             System.out.println("Classes in ClassLoader: " + classInfos.size());
             Map<String, List<String>> errors = new HashMap<>();
             for (ClassPath.ClassInfo classInfo : classInfos) {
-                Class clazz = Class.forName(classInfo.getName());
+                Class<? extends DataSource<?>> clazz = (Class<? extends DataSource<?>>) Class.forName(classInfo.getName());
                 if (Modifier.isAbstract(clazz.getModifiers())) {
                     continue;
                 }
@@ -46,6 +65,13 @@ public class BlocksValidator {
                     List<String> annotationErrors;
                     if (!(annotationErrors = AnnotationValidator.validateDataSource(clazz)).isEmpty()) {
                         errors.put(clazz.getName(), annotationErrors);
+                    }
+
+                    if (customValidator != null) {
+                        List<String> customErrors;
+                        if (!(customErrors = customValidator.validateDatasource(clazz)).isEmpty()) {
+                            errors.computeIfAbsent(clazz.getName(), c -> new ArrayList<>()).addAll(customErrors);
+                        }
                     }
                 }
             }
