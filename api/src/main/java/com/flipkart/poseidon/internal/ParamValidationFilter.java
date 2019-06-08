@@ -103,6 +103,9 @@ public class ParamValidationFilter implements Filter {
                         value = defaultValue;
                     } else {
                         value = parseParamValues(name, new String[] { attribute }, datatype, multivalue, param.getJavaType());
+                        if (failOnMissingValue && value == null) {
+                            throw new BadRequestException("Missing header : " + name);
+                        }
                     }
                 } else if (isBodyRequest) {
                     final String bodyString = poseidonRequest.getAttribute(RequestConstants.BODY);
@@ -155,6 +158,9 @@ public class ParamValidationFilter implements Filter {
                         value = defaultValue;
                     } else {
                         value = parseParamValues(name, (String[]) attribute, datatype, multivalue, param.getJavaType());
+                        if (failOnMissingValue && value == null) {
+                            throw new BadRequestException("Missing parameter : " + name);
+                        }
                     }
                 }
 
@@ -213,6 +219,10 @@ public class ParamValidationFilter implements Filter {
                     }
 
                     Object convertedValue = parseParamValues(name, new String[] { value }, datatype, false, param.getJavaType());
+                    if (convertedValue == null) {
+                        throw new BadRequestException("Missing path parameter : " + name);
+                    }
+
                     if (internalName != null && !internalName.isEmpty()) {
                         parsedParams.put(internalName, convertedValue);
                     } else {
@@ -241,7 +251,7 @@ public class ParamValidationFilter implements Filter {
                 }
 
                 List parsedValues = getValues(values, datatype, javaType);
-                return multivalue ? parsedValues : parsedValues.get(0);
+                return multivalue ? parsedValues : (parsedValues.isEmpty() ? null : parsedValues.get(0));
             }
 
             return null;
