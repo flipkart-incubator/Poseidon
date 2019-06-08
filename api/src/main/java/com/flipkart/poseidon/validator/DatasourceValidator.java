@@ -5,9 +5,7 @@ import flipkart.lego.api.entities.DataSource;
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by shrey.garg on 2019-06-08.
@@ -35,14 +33,5 @@ public class DatasourceValidator {
         }
 
         return errors;
-    }
-
-    private <T> List<Constructor<T>> findInjectableConstructors(Class<T> klass) {
-        final Constructor<T>[] declaredConstructors = (Constructor<T>[]) klass.getDeclaredConstructors();
-        final List<Constructor<T>> injectableConstructors = Arrays.stream(declaredConstructors).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
-        if (injectableConstructors.size() > 1) {
-            throw new UnsupportedOperationException(klass.getName() + " has more than one injectable constructor");
-        }
-        return injectableConstructors;
     }
 }

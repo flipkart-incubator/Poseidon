@@ -16,12 +16,18 @@
 
 package com.flipkart.poseidon.validator;
 
+import com.flipkart.poseidon.datasources.RequestAttribute;
 import com.flipkart.poseidon.pojos.ParamPOJO;
 import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
 import flipkart.lego.api.entities.DataSource;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.flipkart.poseidon.validator.ValidatorUtils.*;
 
@@ -34,14 +40,35 @@ public class TaskValidator {
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();
+            final Class<? extends DataSource<?>> dsClass = datasources.get(task.getName());
             if (isNullOrEmpty(task.getName())) {
                 errors.add("No datasource defined for Task: " + braced(taskName));
-            } else if (datasources.get(task.getName()) == null && validateDataSources) {
+            } else if (dsClass == null && validateDataSources) {
                 errors.add("Datasource used does not exist for Task: " + braced(taskName));
             }
 
-            Map<String, Object> context = Optional.ofNullable(task.getContext()).orElse(new HashMap<>());
+            final Set<String> datasourceRequestAttributes = new HashSet<>();
+            if (dsClass != null && validateDataSources) {
+                final List<? extends Constructor<?>> injectableConstructors = findInjectableConstructors(dsClass);
+                if (!injectableConstructors.isEmpty()) {
+                    final Constructor<?> constructor = injectableConstructors.get(0);
+                    final Parameter[] parameters = constructor.getParameters();
+                    for (Parameter parameter : parameters) {
+                        final RequestAttribute requestAttribute = parameter.getAnnotation(RequestAttribute.class);
+                        if (requestAttribute != null) {
+                            datasourceRequestAttributes.add(Optional.of(requestAttribute.value()).filter(StringUtils::isNotEmpty).orElse(parameter.getName()));
+                        }
+                    }
+                }
+            }
+
+            final Map<String, Object> context = Optional.ofNullable(task.getContext()).orElse(new HashMap<>());
             for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
+                final String key = contextEntry.getKey();
+                if (!datasourceRequestAttributes.contains(key)) {
+                    errors.add("ContextParam: " + braced(key) + " used in Task: " + braced(taskName) + " is not used in the Datasource");
+                }
+
                 Object contextEntryValue = contextEntry.getValue();
                 // Could be literals like boolean true/false
                 if (!(contextEntryValue instanceof String)) {
@@ -102,5 +129,14 @@ public class TaskValidator {
         }
 
         return errors;
+    }
+
+    private static  <T> List<Constructor<T>> findInjectableConstructors(Class<T> klass) {
+        final Constructor<T>[] declaredConstructors = (Constructor<T>[]) klass.getDeclaredConstructors();
+        final List<Constructor<T>> injectableConstructors = Arrays.stream(declaredConstructors).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+        if (injectableConstructors.size() > 1) {
+            throw new UnsupportedOperationException(klass.getName() + " has more than one injectable constructor");
+        }
+        return injectableConstructors;
     }
 }
