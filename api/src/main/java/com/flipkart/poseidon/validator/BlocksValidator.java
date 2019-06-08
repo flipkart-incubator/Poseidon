@@ -61,18 +61,18 @@ public class BlocksValidator {
                     continue;
                 }
 
+                final List<String> classErrors = new ArrayList<>();
                 if (DataSource.class.isAssignableFrom(clazz)) {
-                    List<String> annotationErrors;
-                    if (!(annotationErrors = AnnotationValidator.validateDataSource(clazz)).isEmpty()) {
-                        errors.put(clazz.getName(), annotationErrors);
-                    }
+                    classErrors.addAll(AnnotationValidator.validateDataSource(clazz));
+                    classErrors.addAll(DatasourceValidator.validate(clazz));
 
                     if (customValidator != null) {
-                        List<String> customErrors;
-                        if (!(customErrors = customValidator.validateDatasource(clazz)).isEmpty()) {
-                            errors.computeIfAbsent(clazz.getName(), c -> new ArrayList<>()).addAll(customErrors);
-                        }
+                        classErrors.addAll(customValidator.validateDatasource(clazz));
                     }
+                }
+
+                if (!classErrors.isEmpty()) {
+                    errors.put(clazz.getName(), classErrors);
                 }
             }
 
