@@ -1,11 +1,15 @@
 package com.flipkart.poseidon.validator;
 
+import com.flipkart.poseidon.datasources.RequestAttribute;
 import flipkart.lego.api.entities.DataSource;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Parameter;
+import java.util.*;
+
+import static com.flipkart.poseidon.validator.ValidatorUtils.braced;
 
 /**
  * Created by shrey.garg on 2019-06-08.
@@ -26,6 +30,18 @@ public class DatasourceValidator {
             }
 
             injectableConstructorCount++;
+            final Parameter[] parameters = constructor.getParameters();
+            final Set<String> datasourceRequestAttributes = new HashSet<>();
+            for (Parameter parameter : parameters) {
+                final RequestAttribute requestAttribute = parameter.getAnnotation(RequestAttribute.class);
+                if (requestAttribute != null) {
+                    final String attribute = Optional.of(requestAttribute.value()).filter(StringUtils::isNotEmpty).orElse(parameter.getName());
+                    final boolean added = datasourceRequestAttributes.add(attribute);
+                    if (!added) {
+                        errors.add("RequestAttribute: " + braced(attribute) + " is used twice");
+                    }
+                }
+            }
         }
 
         if (injectableConstructorCount > 1) {
