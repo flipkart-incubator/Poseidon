@@ -1,4 +1,8 @@
-## 5.8.0 
+## 5.9.0 (WIP)
+- [Validator] More datasource validators
+- [Bugfix] React correctly when we do not parse empty strings as params
+
+## 5.8.0 (May 5, 2019)
 - Support for byte[] in ServiceResponseDecoder.
 - Support for Async Interface
 - Dependency Injection framework for Spring managed beans, Request attributes and ServiceClients
