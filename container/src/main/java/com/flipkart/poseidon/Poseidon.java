@@ -40,6 +40,9 @@ import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
 import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import com.flipkart.poseidon.metrics.Metrics;
+import com.flipkart.poseidon.rotation.BackInRotationServlet;
+import com.flipkart.poseidon.rotation.OutOfRotationServlet;
+import com.flipkart.poseidon.rotation.RotationCheckServlet;
 import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
@@ -82,15 +85,22 @@ public class Poseidon implements ApplicationContextAware {
 
     private final Configuration configuration;
     private final Application application;
+    private final RotationCheckServlet rotationCheckServlet;
+    private final BackInRotationServlet backInRotationServlet;
+    private final OutOfRotationServlet outOfRotationServlet;
     private final ExecutorService dataSourceES;
     private final ExecutorService filterES;
     private ApplicationContext context;
     private Server server;
 
     @Autowired
-    public Poseidon(Configuration configuration, Application application) {
+    public Poseidon(Configuration configuration, Application application, RotationCheckServlet rotationCheckServlet,
+                    BackInRotationServlet backInRotationServlet, OutOfRotationServlet outOfRotationServlet) {
         this.configuration = configuration;
         this.application = application;
+        this.rotationCheckServlet = rotationCheckServlet;
+        this.backInRotationServlet = backInRotationServlet;
+        this.outOfRotationServlet = outOfRotationServlet;
 
         dataSourceES = Executors.newCachedThreadPool();
         filterES = Executors.newCachedThreadPool();
@@ -227,6 +237,9 @@ public class Poseidon implements ApplicationContextAware {
         ServletContextHandler servletContextHandler = new ServletContextHandler();
         servletContextHandler.setContextPath("/");
         servletContextHandler.addServlet(new ServletHolder(getPoseidonServlet()), "/*");
+        servletContextHandler.addServlet(new ServletHolder(rotationCheckServlet), "/_poseidon/health");
+        servletContextHandler.addServlet(new ServletHolder(backInRotationServlet), "/_poseidon/bir");
+        servletContextHandler.addServlet(new ServletHolder(outOfRotationServlet), "/_poseidon/oor");
 
         addFilters(servletContextHandler);
 
