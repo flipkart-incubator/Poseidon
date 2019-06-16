@@ -1,4 +1,5 @@
 ## 5.9.0 (WIP)
+- Added Rotation APIs for managing state of the container
 - [Validator] More datasource validators
 - [Bugfix] React correctly when we do not parse empty strings as params
 
