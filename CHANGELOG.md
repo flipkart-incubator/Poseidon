@@ -1,5 +1,6 @@
 ## 5.9.0 (WIP)
 - Added Rotation APIs for managing state of the container
+- Support for custom Servlets
 - [Validator] More datasource validators
 - [Bugfix] React correctly when we do not parse empty strings as params
 
