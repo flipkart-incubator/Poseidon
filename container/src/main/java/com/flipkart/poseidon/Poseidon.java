@@ -241,6 +241,8 @@ public class Poseidon implements ApplicationContextAware {
         servletContextHandler.addServlet(new ServletHolder(backInRotationServlet), "/_poseidon/bir");
         servletContextHandler.addServlet(new ServletHolder(outOfRotationServlet), "/_poseidon/oor");
 
+        configuration.registerServlets().forEach(servlet -> servletContextHandler.addServlet(servlet.getRight(), servlet.getLeft()));
+
         addFilters(servletContextHandler);
 
         InstrumentedHandler instrumentedHandler = new InstrumentedHandler(Metrics.getRegistry());

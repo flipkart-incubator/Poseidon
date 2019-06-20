@@ -18,8 +18,11 @@ package com.flipkart.poseidon.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.helpers.ObjectMapperHelper;
+import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public interface Configuration {
@@ -69,4 +72,8 @@ public interface Configuration {
     }
 
     default List<String> getResponseHeadersToCollect() { return new ArrayList<>(); }
+
+    default List<Pair<String, ServletHolder>> registerServlets() {
+        return Collections.emptyList();
+    }
 }
