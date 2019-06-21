@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.legoset;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.core.PoseidonRequest;
 import com.flipkart.poseidon.datasources.RequestAttribute;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
@@ -40,6 +42,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -57,6 +60,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
     private Map<String, Buildable> buildableMap = new HashMap<>();
     private ExecutorService dataSourceExecutor;
     private ApplicationContext context;
+    private static final ObjectMapper mapper = new ObjectMapper();
+    {
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public void init() {
         try {
@@ -283,11 +290,18 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
     private void resolveInjectableConstructorDependencies(Constructor<?> constructor, Object[] initParams, int offset, Optional<Request> request) throws MissingInformationException, ElementNotFoundException {
         for (int i = offset; i < constructor.getParameterCount(); i++) {
-            final RequestAttribute requestAttribute = constructor.getParameters()[i].getAnnotation(RequestAttribute.class);
-            final com.flipkart.poseidon.datasources.ServiceClient serviceClientAttribute = constructor.getParameters()[i].getAnnotation(com.flipkart.poseidon.datasources.ServiceClient.class);
+            final Parameter constructorParameter = constructor.getParameters()[i];
+            final RequestAttribute requestAttribute = constructorParameter.getAnnotation(RequestAttribute.class);
+            final com.flipkart.poseidon.datasources.ServiceClient serviceClientAttribute = constructorParameter.getAnnotation(com.flipkart.poseidon.datasources.ServiceClient.class);
             if (requestAttribute != null) {
-                final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructor.getParameters()[i].getName() : requestAttribute.value();
-                initParams[i] = request.map(r -> r.getAttribute(attributeName)).orElse(null);
+                final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructorParameter.getName() : requestAttribute.value();
+                initParams[i] = request.map(r -> r.getAttribute(attributeName)).map(attr -> {
+                    if (constructorParameter.getType().isAssignableFrom(attr.getClass())) {
+                        return attr;
+                    } else {
+                        return mapper.convertValue(attr, mapper.constructType(constructorParameter.getParameterizedType()));
+                    }
+                }).orElse(null);
             } else if (serviceClientAttribute != null) {
                 ServiceClient serviceClient = serviceClientsByName.get(constructor.getParameterTypes()[i].getName());
                 if (serviceClient == null) {
@@ -295,7 +309,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
                 }
                 initParams[i] = serviceClient;
             } else {
-                final Qualifier qualifier = constructor.getParameters()[i].getAnnotation(Qualifier.class);
+                final Qualifier qualifier = constructorParameter.getAnnotation(Qualifier.class);
                 String beanName = null;
                 if (qualifier != null && !StringUtils.isNullOrEmpty(qualifier.value())) {
                     beanName = qualifier.value();
