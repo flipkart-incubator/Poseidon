@@ -43,6 +43,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 
 import javax.annotation.Nonnull;
@@ -312,11 +313,17 @@ public class SchemaGenerator {
         final JsonSubTypes subTypes = clazz.getAnnotation(JsonSubTypes.class);
 
         if (typeInfo != null && subTypes != null) {
-            schema.discriminator(new Discriminator().propertyName(typeInfo.property()));
+            final Discriminator discriminator = new Discriminator().propertyName(typeInfo.property());
 
             for (JsonSubTypes.Type type : subTypes.value()) {
-                schema.addOneOfItem(createReference(type.value(), clazz, referencedClasses));
+                final Schema<?> reference = createReference(type.value(), clazz, referencedClasses);
+                schema.addOneOfItem(reference);
+                if (StringUtils.isNotEmpty(type.name())) {
+                    discriminator.mapping(type.name(), reference.get$ref());
+                }
             }
+
+            schema.discriminator(discriminator);
         }
     }
 
