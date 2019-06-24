@@ -319,7 +319,9 @@ public class SchemaGenerator {
                 final Schema<?> reference = createReference(type.value(), clazz, referencedClasses);
                 schema.addOneOfItem(reference);
                 if (StringUtils.isNotEmpty(type.name())) {
-                    discriminator.mapping(type.name(), reference.get$ref());
+                    // TODO: 2019-06-24 fix this once mappings are correctly handled elsewhere
+//                    discriminator.mapping(type.name(), reference.get$ref());
+                    discriminator.mapping(type.name(), "#/components/schemas/" + type.value().getSimpleName());
                 }
             }
 
