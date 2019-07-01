@@ -192,7 +192,9 @@ public class PoseidonServlet extends HttpServlet {
             } else if (responseObj instanceof ByteArrayDataType) {
             	byte[] rawBytes = ((ByteArrayDataType)responseObj).getRawBytes();
             	// we override default response meta-data as the data is raw bytes
-            	httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
+                if(!((ByteArrayDataType)responseObj).skipDefaultContentType()) {
+                    httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
+                }
             	httpResponse.setContentLength(rawBytes.length);
             	httpResponse.getOutputStream().write(rawBytes);
             } else {

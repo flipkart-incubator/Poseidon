@@ -31,12 +31,23 @@ public class ByteArrayDataType implements DataType {
 
 	private byte[] rawBytes;
 
+	private boolean skipDefaultContentType;
+
 	public ByteArrayDataType(byte[] rawBytes) {
 		this.rawBytes = rawBytes;
 	}
 
 	public byte[] getRawBytes() {
 		return rawBytes;
+	}
+
+	public boolean skipDefaultContentType() {
+		return skipDefaultContentType;
+	}
+
+	public ByteArrayDataType(byte[] rawBytes, boolean skipDefaultContentType) {
+		this.rawBytes = rawBytes;
+		this.skipDefaultContentType = skipDefaultContentType;
 	}
 
 }
