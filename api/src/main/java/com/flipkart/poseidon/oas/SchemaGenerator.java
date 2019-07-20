@@ -19,6 +19,7 @@ package com.flipkart.poseidon.oas;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.SimpleType;
 import com.flipkart.poseidon.api.APIManager;
 import com.flipkart.poseidon.helper.ClassPathHelper;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
@@ -142,33 +143,13 @@ public class SchemaGenerator {
             if (paramsPOJO != null) {
                 if (paramsPOJO.getRequired() != null) {
                     for (ParamPOJO paramPOJO : paramsPOJO.getRequired()) {
-                        if (paramPOJO.isFile()) {
-                            continue;
-                        }
-
-                        if (paramPOJO.isBody()) {
-                            final RequestBody requestBody = new RequestBody();
-                            requestBody.required(true);
-                            final Content content = new Content();
-                            final MediaType mediaType = new MediaType();
-                            mediaType.schema(createSchema(paramPOJO));
-                            content.addMediaType("application/json", mediaType);
-                            requestBody.content(content);
-                            operation.requestBody(requestBody);
-                            continue;
-                        }
-
-                        operation.addParametersItem(createParameter(paramPOJO).required(true));
+                        handleParams(operation, paramPOJO, modelsDir, true);
                     }
                 }
 
                 if (paramsPOJO.getOptional() != null) {
                     for (ParamPOJO paramPOJO : paramsPOJO.getOptional()) {
-                        if (paramPOJO.isFile() || paramPOJO.isBody()) {
-                            continue;
-                        }
-
-                        operation.addParametersItem(createParameter(paramPOJO));
+                        handleParams(operation, paramPOJO, modelsDir, false);
                     }
                 }
             }
@@ -226,6 +207,26 @@ public class SchemaGenerator {
         });
     }
 
+    private static void handleParams(Operation operation, ParamPOJO paramPOJO, Path modelsDir, boolean isRequired) {
+        if (paramPOJO.isFile()) {
+            return;
+        }
+
+        if (paramPOJO.isBody()) {
+            final RequestBody requestBody = new RequestBody();
+            requestBody.required(isRequired);
+            final Content content = new Content();
+            final MediaType mediaType = new MediaType();
+            mediaType.schema(createSchema(paramPOJO, modelsDir));
+            content.addMediaType("application/json", mediaType);
+            requestBody.content(content);
+            operation.requestBody(requestBody);
+            return;
+        }
+
+        operation.addParametersItem(createParameter(paramPOJO, modelsDir).required(isRequired));
+    }
+
     private static void resolveAPIResponse(String status, Type resolvedType, ApiResponses responses, Path modelsDir) {
         final Schema<?> responseSchema = processType(resolvedType, modelsDir);
         final ApiResponse response = new ApiResponse();
@@ -251,8 +252,20 @@ public class SchemaGenerator {
     }
 
     private static Schema<?> generateSchema(JavaType javaType, Path modelsDir) {
-        final Class<?> rawClass = javaType.getRawClass();
-        return processClass(rawClass, modelsDir);
+        if (javaType.isCollectionLikeType()) {
+            if (javaType.getContentType() instanceof SimpleType) {
+                final Class<?> rawClass = javaType.getContentType().getRawClass();
+                return new ArraySchema().items(createReference(rawClass, null, new LinkedHashMap<>()));
+            } else {
+                return generateSchema(javaType, modelsDir);
+            }
+        } else if (javaType.isMapLikeType()) {
+            // TODO: 2019-07-20 add here when Map types have to be supported as request bodies
+            return null;
+        } else {
+            final Class<?> rawClass = javaType.getRawClass();
+            return processClass(rawClass, modelsDir);
+        }
     }
 
     private static Schema<?> processClass(Class<?> clazz, Path modelsDir) {
@@ -428,7 +441,7 @@ public class SchemaGenerator {
         }
     }
 
-    private static Parameter createParameter(ParamPOJO paramPOJO) {
+    private static Parameter createParameter(ParamPOJO paramPOJO, Path modelsDir) {
         final Parameter parameter = new Parameter();
         if (paramPOJO.getInternalName() != null) {
             parameter.addExtension("x-internal-name", paramPOJO.getInternalName());
@@ -436,7 +449,7 @@ public class SchemaGenerator {
 
         parameter.name(paramPOJO.getName())
                 .in(getParamType(paramPOJO))
-                .schema(createSchema(paramPOJO));
+                .schema(createSchema(paramPOJO, modelsDir));
 
         return parameter;
     }
@@ -451,10 +464,15 @@ public class SchemaGenerator {
         }
     }
 
-    private static Schema<?> createSchema(ParamPOJO paramPOJO) {
+    private static Schema<?> createSchema(ParamPOJO paramPOJO, Path modelsDir) {
         final Schema<?> schema;
         if (paramPOJO.getDatatype() == null) {
-            return createSchemaPOJO(paramPOJO);
+            JavaType javaType = ApiHelper.constructJavaType(paramPOJO);
+            if (javaType.isContainerType()) {
+                return generateSchema(javaType, modelsDir);
+            } else {
+                return createSchemaPOJO(paramPOJO);
+            }
         }
 
         switch (paramPOJO.getDatatype()) {
