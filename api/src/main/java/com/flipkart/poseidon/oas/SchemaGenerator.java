@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.oas;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
@@ -299,7 +300,15 @@ public class SchemaGenerator {
                 continue;
             }
 
-            schema.addProperties(field.getName(), processField(clazz, field.getType(), field.getGenericType(), referencedClasses));
+            final String alias = fetchAlias(field);
+            final Schema<?> fieldSchema = processField(clazz, field.getType(), field.getGenericType(), referencedClasses);
+            if (alias == null) {
+                schema.addProperties(field.getName(), fieldSchema);
+            } else {
+                fieldSchema.addExtension("x-internal-name", field.getName());
+                schema.addProperties(alias, fieldSchema);
+            }
+
             if (isRequiredProperty(field)) {
                 schema.addRequiredItem(field.getName());
             }
@@ -350,6 +359,15 @@ public class SchemaGenerator {
         }
 
         return false;
+    }
+
+    private static String fetchAlias(Field field) {
+        final String jsonProperty;
+        if (field.isAnnotationPresent(JsonProperty.class) && StringUtils.isNotBlank((jsonProperty = field.getAnnotation(JsonProperty.class).value()))) {
+            return jsonProperty;
+        }
+
+        return null;
     }
 
     private static Schema<?> processType(Type type, Path modelsDir) {
