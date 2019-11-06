@@ -335,15 +335,15 @@ public class SchemaGenerator {
         final JsonSubTypes subTypes = clazz.getAnnotation(JsonSubTypes.class);
 
         if (typeInfo != null && subTypes != null) {
-            final Discriminator discriminator = new Discriminator().propertyName(typeInfo.property());
+            final Discriminator discriminator = new Discriminator().propertyName(typeInfo.property().equals("") ? typeInfo.use().getDefaultPropertyName() : typeInfo.property());
 
             for (JsonSubTypes.Type type : subTypes.value()) {
                 final Schema<?> reference = createReference(type.value(), clazz, referencedClasses);
                 schema.addOneOfItem(reference);
-                if (StringUtils.isNotEmpty(type.name())) {
+                if (StringUtils.isNotEmpty(type.name()) || typeInfo.use() == JsonTypeInfo.Id.CLASS) {
                     // TODO: 2019-06-24 fix this once mappings are correctly handled elsewhere
 //                    discriminator.mapping(type.name(), reference.get$ref());
-                    discriminator.mapping(type.name(), "#/components/schemas/" + type.value().getSimpleName());
+                    discriminator.mapping(typeInfo.use() == JsonTypeInfo.Id.CLASS ? type.value().getName() : type.name(), "#/components/schemas/" + type.value().getSimpleName());
                 }
             }
 
@@ -581,7 +581,7 @@ public class SchemaGenerator {
 
     private static void fetchDataSources(String[] args) {
         try {
-            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
+            final Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
             System.out.println("Classes in ClassLoader: " + classInfos.size());
             for (ClassPath.ClassInfo classInfo : classInfos) {
                 Class clazz = Class.forName(classInfo.getName());
