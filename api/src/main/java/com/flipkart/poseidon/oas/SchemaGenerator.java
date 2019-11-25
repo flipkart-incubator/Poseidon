@@ -45,6 +45,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 
@@ -77,7 +78,8 @@ public class SchemaGenerator {
 
     private static final List<Class<? extends Annotation>> nonNullAnnotations = Arrays.asList(
             NotNull.class,
-            Nonnull.class
+            Nonnull.class,
+            NonNull.class
     );
 
     private static final Map<String, OpenAPI> versionedOpenAPIs = new HashMap<>();
@@ -376,7 +378,7 @@ public class SchemaGenerator {
 
         final Schema<?> schema;
         if (!(type instanceof ParameterizedType)) {
-            if (Map.class.isAssignableFrom((Class<?>) type) || List.class.isAssignableFrom((Class<?>) type)) {
+            if (Map.class.isAssignableFrom((Class<?>) type) || Collection.class.isAssignableFrom((Class<?>) type)) {
                 schema = processType(type, null, referencedClasses);
             } else {
                 schema = createReference((Class<?>) type, null, referencedClasses);
@@ -418,7 +420,7 @@ public class SchemaGenerator {
             return new StringSchema().format("byte");
         } else if (clazz == String.class) {
             return new StringSchema();
-        } else if (Map.class.isAssignableFrom(clazz) || List.class.isAssignableFrom(clazz)) {
+        } else if (Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz)) {
             return processType(type, baseClass, referencedClasses);
         } else if (clazz == Object.class) {
             return new ObjectSchema().extensions(Collections.singletonMap("x-no-contract", true));
@@ -442,7 +444,7 @@ public class SchemaGenerator {
             final Class<?> rawType = (Class<?>) ((ParameterizedType) type).getRawType();
             if (Map.class.isAssignableFrom(rawType)) {
                 return new ObjectSchema().additionalProperties(processType(((ParameterizedType) type).getActualTypeArguments()[1], baseClass, referencedClasses));
-            } else if (List.class.isAssignableFrom(rawType)) {
+            } else if (Collection.class.isAssignableFrom(rawType)) {
                 return new ArraySchema().items(processType(((ParameterizedType) type).getActualTypeArguments()[0], baseClass, referencedClasses));
             } else {
                 return processField(baseClass, rawType, type, referencedClasses);
@@ -451,7 +453,7 @@ public class SchemaGenerator {
             final Class<?> clazz = (Class<?>) type;
             if (Map.class.isAssignableFrom(clazz)) {
                 return new ObjectSchema().additionalProperties(processType(Object.class, baseClass, referencedClasses));
-            } else if (List.class.isAssignableFrom(clazz)) {
+            } else if (Collection.class.isAssignableFrom(clazz)) {
                 return new ArraySchema().items(processType(Object.class, baseClass, referencedClasses));
             } else {
                 return processField(baseClass, clazz, type, referencedClasses);
