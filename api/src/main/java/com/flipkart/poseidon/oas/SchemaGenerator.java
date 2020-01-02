@@ -16,6 +16,7 @@
 
 package com.flipkart.poseidon.oas;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
@@ -44,6 +45,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 
@@ -76,7 +78,8 @@ public class SchemaGenerator {
 
     private static final List<Class<? extends Annotation>> nonNullAnnotations = Arrays.asList(
             NotNull.class,
-            Nonnull.class
+            Nonnull.class,
+            NonNull.class
     );
 
     private static final Map<String, OpenAPI> versionedOpenAPIs = new HashMap<>();
@@ -299,7 +302,15 @@ public class SchemaGenerator {
                 continue;
             }
 
-            schema.addProperties(field.getName(), processField(clazz, field.getType(), field.getGenericType(), referencedClasses));
+            final String alias = fetchAlias(field);
+            final Schema<?> fieldSchema = processField(clazz, field.getType(), field.getGenericType(), referencedClasses);
+            if (alias == null) {
+                schema.addProperties(field.getName(), fieldSchema);
+            } else {
+                fieldSchema.addExtension("x-internal-name", field.getName());
+                schema.addProperties(alias, fieldSchema);
+            }
+
             if (isRequiredProperty(field)) {
                 schema.addRequiredItem(field.getName());
             }
@@ -326,15 +337,15 @@ public class SchemaGenerator {
         final JsonSubTypes subTypes = clazz.getAnnotation(JsonSubTypes.class);
 
         if (typeInfo != null && subTypes != null) {
-            final Discriminator discriminator = new Discriminator().propertyName(typeInfo.property());
+            final Discriminator discriminator = new Discriminator().propertyName(typeInfo.property().equals("") ? typeInfo.use().getDefaultPropertyName() : typeInfo.property());
 
             for (JsonSubTypes.Type type : subTypes.value()) {
                 final Schema<?> reference = createReference(type.value(), clazz, referencedClasses);
                 schema.addOneOfItem(reference);
-                if (StringUtils.isNotEmpty(type.name())) {
+                if (StringUtils.isNotEmpty(type.name()) || typeInfo.use() == JsonTypeInfo.Id.CLASS) {
                     // TODO: 2019-06-24 fix this once mappings are correctly handled elsewhere
 //                    discriminator.mapping(type.name(), reference.get$ref());
-                    discriminator.mapping(type.name(), "#/components/schemas/" + type.value().getSimpleName());
+                    discriminator.mapping(typeInfo.use() == JsonTypeInfo.Id.CLASS ? type.value().getName() : type.name(), "#/components/schemas/" + type.value().getSimpleName());
                 }
             }
 
@@ -352,13 +363,22 @@ public class SchemaGenerator {
         return false;
     }
 
+    private static String fetchAlias(Field field) {
+        final String jsonProperty;
+        if (field.isAnnotationPresent(JsonProperty.class) && StringUtils.isNotBlank((jsonProperty = field.getAnnotation(JsonProperty.class).value()))) {
+            return jsonProperty;
+        }
+
+        return null;
+    }
+
     private static Schema<?> processType(Type type, Path modelsDir) {
         final Map<String, Class<?>> referencedClasses = new HashMap<>();
         final int globalSetSize = globalModelSet.size();
 
         final Schema<?> schema;
         if (!(type instanceof ParameterizedType)) {
-            if (Map.class.isAssignableFrom((Class<?>) type) || List.class.isAssignableFrom((Class<?>) type)) {
+            if (Map.class.isAssignableFrom((Class<?>) type) || Collection.class.isAssignableFrom((Class<?>) type)) {
                 schema = processType(type, null, referencedClasses);
             } else {
                 schema = createReference((Class<?>) type, null, referencedClasses);
@@ -400,7 +420,7 @@ public class SchemaGenerator {
             return new StringSchema().format("byte");
         } else if (clazz == String.class) {
             return new StringSchema();
-        } else if (Map.class.isAssignableFrom(clazz) || List.class.isAssignableFrom(clazz)) {
+        } else if (Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz)) {
             return processType(type, baseClass, referencedClasses);
         } else if (clazz == Object.class) {
             return new ObjectSchema().extensions(Collections.singletonMap("x-no-contract", true));
@@ -424,7 +444,7 @@ public class SchemaGenerator {
             final Class<?> rawType = (Class<?>) ((ParameterizedType) type).getRawType();
             if (Map.class.isAssignableFrom(rawType)) {
                 return new ObjectSchema().additionalProperties(processType(((ParameterizedType) type).getActualTypeArguments()[1], baseClass, referencedClasses));
-            } else if (List.class.isAssignableFrom(rawType)) {
+            } else if (Collection.class.isAssignableFrom(rawType)) {
                 return new ArraySchema().items(processType(((ParameterizedType) type).getActualTypeArguments()[0], baseClass, referencedClasses));
             } else {
                 return processField(baseClass, rawType, type, referencedClasses);
@@ -433,7 +453,7 @@ public class SchemaGenerator {
             final Class<?> clazz = (Class<?>) type;
             if (Map.class.isAssignableFrom(clazz)) {
                 return new ObjectSchema().additionalProperties(processType(Object.class, baseClass, referencedClasses));
-            } else if (List.class.isAssignableFrom(clazz)) {
+            } else if (Collection.class.isAssignableFrom(clazz)) {
                 return new ArraySchema().items(processType(Object.class, baseClass, referencedClasses));
             } else {
                 return processField(baseClass, clazz, type, referencedClasses);
@@ -563,7 +583,7 @@ public class SchemaGenerator {
 
     private static void fetchDataSources(String[] args) {
         try {
-            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
+            final Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
             System.out.println("Classes in ClassLoader: " + classInfos.size());
             for (ClassPath.ClassInfo classInfo : classInfos) {
                 Class clazz = Class.forName(classInfo.getName());
