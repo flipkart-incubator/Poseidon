@@ -19,7 +19,9 @@ package com.flipkart.poseidon.legoset;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.poseidon.core.PoseidonRequest;
+import com.flipkart.poseidon.datasources.DataSourceRequest;
 import com.flipkart.poseidon.datasources.RequestAttribute;
+import com.flipkart.poseidon.datasources.SystemDataSource;
 import com.flipkart.poseidon.handlers.http.utils.StringUtils;
 import com.flipkart.poseidon.helper.AnnotationHelper;
 import com.flipkart.poseidon.helper.CallableNameHelper;
@@ -38,7 +40,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 
 import javax.inject.Inject;
-import java.io.IOException;
+import javax.inject.Singleton;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -53,6 +55,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
     private static final Logger logger = getLogger(PoseidonLegoSet.class);
     private static Map<String, Constructor<DataSource<? extends DataType>>> dataSources = new HashMap<>();
+    private static Map<String, DataSource<? extends DataType>> systemDataSources = new HashMap<>();
     private static Map<String, ServiceClient> serviceClients = new HashMap<>();
     private static Map<String, ServiceClient> serviceClientsByName = new HashMap<>();
     private static Map<String, Filter> filters = new HashMap<>();
@@ -71,8 +74,9 @@ public abstract class PoseidonLegoSet implements LegoSet {
 
             List<Class<ServiceClient>> serviceClientClasses = new ArrayList<>();
             List<Class<Filter>> filterClasses = new ArrayList<>();
+            final Set<String> singletonDataSources = new HashSet<>();
             for (ClassPath.ClassInfo classInfo : classInfos) {
-                bucketize(classInfo, serviceClientClasses, filterClasses);
+                bucketize(classInfo, serviceClientClasses, filterClasses, singletonDataSources);
             }
 
             for (Class<ServiceClient> serviceClientClass : serviceClientClasses) {
@@ -82,18 +86,24 @@ public abstract class PoseidonLegoSet implements LegoSet {
             for (Class<Filter> filterClass : filterClasses) {
                 processFilter(filterClass);
             }
-        } catch (IOException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | MissingInformationException | ElementNotFoundException e) {
+
+            for (String ds : singletonDataSources) {
+                prepareSystemDataSources(ds);
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
             logger.error("Unable to load lego-blocks into their containers", e);
             throw new PoseidonFailureException("Unable to load lego-blocks into their containers", e);
         }
     }
 
-    private void bucketize(ClassPath.ClassInfo aClass, List<Class<ServiceClient>> serviceClientClasses, List<Class<Filter>> filterClasses) {
+    private void bucketize(ClassPath.ClassInfo aClass, List<Class<ServiceClient>> serviceClientClasses, List<Class<Filter>> filterClasses, Set<String> singletonDataSources) {
         try {
             Class klass = Class.forName(aClass.getName());
             if (!isAbstract(klass)) {
                 if (DataSource.class.isAssignableFrom(klass)) {
-                    processDataSource(klass);
+                    processDataSource(klass, singletonDataSources);
                 } else if (ServiceClient.class.isAssignableFrom(klass)) {
                     serviceClientClasses.add(klass);
                 } else if (Filter.class.isAssignableFrom(klass)) {
@@ -109,7 +119,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
         }
     }
 
-    private void processDataSource(Class<DataSource<? extends DataType>> klass) throws NoSuchMethodException, MissingInformationException {
+    private void processDataSource(Class<DataSource<? extends DataType>> klass, Set<String> singletonDataSources) throws NoSuchMethodException, MissingInformationException {
         final List<Constructor<DataSource<? extends DataType>>> injectableConstructors = findInjectableConstructors(klass);
         Constructor<DataSource<? extends DataType>> constructor;
         if (injectableConstructors.isEmpty()) {
@@ -126,6 +136,10 @@ public abstract class PoseidonLegoSet implements LegoSet {
             throw new MissingInformationException();
         }
         dataSources.put(id.get(), constructor);
+
+        if (klass.isAnnotationPresent(Singleton.class)) {
+            singletonDataSources.add(id.get());
+        }
     }
 
     private void processServiceClient(Class<ServiceClient> klass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, MissingInformationException, ElementNotFoundException {
@@ -172,6 +186,13 @@ public abstract class PoseidonLegoSet implements LegoSet {
             filter = klass.newInstance();
         }
         filters.put(getBlockId(klass).orElseThrow(MissingInformationException::new), filter);
+    }
+
+    private void prepareSystemDataSources(String ds) throws Exception {
+        final DataSource<DataType> dataSource = this.getBasicDataSource(ds, new DataSourceRequest());
+        dataSource.call();
+        dataSources.remove(ds);
+        systemDataSources.put(ds, dataSource);
     }
 
     private <T> List<Constructor<T>> findInjectableConstructors(Class<T> klass) {
@@ -293,6 +314,7 @@ public abstract class PoseidonLegoSet implements LegoSet {
             final Parameter constructorParameter = constructor.getParameters()[i];
             final RequestAttribute requestAttribute = constructorParameter.getAnnotation(RequestAttribute.class);
             final com.flipkart.poseidon.datasources.ServiceClient serviceClientAttribute = constructorParameter.getAnnotation(com.flipkart.poseidon.datasources.ServiceClient.class);
+            final SystemDataSource systemDataSourceAttribute = constructorParameter.getAnnotation(SystemDataSource.class);
             if (requestAttribute != null) {
                 final String attributeName = StringUtils.isNullOrEmpty(requestAttribute.value()) ? constructorParameter.getName() : requestAttribute.value();
                 initParams[i] = request.map(r -> r.getAttribute(attributeName)).map(attr -> {
@@ -308,6 +330,12 @@ public abstract class PoseidonLegoSet implements LegoSet {
                     throw new ElementNotFoundException("Unable to find ServiceClient for class = " + constructor.getParameterTypes()[i]);
                 }
                 initParams[i] = serviceClient;
+            } else if (systemDataSourceAttribute != null) {
+                final DataSource<?> systemDataSource = systemDataSources.get(systemDataSourceAttribute.value());
+                if (systemDataSource == null) {
+                    throw new ElementNotFoundException("Unable to find SystemDataSource for id = " + systemDataSourceAttribute.value());
+                }
+                initParams[i] = systemDataSource;
             } else {
                 final Qualifier qualifier = constructorParameter.getAnnotation(Qualifier.class);
                 String beanName = null;

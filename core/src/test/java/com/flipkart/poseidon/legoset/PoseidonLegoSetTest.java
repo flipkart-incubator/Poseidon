@@ -23,6 +23,7 @@ import com.flipkart.poseidon.model.exception.MissingInformationException;
 import com.flipkart.poseidon.model.exception.PoseidonFailureException;
 import flipkart.lego.api.entities.Request;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
+import flipkart.lego.api.exceptions.LegoSetException;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -45,6 +46,9 @@ public class PoseidonLegoSetTest {
     public static final String NAMED_DS_NAME = "ThisIsNamed";
     public static final String PROPER_DS_NAME = "ThisIsProper";
     public static final String PROPER_INJECTABLE_DS_NAME = "ThisIsProperInjectable";
+    public static final String SYSTEM_INJECTABLE_DS_NAME = "ProperSystemInjectable";
+    public static final String INJECTED_SINGLETON_DS_NAME = "SingletonInjected";
+    public static final String IMPROPER_INJECTED_SINGLETON_DS_NAME = "ImproperSingletonInjected";
     public static final String QUALIFIER_INJECTABLE_DS_NAME = "ThisIsQualifierInjectable";
     public static final String TEST_SERVICE_CLIENT = "TestClient";
     public static final String TEST_FILTER = "TestFilter";
@@ -134,6 +138,33 @@ public class PoseidonLegoSetTest {
         legoSet.init();
 
         legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), request);
+    }
+
+    @Test(expected = LegoSetException.class)
+    public void testImproperSystemDataSourceInjection() throws Throwable {
+        when(context.getBean(anyString(), any(Class.class))).thenReturn("will not fail");
+        TestLegoSet legoSet = new TestLegoSet();
+        legoSet.setContext(context);
+        legoSet.init();
+
+        legoSet.getDataSource(CallableNameHelper.versionedName(IMPROPER_INJECTED_SINGLETON_DS_NAME, "4.1.6"), request);
+    }
+
+    @Test
+    public void testSystemDataSourceInjection() throws Throwable {
+        when(context.getBean(anyString(), any(Class.class))).thenReturn("will not fail");
+        TestLegoSet legoSet = new TestLegoSet();
+        legoSet.setContext(context);
+        legoSet.init();
+
+        legoSet.getDataSource(CallableNameHelper.versionedName(QUALIFIER_INJECTABLE_DS_NAME, "4.1.6"), request);
+
+        try {
+            legoSet.getDataSource(CallableNameHelper.versionedName(SYSTEM_INJECTABLE_DS_NAME, "4.1.6"), request);
+            fail("System DataSources should not be fetch-able via getDataSource");
+        } catch (ElementNotFoundException ignored) { }
+
+        legoSet.getDataSource(CallableNameHelper.versionedName(INJECTED_SINGLETON_DS_NAME, "4.1.6"), request);
     }
 
     @Test

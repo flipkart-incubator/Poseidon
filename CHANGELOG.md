@@ -1,6 +1,7 @@
 ## 5.9.0 (WIP)
 - Added Rotation APIs for managing state of the container
 - Support for custom Servlets
+- Support for injectable singleton DataSources
 - [Validator] More datasource validators
 - [SchemaGenerator] Support for optional request body and file types
 - [SchemaGenerator] Support for collections as request bodies
