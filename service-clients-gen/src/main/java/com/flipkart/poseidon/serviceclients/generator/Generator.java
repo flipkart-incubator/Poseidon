@@ -44,6 +44,8 @@ public class Generator {
     private final static String DESTINATION_JAVA_FOLDER = ".target.generated-sources.";
     private final static JCodeModel jCodeModel = new JCodeModel();
     private final static Logger logger = LoggerFactory.getLogger(Generator.class);
+    private final static String SERVICE_CLIENT_GROUP_ID_KEY = "service.clients.groupId";
+    private final static String SERVICE_CLIENT_GROUP_ID_REGEX = "^([a-zA-Z_]+[.])*([a-zA-Z_]+)$";
 
     private static String moduleParentPath;
     private static String modulePath;
@@ -89,13 +91,13 @@ public class Generator {
         determineVersion(args[1]);
         String majorVersion = "v" + version.getMajor();
 
-        String serviceClientGroupId = System.getProperty("service.clients.groupId");
+        String serviceClientGroupId = System.getProperty(SERVICE_CLIENT_GROUP_ID_KEY);
         if (serviceClientGroupId == null || serviceClientGroupId.isEmpty()) {
             serviceClientGroupId = DEFAULT_SERVICE_CLIENT_GROUP_ID;
         }
 
         validateServiceClientGroupId(serviceClientGroupId);
-        packageName = trimmedPackageName(serviceClientGroupId) + "." + moduleName + "." + majorVersion;
+        packageName = serviceClientGroupId + "." + moduleName + "." + majorVersion;
 
         if (args.length > 2) {
             pojoOrdering = args[2].split(",");
@@ -104,14 +106,10 @@ public class Generator {
     }
 
     private static void validateServiceClientGroupId(String groupId) {
-        if (!groupId.matches("^([a-zA-Z_]+[.])*([a-zA-Z_]+)$")) {
+        if (!groupId.matches(SERVICE_CLIENT_GROUP_ID_REGEX)) {
             logger.error("Invalid value for property service.clients.groupId");
             System.exit(-1);
         }
-    }
-
-    private static String trimmedPackageName(String pkgName){
-        return pkgName.endsWith(".") ? pkgName.substring(0, pkgName.length() - 2) : pkgName;
     }
 
     private static void determineVersion(String localPomVersion) {
