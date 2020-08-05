@@ -1,4 +1,4 @@
-## 5.9.0 (WIP)
+## 5.9.0 (Aug 5, 2020)
 - Added Rotation APIs for managing state of the container
 - Support for custom Servlets
 - Support for injectable singleton DataSources
