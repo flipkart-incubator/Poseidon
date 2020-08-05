@@ -107,7 +107,7 @@ public class Generator {
 
     private static void validateServiceClientGroupId(String groupId) {
         if (!groupId.matches(SERVICE_CLIENT_GROUP_ID_REGEX)) {
-            logger.error("Invalid value for property service.clients.groupId");
+            logger.error("Invalid value for property {}", SERVICE_CLIENT_GROUP_ID_KEY);
             System.exit(-1);
         }
     }
