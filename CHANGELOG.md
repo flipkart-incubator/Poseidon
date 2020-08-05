@@ -6,6 +6,7 @@
 - [SchemaGenerator] Support for optional request body and file types
 - [SchemaGenerator] Support for collections as request bodies
 - [Bugfix] React correctly when we do not parse empty strings as params
+- Custom group id for generated service clients
 
 ## 5.8.0 (May 5, 2019)
 - Support for byte[] in ServiceResponseDecoder.
