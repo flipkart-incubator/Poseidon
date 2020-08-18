@@ -25,6 +25,7 @@ public class HandlerConstants {
     public static final String HTTP_URI = "uri";
     public static final String HTTP_METHOD = "method";
     public static final String HTTP_HEADERS = "headers";
+    public static final String HTTP_FORM_FIELDS = "formFields";
 
     public static final String X_CACHE_REQUEST = "X-Cache-Request";
 }

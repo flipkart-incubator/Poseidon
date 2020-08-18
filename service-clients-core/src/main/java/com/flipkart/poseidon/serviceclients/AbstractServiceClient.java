@@ -24,15 +24,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +88,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Object requestObject = properties.getRequestObject();
         JavaType javaType = properties.getJavaType();
         JavaType errorType = properties.getErrorType();
+        List<FormField> formFields = properties.getFormFields();
         Map<String, ServiceResponseInfo> serviceResponseInfoMap = properties.getServiceResponseInfoMap();
 
         if (commandName == null || commandName.isEmpty()) {
@@ -100,6 +105,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Map<String, Object> params = new HashMap<>();
         params.put(HTTP_URI, uri);
         params.put(HTTP_METHOD, httpMethod);
+        params.put(HTTP_FORM_FIELDS, formFields);
         if (requestCachingEnabled) {
             params.put(X_CACHE_REQUEST, "true");
         }
@@ -189,6 +195,26 @@ public abstract class AbstractServiceClient implements ServiceClient {
             return String.valueOf(url);
         } else {
             return encodeUrl(objectMapper.writeValueAsString(url));
+        }
+    }
+
+    protected String encodePathParam(Object path) throws JsonProcessingException {
+        String stringifiedPath;
+
+        if (path == null) {
+            stringifiedPath = "";
+        } else if (path instanceof String) {
+            stringifiedPath = (String) path;
+        } else if (ClassUtils.isPrimitiveOrWrapper(path.getClass()) || path.getClass().isEnum()) {
+            stringifiedPath = String.valueOf(path);
+        } else {
+            stringifiedPath = objectMapper.writeValueAsString(path);
+        }
+        try {
+            return new URIBuilder().setPath(stringifiedPath).build().toString();
+        } catch (URISyntaxException e) {
+            LoggerFactory.getLogger(getClass()).error("Exception while encoding Path param: " + stringifiedPath, e);
+            return stringifiedPath;
         }
     }
 
@@ -293,6 +319,10 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         return objectMapper.getTypeFactory().constructParametrizedType(clazz, clazz, javaTypes);
+    }
+
+    protected <T> void validateNotEmpty(T[] a) {
+        ArrayUtils.isNotEmpty(a);
     }
 
     @Override

@@ -18,10 +18,12 @@ package com.flipkart.poseidon.serviceclients.generator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flipkart.poseidon.handlers.http.multipart.FileFormField;
 import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.serviceclients.AbstractServiceClient;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.flipkart.poseidon.serviceclients.FutureTaskResultToDomainObjectPromiseWrapper;
 import com.flipkart.poseidon.serviceclients.ServiceExecutePropertiesBuilder;
 import com.flipkart.poseidon.serviceclients.idl.pojo.EndPoint;
@@ -31,7 +33,9 @@ import com.google.common.base.Joiner;
 import com.sun.codemodel.*;
 import flipkart.lego.api.entities.ServiceClient;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 
 import javax.validation.constraints.NotNull;
 import java.beans.Introspector;
@@ -106,6 +110,13 @@ public class ServiceGenerator {
             method.param(jType.boxify(), paramName).annotate(NotNull.class);
         } else {
             method.param(jType.boxify(), paramName);
+        }
+        if(Parameter.Type.FILE.equals(parameter.getFormFieldType())) {
+            //Additional parameter of file name also will be needed to be processed by http MultipartEntity
+            JVar var = method.param(jCodeModel.ref("String"), paramName + "FileName");
+            if(!parameter.getOptional()) {
+                var.annotate(NotNull.class);
+            }
         }
         JCommentPart paramComment = methodComment.addParam(paramName);
         if (parameter.getDescription() != null) {
@@ -295,6 +306,7 @@ public class ServiceGenerator {
         String uri = (baseUri + endPointUri).replaceAll("//", "/");
         Set<String> argsList = new LinkedHashSet<>();
         Set<String> argsListQueryParams = new LinkedHashSet<>();
+        Set<String> formFields = new LinkedHashSet<>();
 
         Matcher matcher = PARAMETERS_PATTERN.matcher(uri);
         while (matcher.find()) {
@@ -312,10 +324,10 @@ public class ServiceGenerator {
                     arg = listElementVarName;
                 }
                 if (parameter.getType().equals("String")) {
-                    invocation.arg(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg)));
+                    invocation.arg(JExpr.invoke("encodePathParam").arg(JExpr.ref(arg)));
                 } else if (parameter.getType().endsWith("[]")) {
                     JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
-                    invocation.arg(JExpr.invoke("encodeUrl").arg(joinerExpression));
+                    invocation.arg(JExpr.invoke("encodePathParam").arg(joinerExpression));
                 } else if (parameter.getType().startsWith("java.util.List")) {
                     invocation.arg(jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(arg)).arg(","));
                 } else {
@@ -329,8 +341,11 @@ public class ServiceGenerator {
             for (String paramName : endPoint.getParameters()) {
                 Parameter parameter = serviceIdl.getParameters().get(paramName);
                 if (!parameter.getOptional()) {
-                    if (parameter.getType().equalsIgnoreCase("string") || parameter.getType().endsWith("[]")) {
+                    if (parameter.getType().equalsIgnoreCase("string")) {
                         block.add(jCodeModel.ref(Validate.class).staticInvoke("notEmpty").arg(JExpr.ref(paramName)).arg(paramName + " can not be null/empty"));
+                    } else if (parameter.getType().endsWith("[]")) {
+                        JInvocation isNotEmpty = jCodeModel.ref(ArrayUtils.class).staticInvoke("isNotEmpty").arg(JExpr.ref(paramName));
+                        block.add(jCodeModel.ref(Validate.class).staticInvoke("isTrue").arg(isNotEmpty).arg(paramName + " can not be null/empty"));
                     } else {
                         block.add(jCodeModel.ref(Validate.class).staticInvoke("notNull").arg(JExpr.ref(paramName)).arg(paramName + " can not be null"));
                     }
@@ -338,8 +353,11 @@ public class ServiceGenerator {
 
                 if (argsList.contains(paramName))
                     continue;
-
-                argsListQueryParams.add(paramName);
+                if(parameter.getFormFieldType() != null) {
+                    formFields.add(paramName);
+                } else {
+                    argsListQueryParams.add(paramName);
+                }
             }
         }
 
@@ -349,6 +367,24 @@ public class ServiceGenerator {
                 block.decl(jCodeModel.ref("String"), META_INFO_COMMAND_NAME_VAR_NAME, invocation);
                 block.add(jCodeModel.ref(Validate.class).staticInvoke("notNull").arg(JExpr.ref(META_INFO_COMMAND_NAME_VAR_NAME)).arg(META_INFO_COMMAND_NAME_VAR_NAME + " can not be null"));
             }
+        }
+
+        if (!formFields.isEmpty()) {
+            JInvocation invocation = jCodeModel.ref(Arrays.class).staticInvoke("asList");
+            for (String paramName : formFields) {
+                Parameter parameter = serviceIdl.getParameters().get(paramName);
+                JExpression contentType = jCodeModel.ref(ContentType.class).staticInvoke("parse").arg(parameter.getFormFieldContentType());
+                if(parameter.getFormFieldType().equals(Parameter.Type.TEXT)) {
+                    JClass formFieldClass = jCodeModel.ref(FormField.class);
+                    invocation.arg(JExpr._new(formFieldClass).arg(paramName).arg(contentType).arg(JExpr.ref(paramName)));
+                } else if(parameter.getFormFieldType().equals(Parameter.Type.FILE)) {
+                    JClass fileFormFieldClass = jCodeModel.ref(FileFormField.class);
+                    invocation.arg(JExpr._new(fileFormFieldClass).arg(paramName).arg(contentType).arg(JExpr.ref(paramName)).arg(JExpr.ref(paramName + "FileName")));
+                }
+            }
+            JClass formFieldListClass = jCodeModel.ref(List.class).narrow(FormField.class);
+            block.decl(formFieldListClass, "formFields", invocation);
+            //TODO consider multivalue etc.
         }
 
         if (!argsListQueryParams.isEmpty()) {
@@ -475,6 +511,11 @@ public class ServiceGenerator {
             if (endPoint.isRequestCachingEnabled()) {
                 builderInvocation = builderInvocation.invoke("setRequestCachingEnabled").arg(JExpr.lit(true));
             }
+
+            if(formFields.size() > 0) {
+                builderInvocation = builderInvocation.invoke("setFormFields").arg(JExpr.ref("formFields"));
+            }
+
             builderInvocation = builderInvocation.invoke("build");
             return invocation.arg(builderInvocation);
         }
