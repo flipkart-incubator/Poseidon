@@ -337,15 +337,15 @@ public class HttpConnectionPool {
         } else if ("POST".equals(requestType))
         {
             HttpPost request = new HttpPost(constructUrl(uri));
-            setRequestBody(request,data, formFields);
             setRequestHeaders(request, requestHeaders);
+            setRequestBody(request,data, formFields);
             return request;
 
         } else if ("PUT".equals(requestType))
         {
             HttpPut request = new HttpPut(constructUrl(uri));
-            setRequestBody(request,data, formFields);
             setRequestHeaders(request, requestHeaders);
+            setRequestBody(request,data, formFields);
             return request;
 
         } else if ("DELETE".equals(requestType))
@@ -387,7 +387,6 @@ public class HttpConnectionPool {
         if(CollectionUtils.isEmpty(formFields)) {
             setRequestBody(request, data);
         } else {
-//            request.setHeader("Content-Type", ContentType.MULTIPART_FORM_DATA.getMimeType());
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
             formFields.forEach(formField -> {
                 if(formField instanceof FileFormField) {
@@ -397,7 +396,9 @@ public class HttpConnectionPool {
                     multipartEntityBuilder.addTextBody(formField.getName(), new String(formField.getData()), formField.getContentType());
                 }
             });
-            request.setEntity(multipartEntityBuilder.build());
+            HttpEntity httpEntity = multipartEntityBuilder.build();
+            request.setEntity(httpEntity);
+            request.setHeader(httpEntity.getContentType());
         }
     }
 
