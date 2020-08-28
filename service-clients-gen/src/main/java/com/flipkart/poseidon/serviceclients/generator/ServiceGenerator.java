@@ -384,7 +384,6 @@ public class ServiceGenerator {
             }
             JClass formFieldListClass = jCodeModel.ref(List.class).narrow(FormField.class);
             block.decl(formFieldListClass, "formFields", invocation);
-            //TODO consider multivalue etc.
         }
 
         if (!argsListQueryParams.isEmpty()) {

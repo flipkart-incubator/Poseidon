@@ -277,12 +277,13 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         return makeRequest(method, uri, data, requestHeaders, Collections.emptyList());
     }
     /**
-     * This makes the call to the service via the Http Client Framework
+     * This makes the call to the service via the Http Client Framework having form fields option
      *
      * @param method
      * @param uri
      * @param data
      * @param requestHeaders
+     * @param formFields
      * @return
      * @throws Exception
      */
