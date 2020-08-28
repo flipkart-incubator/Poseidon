@@ -28,7 +28,6 @@ import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -319,10 +318,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
         }
 
         return objectMapper.getTypeFactory().constructParametrizedType(clazz, clazz, javaTypes);
-    }
-
-    protected <T> void validateNotEmpty(T[] a) {
-        ArrayUtils.isNotEmpty(a);
     }
 
     @Override
