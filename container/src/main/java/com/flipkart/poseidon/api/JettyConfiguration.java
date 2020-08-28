@@ -17,6 +17,9 @@
 package com.flipkart.poseidon.api;
 
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SessionIdManager;
+import org.eclipse.jetty.server.session.SessionCacheFactory;
 
 import java.util.List;
 
@@ -80,6 +83,22 @@ public interface JettyConfiguration {
      * Allows configuration of jetty's connection factory
      */
     default HttpConnectionFactory getHttpConnectionFactory() {
+        return null;
+    }
+
+    /*
+     * Session Id manager which manages the session. This is required if session has to be managed in the request lifecycle
+     * Default is null which means session is not managed.
+     */
+    default SessionIdManager getSessionIdManager(Server server) {
+        return null;
+    }
+
+    /*
+     * Session Cache factory which will be responsible to provide the session cache class.
+     * Default is null which means jetty will use its default (DefaultSessionCacheFactory).
+     */
+    default SessionCacheFactory getSessionCacheFactory() {
         return null;
     }
 }

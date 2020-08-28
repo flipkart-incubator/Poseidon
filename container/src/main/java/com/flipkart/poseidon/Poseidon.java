@@ -51,6 +51,8 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+import org.eclipse.jetty.server.session.SessionCacheFactory;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -92,6 +94,7 @@ public class Poseidon implements ApplicationContextAware {
     private final ExecutorService filterES;
     private ApplicationContext context;
     private Server server;
+    private SessionHandler sessionHandler;
 
     @Autowired
     public Poseidon(Configuration configuration, Application application, RotationCheckServlet rotationCheckServlet,
@@ -152,6 +155,8 @@ public class Poseidon implements ApplicationContextAware {
                 connector.setPort(configuration.getPort());
                 connector.setAcceptQueueSize(jettyConfiguration.getAcceptQueueSize());
                 server.setConnectors(new Connector[] { connector });
+                initializeSessionManagement(jettyConfiguration);
+
             } else {
                 server = new Server(configuration.getPort());
             }
@@ -241,6 +246,10 @@ public class Poseidon implements ApplicationContextAware {
         servletContextHandler.addServlet(new ServletHolder(backInRotationServlet), "/_poseidon/bir");
         servletContextHandler.addServlet(new ServletHolder(outOfRotationServlet), "/_poseidon/oor");
 
+        if(sessionHandler != null) {
+            servletContextHandler.setSessionHandler(sessionHandler);
+        }
+
         configuration.registerServlets().forEach(servlet -> servletContextHandler.addServlet(servlet.getRight(), servlet.getLeft()));
 
         addFilters(servletContextHandler);
@@ -304,6 +313,19 @@ public class Poseidon implements ApplicationContextAware {
                 if (connectionFactory instanceof HttpConnectionFactory) {
                     ((HttpConnectionFactory) connectionFactory).getHttpConfiguration().setSendServerVersion(false);
                 }
+            }
+        }
+    }
+
+    private void initializeSessionManagement(JettyConfiguration jettyConfiguration) {
+        SessionIdManager sessionIdManager = jettyConfiguration.getSessionIdManager(server);
+        if(sessionIdManager != null) {
+            server.setSessionIdManager(sessionIdManager);
+            sessionHandler = new SessionHandler();
+            sessionHandler.setSessionIdManager(sessionIdManager);
+            SessionCacheFactory sessionCacheFactory = jettyConfiguration.getSessionCacheFactory();
+            if(sessionCacheFactory != null) {
+                server.addBean(sessionCacheFactory);
             }
         }
     }
