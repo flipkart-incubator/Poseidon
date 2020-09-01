@@ -324,10 +324,10 @@ public class ServiceGenerator {
                     arg = listElementVarName;
                 }
                 if (parameter.getType().equals("String")) {
-                    invocation.arg(JExpr.invoke("encodePathParam").arg(JExpr.ref(arg)));
+                    invocation.arg(JExpr.invoke("encodeUrl").arg(JExpr.ref(arg)));
                 } else if (parameter.getType().endsWith("[]")) {
                     JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
-                    invocation.arg(JExpr.invoke("encodePathParam").arg(joinerExpression));
+                    invocation.arg(JExpr.invoke("encodeUrl").arg(joinerExpression));
                 } else if (parameter.getType().startsWith("java.util.List")) {
                     invocation.arg(jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(arg)).arg(","));
                 } else {
