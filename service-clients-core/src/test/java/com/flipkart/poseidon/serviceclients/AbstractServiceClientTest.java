@@ -16,7 +16,6 @@
 
 package com.flipkart.poseidon.serviceclients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -30,7 +29,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class AbstractServiceClientTest {
     @Test
-    public void testMultiValueParamURI() throws JsonProcessingException {
+    public void testMultiValueParamURI() {
         AbstractServiceClient serviceClient = new TestAbstractServiceClient();
         assertEquals("", serviceClient.getMultiValueParamURI("key", null));
         assertEquals("", serviceClient.getMultiValueParamURI("key", Arrays.asList()));
@@ -41,9 +40,6 @@ public class AbstractServiceClientTest {
         assertEquals("key=a&key=&key=c", serviceClient.getMultiValueParamURI("key", Arrays.asList("a", "", "c")));
         assertEquals("key=a&key=b%26c&key=c", serviceClient.getMultiValueParamURI("key", Arrays.asList("a", "b&c", "c")));
         assertEquals("key=10&key=20&key=30", serviceClient.getMultiValueParamURI("key", Arrays.asList(10, 20, 30)));
-        assertEquals("path", serviceClient.encodePathParam("path"));
-        assertEquals("path%20param", serviceClient.encodePathParam("path param"));
-        assertEquals("path+param", serviceClient.encodePathParam("path+param"));
     }
 
     public static class TestAbstractServiceClient extends AbstractServiceClient {

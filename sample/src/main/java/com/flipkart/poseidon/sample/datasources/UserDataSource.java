@@ -22,7 +22,7 @@ import com.flipkart.poseidon.model.annotations.Description;
 import com.flipkart.poseidon.model.annotations.Name;
 import com.flipkart.poseidon.model.annotations.Version;
 import com.flipkart.poseidon.sample.datatypes.UserDataType;
-import com.flipkart.poseidon.serviceclients.sampleSC.v6.*;
+import com.flipkart.poseidon.serviceclients.sampleSC.v5.*;
 import flipkart.lego.api.entities.LegoSet;
 import flipkart.lego.api.entities.Request;
 import org.slf4j.Logger;

@@ -29,13 +29,11 @@ import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -194,26 +192,6 @@ public abstract class AbstractServiceClient implements ServiceClient {
             return String.valueOf(url);
         } else {
             return encodeUrl(objectMapper.writeValueAsString(url));
-        }
-    }
-
-    protected String encodePathParam(Object path) throws JsonProcessingException {
-        String stringifiedPath;
-
-        if (path == null) {
-            stringifiedPath = "";
-        } else if (path instanceof String) {
-            stringifiedPath = (String) path;
-        } else if (ClassUtils.isPrimitiveOrWrapper(path.getClass()) || path.getClass().isEnum()) {
-            stringifiedPath = String.valueOf(path);
-        } else {
-            stringifiedPath = objectMapper.writeValueAsString(path);
-        }
-        try {
-            return new URIBuilder().setPath(stringifiedPath).build().toString();
-        } catch (URISyntaxException e) {
-            LoggerFactory.getLogger(getClass()).error("Exception while encoding Path param: " + stringifiedPath, e);
-            return stringifiedPath;
         }
     }
 
