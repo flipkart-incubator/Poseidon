@@ -17,6 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
+| Version 5.10.0            | Sep 01 2020      |    Upgrade to Spring 5.2.5.RELEASE
 | Version 5.9.0             | Aug 05 2020      |    Custom servlets, singleton DS, bug fixes
 | Version 5.8.0             | May 31 2019      |    Support for byte[] in ServiceResponseDecoder
 | Version 5.6.0             | Jun 28 2018      |    Multiple error types in ServiceResponseDecoder

@@ -1,3 +1,6 @@
+## 5.10.0 (Sep 1, 2020)
+- Upgrade to Spring 5.2.5.RELEASE
+
 ## 5.9.0 (Aug 5, 2020)
 - Added Rotation APIs for managing state of the container
 - Support for custom Servlets
