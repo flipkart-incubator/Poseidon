@@ -409,19 +409,6 @@
 
     <repositories>
         <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>fk-art-release</id>
-            <name>Flipkart-ART-release</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
-        </repository>
-        <repository>
-            <id>fk-art-snapshot</id>
-            <name>Flipkart-ART-snapshot</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
-        </repository>
-        <repository>
             <id>clojars</id>
             <name>Clojars Maven Repository</name>
             <url>http://clojars.org/repo/</url>
@@ -437,15 +424,10 @@
     </repositories>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>fk-art-snapshot</id>
-            <name>FK ART - Snapshots</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
-        </snapshotRepository>
         <repository>
-            <id>fk-art-release</id>
-            <name>FK ART - Releases</name>
-            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
+            <id>clojars</id>
+            <name>Clojars repository</name>
+            <url>https://clojars.org/repo</url>
         </repository>
     </distributionManagement>
 

@@ -40,10 +40,12 @@ public class Generator {
     private final static String IDL_BASE_PATH = ".src.main.resources.idl.";
     private final static String POJO_FOLDER_NAME = "pojos";
     private final static String SERVICE_FOLDER_NAME = "service";
+    private final static String DEFAULT_SERVICE_CLIENT_GROUP_ID = "com.flipkart.poseidon.serviceclients";
     private final static String DESTINATION_JAVA_FOLDER = ".target.generated-sources.";
-    private final static String PACKAGE_NAME = "com.flipkart.poseidon.serviceclients."; // module name and major version will be appended to this
     private final static JCodeModel jCodeModel = new JCodeModel();
     private final static Logger logger = LoggerFactory.getLogger(Generator.class);
+    private final static String SERVICE_CLIENT_GROUP_ID_KEY = "service.clients.groupId";
+    private final static String SERVICE_CLIENT_GROUP_ID_REGEX = "^([a-zA-Z_]+[.])*([a-zA-Z_]+)$";
 
     private static String moduleParentPath;
     private static String modulePath;
@@ -88,12 +90,26 @@ public class Generator {
 
         determineVersion(args[1]);
         String majorVersion = "v" + version.getMajor();
-        packageName = PACKAGE_NAME + moduleName + "." + majorVersion;
+
+        String serviceClientGroupId = System.getProperty(SERVICE_CLIENT_GROUP_ID_KEY);
+        if (serviceClientGroupId == null || serviceClientGroupId.isEmpty()) {
+            serviceClientGroupId = DEFAULT_SERVICE_CLIENT_GROUP_ID;
+        }
+
+        validateServiceClientGroupId(serviceClientGroupId);
+        packageName = serviceClientGroupId + "." + moduleName + "." + majorVersion;
 
         if (args.length > 2) {
             pojoOrdering = args[2].split(",");
         }
         return true;
+    }
+
+    private static void validateServiceClientGroupId(String groupId) {
+        if (!groupId.matches(SERVICE_CLIENT_GROUP_ID_REGEX)) {
+            logger.error("Invalid value for property {}", SERVICE_CLIENT_GROUP_ID_KEY);
+            System.exit(-1);
+        }
     }
 
     private static void determineVersion(String localPomVersion) {
