@@ -1,4 +1,4 @@
-## 5.10.0 (Sep 1, 2020)
+## 5.10.0 (Sep 2, 2020)
 - Upgrade to Spring 5.2.5.RELEASE
 - Upgrade to Phantom 3.5.0
 
