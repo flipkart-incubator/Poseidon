@@ -83,7 +83,7 @@
         <phantom.version>3.5.0</phantom.version>
         <brave.version>2.2.1</brave.version>
         <slf4j.api.version>1.7.9</slf4j.api.version>
-        <log4j.version>2.6.2</log4j.version>
+        <log4j.version>2.13.3</log4j.version>
         <disruptor.version>3.3.4</disruptor.version>
     </properties>
 
