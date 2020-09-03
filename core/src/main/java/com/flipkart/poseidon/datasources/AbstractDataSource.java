@@ -16,7 +16,11 @@
 
 package com.flipkart.poseidon.datasources;
 
+import com.flipkart.poseidon.helper.AnnotationHelper;
+import com.flipkart.poseidon.helper.CallableNameHelper;
 import com.flipkart.poseidon.legoset.PoseidonLegoSet;
+import com.flipkart.poseidon.model.annotations.Name;
+import com.flipkart.poseidon.model.annotations.Version;
 import flipkart.lego.api.entities.DataSource;
 import flipkart.lego.api.entities.DataType;
 import flipkart.lego.api.entities.LegoSet;
@@ -41,6 +45,10 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return execute(dsId, dataSourceRequest);
     }
 
+    public <Q extends DataType> Future<Q> execute(Class<? extends AbstractDataSource<Q>> clazz, Map<String, Object> requestMap) throws Exception {
+        return execute(getDataSourceId(clazz), requestMap);
+    }
+
     public <Q extends DataType> Future<Q> execute(AbstractDataSource<Q> dataSource) throws Exception {
         return this.legoset.getDataSourceExecutor().submit(this.legoset.wrapDataSource(dataSource, dataSource.getRequest()));
     }
@@ -48,6 +56,10 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
     public <Q extends DataType> Future<Q> execute(String dsId, Request request) throws Exception {
         DataSource<Q> dataSource = this.legoset.getDataSource(dsId, request);
         return this.legoset.getDataSourceExecutor().submit(dataSource);
+    }
+
+    public <Q extends DataType> Future<Q> execute(Class<? extends AbstractDataSource<Q>> clazz, Request request) throws Exception {
+        return this.execute(getDataSourceId(clazz), request);
     }
 
     public <Q extends DataType> Q executeSync(AbstractDataSource<Q> dataSource) throws Exception {
@@ -60,9 +72,23 @@ public abstract class AbstractDataSource<T extends DataType> implements DataSour
         return executeSync(dsId, dataSourceRequest);
     }
 
+    public <Q extends DataType> Q executeSync(Class<? extends AbstractDataSource<Q>> clazz, Map<String, Object> requestMap) throws Exception {
+        return executeSync(getDataSourceId(clazz), requestMap);
+    }
+
     public <Q extends DataType> Q executeSync(String dsId, Request request) throws Exception {
         DataSource<Q> dataSource = this.legoset.getBasicDataSource(dsId, request);
         return dataSource.call();
+    }
+
+    public <Q extends DataType> Q executeSync(Class<? extends AbstractDataSource<Q>> clazz, Request request) throws Exception {
+        return executeSync(getDataSourceId(clazz), request);
+    }
+
+    private <Q extends AbstractDataSource> String getDataSourceId(Class<Q> clazz) {
+        String name = clazz.getAnnotation(Name.class).value();
+        String version = AnnotationHelper.constructVersion(clazz.getAnnotation(Version.class));
+        return CallableNameHelper.versionedName(name, version);
     }
 
     @Override
