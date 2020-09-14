@@ -17,8 +17,11 @@
 package com.flipkart.poseidon.serviceclients;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +37,7 @@ public class ServiceExecuteProperties {
     private String commandName;
     private boolean requestCachingEnabled;
     private Map<String, ServiceResponseInfo> serviceResponseInfoMap = new HashMap<>();
+    private List<FormField> formFields = new ArrayList<>();
 
     public JavaType getJavaType() {
         return javaType;
@@ -106,4 +110,13 @@ public class ServiceExecuteProperties {
     public void setServiceResponseInfoMap(Map<String, ServiceResponseInfo> serviceResponseInfoMap) {
         this.serviceResponseInfoMap = serviceResponseInfoMap;
     }
+
+    public List<FormField> getFormFields() {
+        return formFields;
+    }
+
+    public void setFormFields(List<FormField> formFields) {
+        this.formFields = formFields;
+    }
+
 }

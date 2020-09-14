@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.phantom.task.spi.TaskResult;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
@@ -84,6 +85,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Object requestObject = properties.getRequestObject();
         JavaType javaType = properties.getJavaType();
         JavaType errorType = properties.getErrorType();
+        List<FormField> formFields = properties.getFormFields();
         Map<String, ServiceResponseInfo> serviceResponseInfoMap = properties.getServiceResponseInfoMap();
 
         if (commandName == null || commandName.isEmpty()) {
@@ -100,6 +102,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
         Map<String, Object> params = new HashMap<>();
         params.put(HTTP_URI, uri);
         params.put(HTTP_METHOD, httpMethod);
+        params.put(HTTP_FORM_FIELDS, formFields);
         if (requestCachingEnabled) {
             params.put(X_CACHE_REQUEST, "true");
         }

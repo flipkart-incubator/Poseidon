@@ -17,7 +17,9 @@
 package com.flipkart.poseidon.serviceclients;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -79,6 +81,13 @@ public class ServiceExecutePropertiesBuilder {
         }
 
         instance.setServiceResponseInfoMap(serviceResponseInfoMap);
+        return this;
+    }
+
+    public ServiceExecutePropertiesBuilder setFormFields(List<FormField> formFields) {
+        if (formFields != null) {
+            instance.setFormFields(formFields);
+        }
         return this;
     }
 

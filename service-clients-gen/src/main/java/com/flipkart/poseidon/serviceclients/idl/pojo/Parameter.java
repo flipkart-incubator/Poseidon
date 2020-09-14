@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.serviceclients.idl.pojo;
 
+import org.apache.http.entity.ContentType;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,8 @@ public class Parameter {
     private String name;
     private boolean multiValue = false;
     private Boolean optional = false;
+    private Type formFieldType;
+    private String formFieldContentType = ContentType.TEXT_PLAIN.getMimeType();
     private String[] description;
 
     public String getType() {
@@ -102,5 +106,26 @@ public class Parameter {
             return false;
         }
         return true;
+    }
+
+    public String getFormFieldContentType() {
+        return formFieldContentType;
+    }
+
+    public void setFormFieldContentType(String formFieldContentType) {
+        this.formFieldContentType = formFieldContentType;
+    }
+
+    public Type getFormFieldType() {
+        return formFieldType;
+    }
+
+    public void setFormFieldType(Type formFieldType) {
+        this.formFieldType = formFieldType;
+    }
+
+    public enum Type {
+        TEXT,
+        FILE
     }
 }

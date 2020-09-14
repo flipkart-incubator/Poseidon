@@ -69,6 +69,15 @@
             "multiValue": {
               "type": "boolean"
             },
+            "formFieldType": {
+              "enum": [
+                "TEXT",
+                "FILE"
+              ]
+            },
+            "formFieldContentType": {
+              "type": "string"
+            },
             "description": {
               "$ref": "#/definitions/stringArray"
             }

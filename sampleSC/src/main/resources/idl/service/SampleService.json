@@ -23,6 +23,22 @@
       "description": [
         "Unique ID of post to get all comments"
       ]
+    },
+    "userData": {
+      "type": "String",
+      "formFieldType" : "TEXT",
+      "formFieldContentType" : "application/json",
+      "description" : [
+        "User details as json string"
+      ]
+    },
+    "avatar": {
+      "type": "byte[]",
+      "formFieldType" : "FILE",
+      "formFieldContentType" : "image/jpeg",
+      "description" : [
+        "User's display picture"
+      ]
     }
   },
   "endPoints": {
@@ -60,6 +76,21 @@
       "responseObject": "Comments",
       "description": [
         "Fetches all comments of a post"
+      ]
+    },
+    "createUser": {
+      "httpMethod": "POST",
+      "uri": "/users",
+      "headers": {
+        "Content-Type":"multipart/form-data"
+      },
+      "responseObject": "User",
+      "parameters": [
+        "userData",
+        "avatar"
+      ],
+      "description": [
+        "Dummy create user api"
       ]
     }
   },

@@ -16,6 +16,8 @@
 
 package com.flipkart.poseidon.handlers.http.impl;
 
+import com.flipkart.poseidon.handlers.http.multipart.FileFormField;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.flipkart.poseidon.handlers.http.HttpDelete;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
@@ -31,6 +33,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
@@ -38,6 +41,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.pool.PoolStats;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.util.CollectionUtils;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
@@ -257,7 +261,7 @@ public class HttpConnectionPool {
         setRequestHeaders(request, requestHeaders);
         return execute(request);
     }
-    
+
     /**
      * Method for executing HTTP DELETE request
      */
@@ -322,8 +326,8 @@ public class HttpConnectionPool {
     /**
      * Method to create HttpRequest
      */
-
-    public HttpRequestBase createHttpRequest(String uri, byte[] data, Map<String, String> requestHeaders, String requestType)
+    public HttpRequestBase createHttpRequest(String uri, byte[] data, Map<String, String> requestHeaders,
+                                             String requestType, List<FormField> formFields)
     {
         if("GET".equals(requestType))
         {
@@ -333,15 +337,15 @@ public class HttpConnectionPool {
         } else if ("POST".equals(requestType))
         {
             HttpPost request = new HttpPost(constructUrl(uri));
-            setRequestBody(request,data);
             setRequestHeaders(request, requestHeaders);
+            setRequestBody(request,data, formFields);
             return request;
 
         } else if ("PUT".equals(requestType))
         {
             HttpPut request = new HttpPut(constructUrl(uri));
-            setRequestBody(request,data);
             setRequestHeaders(request, requestHeaders);
+            setRequestBody(request,data, formFields);
             return request;
 
         } else if ("DELETE".equals(requestType))
@@ -363,7 +367,6 @@ public class HttpConnectionPool {
             return request;
         }
     }
-
     /**
      *
      * @param request
@@ -377,6 +380,25 @@ public class HttpConnectionPool {
             } else {
                 request.setEntity(new ByteArrayEntity(data));
             }
+        }
+    }
+
+    private void setRequestBody(HttpEntityEnclosingRequestBase request, byte[] data, List<FormField> formFields) {
+        if(CollectionUtils.isEmpty(formFields)) {
+            setRequestBody(request, data);
+        } else {
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+            formFields.forEach(formField -> {
+                if(formField instanceof FileFormField) {
+                    multipartEntityBuilder.addBinaryBody(formField.getName(), formField.getData(),
+                            formField.getContentType(), ((FileFormField) formField).getFileName());
+                } else {
+                    multipartEntityBuilder.addTextBody(formField.getName(), new String(formField.getData()), formField.getContentType());
+                }
+            });
+            HttpEntity httpEntity = multipartEntityBuilder.build();
+            request.setEntity(httpEntity);
+            request.setHeader(httpEntity.getContentType());
         }
     }
 

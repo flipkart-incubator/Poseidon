@@ -24,6 +24,7 @@ import com.flipkart.phantom.task.spi.Decoder;
 import com.flipkart.phantom.task.spi.TaskContext;
 import com.flipkart.poseidon.handlers.http.HttpResponseDecoder;
 import com.flipkart.poseidon.handlers.http.HttpResponseData;
+import com.flipkart.poseidon.handlers.http.multipart.FormField;
 import com.google.common.base.Charsets;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -35,15 +36,13 @@ import org.apache.http.util.EntityUtils;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.flipkart.poseidon.handlers.http.HandlerConstants.*;
 import static com.google.common.hash.Hashing.murmur3_32;
-
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_HEADERS;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_METHOD;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.HTTP_URI;
-import static com.flipkart.poseidon.handlers.http.HandlerConstants.X_CACHE_REQUEST;
 
 
 public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandler {
@@ -148,7 +147,8 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         }
 
         try {
-            HttpRequestBase request = this.pool.createHttpRequest((String) params.get(HTTP_URI), data, requestHeaders, (String) params.get(HTTP_METHOD));
+            HttpRequestBase request = this.pool.createHttpRequest((String) params.get(HTTP_URI), data,
+                    requestHeaders, (String) params.get(HTTP_METHOD), (List<FormField>) params.get(HTTP_FORM_FIELDS));
             HttpResponse httpResponse =  this.pool.execute(request);
 
             return  new TaskResult<T>(true, null, ((HttpResponseDecoder<T>) decoder).decode(httpResponse));
@@ -181,7 +181,8 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
         }
         TaskResult result;
         try {
-            result  = handleHttpResponse(makeRequest((String) params.get(HTTP_METHOD), (String) params.get(HTTP_URI), (byte[]) data, requestHeaders));
+            result  = handleHttpResponse(makeRequest((String) params.get(HTTP_METHOD), (String) params.get(HTTP_URI),
+                    (byte[]) data, requestHeaders, (List<FormField>) params.get(HTTP_FORM_FIELDS)));
         }
         catch (Exception e) {
             result =  handleException(e, (String) params.get(HTTP_URI), (String) params.get(HTTP_METHOD));
@@ -273,7 +274,22 @@ public class SinglePoolHttpTaskHandler extends RequestCacheableHystrixTaskHandle
      */
     protected final HttpResponseData makeRequest(String method, String uri, byte[] data,
                                                  Map<String,String> requestHeaders) throws Exception{
-        HttpRequestBase request = this.pool.createHttpRequest(uri, data, requestHeaders, method);
+        return makeRequest(method, uri, data, requestHeaders, Collections.emptyList());
+    }
+    /**
+     * This makes the call to the service via the Http Client Framework having form fields option
+     *
+     * @param method
+     * @param uri
+     * @param data
+     * @param requestHeaders
+     * @param formFields
+     * @return
+     * @throws Exception
+     */
+    protected final HttpResponseData makeRequest(String method, String uri, byte[] data,
+                                                 Map<String,String> requestHeaders, List<FormField> formFields) throws Exception{
+        HttpRequestBase request = this.pool.createHttpRequest(uri, data, requestHeaders, method, formFields);
         return getHttpResponseData(this.pool.execute(request));
     }
 
