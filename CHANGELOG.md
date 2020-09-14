@@ -1,3 +1,8 @@
+## 5.11.0 (Sep 11, 2020)
+- Support for multipart forms in ServiceClients
+- Support for session management
+- Added type safe execute Sync and Async methods in AbstractDataSource
+
 ## 5.10.0 (Sep 2, 2020)
 - Upgrade to Spring 5.2.5.RELEASE
 - Upgrade to Phantom 3.5.0
