@@ -323,16 +323,14 @@ public class ServiceGenerator {
                 if (endPoint.getRequestParamWithLimit() != null && requestParamWithLimit.equals(arg)) {
                     arg = listElementVarName;
                 }
-                if (parameter.getType().equals("String")) {
-                    invocation.arg(JExpr.invoke("encodePathParam").arg(JExpr.ref(arg)));
-                } else if (parameter.getType().endsWith("[]")) {
-                    JExpression joinerExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
-                    invocation.arg(JExpr.invoke("encodePathParam").arg(joinerExpression));
-                } else if (parameter.getType().startsWith("java.util.List")) {
-                    invocation.arg(jCodeModel.ref(StringUtils.class).staticInvoke("join").arg(JExpr.ref(arg)).arg(","));
+                JExpression pathParamExpression;
+                if (parameter.getType().endsWith("[]")) {
+                    pathParamExpression = jCodeModel.ref(Joiner.class).staticInvoke("on").arg(JExpr.lit(',')).invoke("join").arg(JExpr.ref(arg));
                 } else {
-                    invocation.arg(JExpr.ref(arg));
+                    // This is applicable to every other types: string, enum, object, list of objects
+                    pathParamExpression = JExpr.invoke("pathParamToString").arg(JExpr.ref(arg));
                 }
+                invocation.arg(JExpr.invoke("encodePathParam").arg(pathParamExpression));
             }
             block.decl(jCodeModel.ref("String"), "uri", invocation);
         }
