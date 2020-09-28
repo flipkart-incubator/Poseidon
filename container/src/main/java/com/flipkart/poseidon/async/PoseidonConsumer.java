@@ -132,8 +132,8 @@ public abstract class PoseidonConsumer {
         if (!StringUtils.isNullOrEmpty(RequestContext.get(ENDPOINT_NAME))) {
             String status = (response.getStatusCode() / 100) + "XX";
             Metrics.getRegistry()
-                    .counter(MetricsHelper.getStatusCodeMetricsName(RequestContext.get(ENDPOINT_NAME), RequestContext.get(RequestConstants.METHOD), status))
-                    .inc();
+                    .meter(MetricsHelper.getStatusCodeMetricsName(RequestContext.get(ENDPOINT_NAME), RequestContext.get(RequestConstants.METHOD), status))
+                    .mark();
         }
     }
 
