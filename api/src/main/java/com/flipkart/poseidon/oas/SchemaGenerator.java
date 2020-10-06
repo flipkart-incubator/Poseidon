@@ -244,13 +244,20 @@ public class SchemaGenerator {
 
     private static void handleOtherResponses(Class<? extends DataSource<?>> dsClass, ApiResponses responses, Path modelsDir) {
         final Responses responsesAnnotation = dsClass.getAnnotation(Responses.class);
-        if (responsesAnnotation == null) {
-            return;
+        boolean defaultResponseAdded = false;
+        if (responsesAnnotation != null) {
+            final Response[] responseArray = responsesAnnotation.value();
+            for (Response response : responseArray) {
+                String status = String.valueOf(response.status());
+                if(response.status() == 0) {
+                    status = ApiResponses.DEFAULT;
+                    defaultResponseAdded = true;
+                }
+                resolveAPIResponse(status, response.responseClass(), responses, modelsDir);
+            }
         }
-
-        final Response[] responseArray = responsesAnnotation.value();
-        for (Response response : responseArray) {
-            resolveAPIResponse(String.valueOf(response.status()), response.responseClass(), responses, modelsDir);
+        if(!defaultResponseAdded) {
+            resolveAPIResponse(ApiResponses.DEFAULT, Map.class, responses, modelsDir);
         }
     }
 

@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package com.flipkart.poseidon.model.oas;
 
 /**
  * Created by shrey.garg on 2019-01-08.
  */
 public @interface Response {
-    int status();
+    /**
+     * Http response code. Specify 0 for "default" open api response
+     * @return
+     */
+    int status() default 0;
     Class<?> responseClass();
 }
