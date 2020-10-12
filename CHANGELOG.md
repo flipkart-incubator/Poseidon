@@ -1,3 +1,6 @@
+## 6.0.0-BETA (Oct 12, 2020)
+- Encode path parameters using URLBuilder in service client generated code
+
 ## 5.11.0 (Sep 11, 2020)
 - Support for multipart forms in ServiceClients
 - Support for session management
