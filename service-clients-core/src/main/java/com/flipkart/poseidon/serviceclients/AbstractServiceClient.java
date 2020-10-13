@@ -29,16 +29,16 @@ import com.flipkart.poseidon.model.VariableModel;
 import flipkart.lego.api.entities.ServiceClient;
 import flipkart.lego.api.exceptions.LegoServiceException;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
@@ -260,6 +260,42 @@ public abstract class AbstractServiceClient implements ServiceClient {
             }
         }
         return queryURI.toString();
+    }
+
+    protected String encodePathParam(String path) throws JsonProcessingException {
+        try {
+            return new URIBuilder().setPath(path).build().toString();
+        } catch (URISyntaxException e) {
+            LoggerFactory.getLogger(getClass()).error("Exception while encoding Path param: " + path, e);
+            return path;
+        }
+    }
+
+    protected String pathParamToString(Object path) throws JsonProcessingException {
+        String stringifiedPath;
+
+        if (path == null) {
+            stringifiedPath = "";
+        } else if (path instanceof String) {
+            stringifiedPath = (String) path;
+        } else if (ClassUtils.isPrimitiveOrWrapper(path.getClass()) || path.getClass().isEnum()) {
+            stringifiedPath = String.valueOf(path);
+        } else {
+            stringifiedPath = objectMapper.writeValueAsString(path);
+        }
+        return stringifiedPath;
+    }
+
+    protected String pathParamToString(List<?> path) throws JsonProcessingException {
+        if(path == null) {
+            return "";
+        }
+        List<String> list = new ArrayList<>();
+        for (Object element : path) {
+            String elementAsString = pathParamToString(element);
+            list.add(elementAsString);
+        }
+        return StringUtils.join(list, ",");
     }
 
     public JavaType getJavaType(TypeReference typeReference) {
