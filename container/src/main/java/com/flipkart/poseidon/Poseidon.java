@@ -71,10 +71,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
 import static javax.servlet.DispatcherType.REQUEST;
@@ -104,9 +101,10 @@ public class Poseidon implements ApplicationContextAware {
         this.rotationCheckServlet = rotationCheckServlet;
         this.backInRotationServlet = backInRotationServlet;
         this.outOfRotationServlet = outOfRotationServlet;
+        ThreadFactory factory = Thread.builder().virtual().factory();
 
-        dataSourceES = Executors.newCachedThreadPool();
-        filterES = Executors.newCachedThreadPool();
+        dataSourceES = Executors.newCachedThreadPool(factory);
+        filterES = Executors.newCachedThreadPool(factory);
     }
 
     public static void main(String[] args) {
@@ -144,9 +142,9 @@ public class Poseidon implements ApplicationContextAware {
                 // Use a bounded queue over jetty's default unbounded queue
                 // https://wiki.eclipse.org/Jetty/Howto/High_Load#Thread_Pool
                 BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(jettyConfiguration.getTaskQueueSize());
-                QueuedThreadPool threadPool = new QueuedThreadPool(jettyConfiguration.getMaxThreads(),
-                        jettyConfiguration.getMinThreads(), jettyConfiguration.getThreadIdleTimeout(), queue);
-                server = new Server(threadPool);
+//                QueuedThreadPool threadPool = new QueuedThreadPool(jettyConfiguration.getMaxThreads(),
+//                        jettyConfiguration.getMinThreads(), jettyConfiguration.getThreadIdleTimeout(), queue);
+                server = new Server(new VirtualThreadPool());
                 ServerConnector connector = new ServerConnector(
                         server,
                         jettyConfiguration.getAcceptors(),
