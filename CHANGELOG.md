@@ -1,3 +1,6 @@
+## 5.11.1 (Jan 22, 2021)
+- Meter instead of Counter for API metrics
+
 ## 5.11.0 (Sep 11, 2020)
 - Support for multipart forms in ServiceClients
 - Support for session management
