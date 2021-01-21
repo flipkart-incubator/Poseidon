@@ -84,9 +84,6 @@ public class Poseidon implements ApplicationContextAware {
 
     private final Configuration configuration;
     private final Application application;
-    private final RotationCheckServlet rotationCheckServlet;
-    private final BackInRotationServlet backInRotationServlet;
-    private final OutOfRotationServlet outOfRotationServlet;
     private final ExecutorService dataSourceES;
     private final ExecutorService filterES;
     private ApplicationContext context;
@@ -94,13 +91,9 @@ public class Poseidon implements ApplicationContextAware {
     private SessionHandler sessionHandler;
 
     @Autowired
-    public Poseidon(Configuration configuration, Application application, RotationCheckServlet rotationCheckServlet,
-                    BackInRotationServlet backInRotationServlet, OutOfRotationServlet outOfRotationServlet) {
+    public Poseidon(Configuration configuration, Application application) {
         this.configuration = configuration;
         this.application = application;
-        this.rotationCheckServlet = rotationCheckServlet;
-        this.backInRotationServlet = backInRotationServlet;
-        this.outOfRotationServlet = outOfRotationServlet;
         ThreadFactory factory = Thread.builder().virtual().factory();
 
         dataSourceES = Executors.newCachedThreadPool(factory);
@@ -240,9 +233,6 @@ public class Poseidon implements ApplicationContextAware {
         ServletContextHandler servletContextHandler = new ServletContextHandler();
         servletContextHandler.setContextPath("/");
         servletContextHandler.addServlet(new ServletHolder(getPoseidonServlet()), "/*");
-        servletContextHandler.addServlet(new ServletHolder(rotationCheckServlet), "/_poseidon/rotation");
-        servletContextHandler.addServlet(new ServletHolder(backInRotationServlet), "/_poseidon/bir");
-        servletContextHandler.addServlet(new ServletHolder(outOfRotationServlet), "/_poseidon/oor");
 
         if(sessionHandler != null) {
             servletContextHandler.setSessionHandler(sessionHandler);
