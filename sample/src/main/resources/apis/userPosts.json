@@ -25,7 +25,6 @@
       }
     }
   },
-  "filters": ["BotFilter_1.0.0"],
   "response": {
     "user": "{{$userDT}}",
     "posts": "{{#$postsDT.posts}}"
