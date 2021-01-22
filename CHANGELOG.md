@@ -1,4 +1,4 @@
-## 5.11.0 (Sep 11, 2020)
+## 5.11.1 (Sep 11, 2020)
 - Support for multipart forms in ServiceClients
 - Support for session management
 - Added type safe execute Sync and Async methods in AbstractDataSource

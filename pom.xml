@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>5.11.0</version>
+    <version>5.11.1</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>
@@ -24,8 +24,6 @@
         <module>service-clients-archetype</module>
         <module>log4j-access</module>
         <module>sample</module>
-        <module>cadfael</module>
-        <module>cadfael-maven-plugin</module>
         <module>sampleSC</module>
     </modules>
 
@@ -113,7 +111,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>18.0</version>
+                <version>26.0-jre</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>

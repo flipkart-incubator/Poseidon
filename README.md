@@ -17,7 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
-| Version 5.11.0            | Sep 11 2020      |    Support for multipart forms in ServiceClients and session management
+| Version 5.11.1            | Sep 11 2020      |    Support for multipart forms in ServiceClients and session management
 | Version 5.10.0            | Sep 02 2020      |    Upgrade to Spring 5.2.5.RELEASE
 | Version 5.9.0             | Aug 05 2020      |    Custom servlets, singleton DS, bug fixes
 | Version 5.8.0             | May 31 2019      |    Support for byte[] in ServiceResponseDecoder

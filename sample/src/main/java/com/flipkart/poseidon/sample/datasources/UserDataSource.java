@@ -41,8 +41,9 @@ public class UserDataSource extends AbstractDataSource<UserDataType> {
     @Override
     public UserDataType call() throws Exception {
         try {
+            logger.error("THread: {}", Thread.currentThread().isVirtual());
             String userId = request.getAttribute("userId");
-            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
+            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_5.11.1");
             UserList userList = serviceClient.getUser(userId).get();
             if (userList == null || userList.isEmpty()) {
                 throw new DataSourceException("User not found", 404);
