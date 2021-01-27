@@ -18,7 +18,7 @@ package com.flipkart.poseidon.core;
 
 import com.google.common.collect.ImmutableMap;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 import java.util.Map;
 
 /**

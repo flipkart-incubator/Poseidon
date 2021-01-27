@@ -23,21 +23,12 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-        <dependency>
             <groupId>com.flipkart.lego</groupId>
             <artifactId>model</artifactId>
         </dependency>
         <dependency>
             <groupId>com.flipkart.lego</groupId>
             <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
@@ -50,11 +41,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
         </dependency>
         <dependency>
             <groupId>com.flipkart.phantom</groupId>
@@ -90,6 +76,11 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
         </dependency>
     </dependencies>
 </project>

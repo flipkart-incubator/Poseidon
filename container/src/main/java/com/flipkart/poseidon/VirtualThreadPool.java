@@ -1,41 +1,62 @@
 package com.flipkart.poseidon;
 
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.thread.ThreadPool;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public class VirtualThreadPool implements ThreadPool {
 
-    private final ExecutorService executor;
+public class VirtualThreadPool extends AbstractLifeCycle implements ThreadPool {
+    private final ExecutorService executorService;
 
-    public VirtualThreadPool() {
-        executor = Executors.newThreadExecutor(
-                Thread.builder().virtual().name("jetty-vt#", 0).factory());
-        // too early for logging libs
-        System.out.println("VirtualThreadExecutor is active.");
+    public VirtualThreadPool()
+    {
+        ThreadFactory factory = Thread.builder().virtual().name("LoomThreadPool-").factory();
+        executorService = Executors.newThreadExecutor(factory);
     }
 
     @Override
-    public void execute(Runnable command) {
-        executor.execute(command);
+    public void execute(Runnable command)
+    {
+        executorService.execute(command);
     }
 
     @Override
-    public void join() throws InterruptedException {
-        executor.shutdown();
-        executor.awaitTermination(3, TimeUnit.SECONDS);
+    public void join()
+    {
+        while (!executorService.isTerminated())
+        {
+            Thread.onSpinWait();
+        }
     }
 
-    // those are hopefully only used for stats/dashboards etc
     @Override
-    public int getThreads() { return -1; }
+    protected void doStop() throws Exception
+    {
+        super.doStop();
+        executorService.shutdown();
+    }
 
     @Override
-    public int getIdleThreads() { return -1; }
+    public int getThreads()
+    {
+        // TODO: always report a value?
+        return Integer.MAX_VALUE;
+    }
 
     @Override
-    public boolean isLowOnThreads() { return false; }
+    public int getIdleThreads()
+    {
+        // TODO: always report available?
+        return Integer.MAX_VALUE;
+    }
 
+    @Override
+    public boolean isLowOnThreads()
+    {
+        return false;
+    }
 }

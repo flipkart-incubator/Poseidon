@@ -24,10 +24,10 @@ import com.flipkart.poseidon.serviceclients.ServiceContext;
 import com.flipkart.poseidon.serviceclients.ServiceDebug;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;

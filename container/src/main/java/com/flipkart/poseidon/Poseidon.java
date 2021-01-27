@@ -20,15 +20,12 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.jetty9.InstrumentedHandler;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
-import com.codahale.metrics.servlets.AdminServlet;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.fasterxml.jackson.databind.JavaType;
-import com.flipkart.phantom.runtime.impl.jetty.filter.ServletTraceFilter;
 import com.flipkart.poseidon.api.Application;
 import com.flipkart.poseidon.api.Configuration;
 import com.flipkart.poseidon.api.JettyConfiguration;
@@ -40,10 +37,6 @@ import com.flipkart.poseidon.filters.RequestGzipFilter;
 import com.flipkart.poseidon.healthchecks.Rotation;
 import com.flipkart.poseidon.log4j.Log4JAccessLog;
 import com.flipkart.poseidon.metrics.Metrics;
-import com.flipkart.poseidon.rotation.BackInRotationServlet;
-import com.flipkart.poseidon.rotation.OutOfRotationServlet;
-import com.flipkart.poseidon.rotation.RotationCheckServlet;
-import com.flipkart.poseidon.tracing.ServletTraceFilterBuilder;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.*;
@@ -56,7 +49,6 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,10 +63,13 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.flipkart.poseidon.helpers.ObjectMapperHelper.getMapper;
-import static javax.servlet.DispatcherType.REQUEST;
+import static jakarta.servlet.DispatcherType.REQUEST;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
@@ -94,10 +89,8 @@ public class Poseidon implements ApplicationContextAware {
     public Poseidon(Configuration configuration, Application application) {
         this.configuration = configuration;
         this.application = application;
-        ThreadFactory factory = Thread.builder().virtual().factory();
-
-        dataSourceES = Executors.newCachedThreadPool(factory);
-        filterES = Executors.newCachedThreadPool(factory);
+        dataSourceES = Executors.newVirtualThreadExecutor();
+        filterES = Executors.newVirtualThreadExecutor();
     }
 
     public static void main(String[] args) {
@@ -160,6 +153,7 @@ public class Poseidon implements ApplicationContextAware {
             initializeMetricReporters();
 
             server.start();
+            server.join();
             STARTUP_LOGGER.info("*** Poseidon started ***");
         } catch (Exception e) {
             STARTUP_LOGGER.error("Unable to start Poseidon.", e);
@@ -242,9 +236,7 @@ public class Poseidon implements ApplicationContextAware {
 
         addFilters(servletContextHandler);
 
-        InstrumentedHandler instrumentedHandler = new InstrumentedHandler(Metrics.getRegistry());
-        instrumentedHandler.setHandler(servletContextHandler);
-        return instrumentedHandler;
+        return servletContextHandler;
     }
 
     private ServletContextHandler getMetricsHandler() {
@@ -259,9 +251,8 @@ public class Poseidon implements ApplicationContextAware {
 
         ServletContextHandler servletContextHandler = new ServletContextHandler();
         servletContextHandler.setContextPath("/__metrics");
-        servletContextHandler.setAttribute(MetricsServlet.class.getCanonicalName() + ".registry", registry);
-        servletContextHandler.setAttribute(HealthCheckServlet.class.getCanonicalName() + ".registry", healthCheckRegistry);
-        servletContextHandler.addServlet(new ServletHolder(new AdminServlet()), "/*");
+//        servletContextHandler.setAttribute(HealthCheckServlet.class.getCanonicalName() + ".registry", healthCheckRegistry);
+//        servletContextHandler.addServlet(new ServletHolder(new AdminServlet()), "/*");
 
         return servletContextHandler;
     }
@@ -275,10 +266,7 @@ public class Poseidon implements ApplicationContextAware {
         // RequestContext is required in other filters, hence set it up first
         servletContextHandler.addFilter(new FilterHolder(new HystrixContextFilter(configuration)), "/*", EnumSet.of(REQUEST));
         // Set up distributed tracing filter
-        ServletTraceFilter servletTraceFilter = ServletTraceFilterBuilder.build(configuration);
-        if (servletTraceFilter != null) {
-            servletContextHandler.addFilter(new FilterHolder(servletTraceFilter), "/*", EnumSet.of(REQUEST));
-        }
+
         servletContextHandler.addFilter(new FilterHolder(new RequestGzipFilter()), "/*", EnumSet.of(REQUEST));
 
         List<JettyFilterConfiguration> jettyFilterConfigurations = Optional.ofNullable(configuration.getJettyConfiguration()).map(JettyConfiguration::getJettyFilterConfigurations).orElse(new ArrayList<>());

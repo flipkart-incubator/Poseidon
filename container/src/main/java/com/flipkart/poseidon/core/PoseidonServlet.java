@@ -25,28 +25,23 @@ import flipkart.lego.api.exceptions.BadRequestException;
 import flipkart.lego.api.exceptions.ElementNotFoundException;
 import flipkart.lego.api.exceptions.InternalErrorException;
 import flipkart.lego.api.exceptions.ProcessingException;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.springframework.http.HttpMethod;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.flipkart.poseidon.constants.RequestConstants.*;
-import static javax.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpMethod.*;
 
@@ -114,20 +109,17 @@ public class PoseidonServlet extends HttpServlet {
         PoseidonRequest request = new PoseidonRequest(httpRequest);
         request.setAttribute(METHOD, method);
 
-        if (ServletFileUpload.isMultipartContent(httpRequest)) {
-            handleFileUpload(request, httpRequest);
-        } else {
-            StringBuffer requestBuffer = new StringBuffer();
-            String line;
-            try {
-                BufferedReader reader = httpRequest.getReader();
-                while ((line = reader.readLine()) != null)
-                    requestBuffer.append(line);
-            } catch (Exception e) {
-                logger.debug("301: Couldn't read body" + e.getMessage());
-            }
-            request.setAttribute(BODY, requestBuffer.toString());
+        StringBuffer requestBuffer = new StringBuffer();
+        String line;
+        try {
+            BufferedReader reader = httpRequest.getReader();
+            while ((line = reader.readLine()) != null)
+                requestBuffer.append(line);
+        } catch (Exception e) {
+            logger.debug("301: Couldn't read body" + e.getMessage());
         }
+        request.setAttribute(BODY, requestBuffer.toString());
+
 
         PoseidonResponse response = new PoseidonResponse();
         response.setContentType(application.getDefaultMediaType());
@@ -146,33 +138,6 @@ public class PoseidonServlet extends HttpServlet {
         }
     }
 
-    private void handleFileUpload(PoseidonRequest request, HttpServletRequest httpRequest) throws IOException {
-        // If uploaded file size is more than 10KB, will be stored in disk
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        File repository = new File(FILE_UPLOAD_TMP_DIR);
-        if (repository.exists()) {
-            factory.setRepository(repository);
-        }
-
-        // Currently we don't impose max file size at container layer. Apps can impose it by checking FileItem
-        // Apps also have to delete tmp file explicitly (if at all it went to disk)
-        ServletFileUpload upload = new ServletFileUpload(factory);
-        List<FileItem> fileItems = null;
-        try {
-            fileItems = upload.parseRequest(httpRequest);
-        } catch (FileUploadException e) {
-            throw new IOException(e);
-        }
-        for (FileItem fileItem : fileItems) {
-            String name = fileItem.getFieldName();
-            if (fileItem.isFormField()) {
-                request.setAttribute(name, new String[] { fileItem.getString() });
-            } else {
-                request.setAttribute(name, fileItem);
-            }
-        }
-    }
-
     private void buildResponse(PoseidonRequest request, PoseidonResponse poseidonResponse, HttpServletResponse httpResponse) throws BadRequestException, ElementNotFoundException, InternalErrorException, ProcessingException, IOException {
         application.handleRequest(request, poseidonResponse);
 
@@ -188,17 +153,17 @@ public class PoseidonServlet extends HttpServlet {
         Object responseObj = poseidonResponse.getResponse();
         if (responseObj != null) {
             if (responseObj instanceof String) {
-            	httpResponse.getWriter().println((String)responseObj);
+                httpResponse.getWriter().println((String) responseObj);
             } else if (responseObj instanceof ByteArrayDataType) {
-            	byte[] rawBytes = ((ByteArrayDataType)responseObj).getRawBytes();
-            	// we override default response meta-data as the data is raw bytes
-                if(!((ByteArrayDataType)responseObj).skipDefaultContentType()) {
+                byte[] rawBytes = ((ByteArrayDataType) responseObj).getRawBytes();
+                // we override default response meta-data as the data is raw bytes
+                if (!((ByteArrayDataType) responseObj).skipDefaultContentType()) {
                     httpResponse.setContentType(MediaType.OCTET_STREAM.toString());
                 }
-            	httpResponse.setContentLength(rawBytes.length);
-            	httpResponse.getOutputStream().write(rawBytes);
+                httpResponse.setContentLength(rawBytes.length);
+                httpResponse.getOutputStream().write(rawBytes);
             } else {
-            	httpResponse.getWriter().println(configuration.getObjectMapper().writeValueAsString(responseObj));
+                httpResponse.getWriter().println(configuration.getObjectMapper().writeValueAsString(responseObj));
             }
         }
     }

@@ -44,9 +44,10 @@ public class ArithmeticDataSource extends AbstractDataSource<ArithmeticResultDat
         float num2 = ((Double) request.getAttribute("num2")).floatValue();
         String operation = request.getAttribute("operation");
 
-        ArithmeticServiceClient serviceClient = (ArithmeticServiceClient) legoset.getServiceClient("arithmeticSC_1.0.0");
+//        ArithmeticServiceClient serviceClient = (ArithmeticServiceClient) legoset.getServiceClient("arithmeticSC_1.0.0");
         ArithmeticResultDataType dataType = new ArithmeticResultDataType();
-        dataType.setResult(serviceClient.doOperation(num1, num2, operation));
+//        dataType.setResult(serviceClient.doOperation(num1, num2, operation));
+        dataType.setResult(num1+num2);
         return dataType;
     }
 }

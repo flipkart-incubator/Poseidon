@@ -18,8 +18,8 @@ package com.flipkart.poseidon.core;
 
 import com.google.common.net.MediaType;
 import flipkart.lego.api.entities.Response;
+import jakarta.servlet.http.Cookie;
 
-import javax.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

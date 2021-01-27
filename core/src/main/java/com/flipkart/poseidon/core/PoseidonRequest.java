@@ -18,9 +18,9 @@ package com.flipkart.poseidon.core;
 
 import com.google.common.collect.ImmutableMap;
 import flipkart.lego.api.entities.Request;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;

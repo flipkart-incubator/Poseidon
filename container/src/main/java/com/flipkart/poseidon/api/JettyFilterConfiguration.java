@@ -18,8 +18,8 @@ package com.flipkart.poseidon.api;
 
 import org.eclipse.jetty.servlet.FilterMapping;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
 import java.util.*;
 
 /**
