@@ -79,7 +79,7 @@
         <hystrix.version>1.5.8</hystrix.version>
         <hystrix.metrics.plugin.version>1.4.0-RC5</hystrix.metrics.plugin.version>
         <jackson.version>2.11.2</jackson.version>
-        <jetty.version>9.4.31.v20200723</jetty.version>
+        <jetty.version>9.4.41.v20210516</jetty.version>
         <phantom.version>3.5.0</phantom.version>
         <brave.version>2.2.1</brave.version>
         <slf4j.api.version>1.7.9</slf4j.api.version>
