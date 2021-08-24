@@ -16,6 +16,9 @@
 
 package com.flipkart.poseidon.ds.trie;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by mohan.pandian on 20/11/15.
  */
@@ -24,8 +27,22 @@ public class TrieNode<K,V> {
     V value;
     boolean matchAny;
     boolean greedyMatchAny;
-    TrieNode<K,V> rightSibling;
-    TrieNode<K,V> firstChild;
+
     TrieNode<K,V> wildChild;
     TrieNode<K,V> greedyWildChild;
+
+    final Map<K, TrieNode<K, V>> children = new HashMap<>();
+
+    @Override
+    public String toString() {
+        return "TrieNode{" +
+                "key=" + key +
+                ", value=" + value +
+                ", matchAny=" + matchAny +
+                ", greedyMatchAny=" + greedyMatchAny +
+                ", wildChild=" + wildChild +
+                ", greedyWildChild=" + greedyWildChild +
+                ", children=" + children +
+                '}';
+    }
 }
