@@ -131,6 +131,7 @@ public class PoseidonServlet extends HttpServlet {
 
         PoseidonResponse response = new PoseidonResponse();
         response.setContentType(application.getDefaultMediaType());
+        response.setHttpResponse(httpResponse);
 
         try {
             buildResponse(request, response, httpResponse);
