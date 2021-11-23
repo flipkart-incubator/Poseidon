@@ -33,55 +33,58 @@ public class BlocksValidator {
     private static final Logger logger = LoggerFactory.getLogger(BlocksValidator.class);
 
     public static void main(String[] args) {
-        try {
-            final String customValidatorClass = System.getProperty("poseidon.validator.block.custom");
-            CustomBlocksValidator customValidator = null;
-            if (StringUtils.isNotEmpty(customValidatorClass)) {
-                try {
-                    final Class<?> aClass = Class.forName(customValidatorClass);
-                    final Object constructedInstance = aClass.newInstance();
-                    if (constructedInstance instanceof CustomBlocksValidator) {
-                        customValidator = (CustomBlocksValidator) constructedInstance;
-                    } else {
-                        throw new IllegalArgumentException("Wrong class supplied");
+        boolean skipBlocksValidator = Boolean.valueOf(System.getProperty("skipBlocksValidator").toUpperCase());
+        if (!skipBlocksValidator) {
+            try {
+                final String customValidatorClass = System.getProperty("poseidon.validator.block.custom");
+                CustomBlocksValidator customValidator = null;
+                if (StringUtils.isNotEmpty(customValidatorClass)) {
+                    try {
+                        final Class<?> aClass = Class.forName(customValidatorClass);
+                        final Object constructedInstance = aClass.newInstance();
+                        if (constructedInstance instanceof CustomBlocksValidator) {
+                            customValidator = (CustomBlocksValidator) constructedInstance;
+                        } else {
+                            throw new IllegalArgumentException("Wrong class supplied");
+                        }
+                    } catch (Exception e) {
+                        logger.error("Wrong CustomBlockValidator passed", e);
+                        System.exit(-1);
                     }
-                } catch (Exception e) {
-                    logger.error("Wrong CustomBlockValidator passed", e);
+                }
+
+
+                Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
+                System.out.println("Classes in ClassLoader: " + classInfos.size());
+                Map<String, List<String>> errors = new HashMap<>();
+                for (ClassPath.ClassInfo classInfo : classInfos) {
+                    Class<? extends DataSource<?>> clazz = (Class<? extends DataSource<?>>) Class.forName(classInfo.getName());
+                    if (Modifier.isAbstract(clazz.getModifiers())) {
+                        continue;
+                    }
+
+                    final List<String> classErrors = new ArrayList<>();
+                    if (DataSource.class.isAssignableFrom(clazz)) {
+                        classErrors.addAll(AnnotationValidator.validateDataSource(clazz));
+                        classErrors.addAll(DatasourceValidator.validate(clazz));
+
+                        if (customValidator != null) {
+                            classErrors.addAll(customValidator.validateDatasource(clazz));
+                        }
+                    }
+
+                    if (!classErrors.isEmpty()) {
+                        errors.put(clazz.getName(), classErrors);
+                    }
+                }
+
+                if (!errors.isEmpty()) {
+                    logger.error(ValidatorUtils.getFormattedErrorMessages(errors));
                     System.exit(-1);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-
-            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), Arrays.asList(args));
-            System.out.println("Classes in ClassLoader: " + classInfos.size());
-            Map<String, List<String>> errors = new HashMap<>();
-            for (ClassPath.ClassInfo classInfo : classInfos) {
-                Class<? extends DataSource<?>> clazz = (Class<? extends DataSource<?>>) Class.forName(classInfo.getName());
-                if (Modifier.isAbstract(clazz.getModifiers())) {
-                    continue;
-                }
-
-                final List<String> classErrors = new ArrayList<>();
-                if (DataSource.class.isAssignableFrom(clazz)) {
-                    classErrors.addAll(AnnotationValidator.validateDataSource(clazz));
-                    classErrors.addAll(DatasourceValidator.validate(clazz));
-
-                    if (customValidator != null) {
-                        classErrors.addAll(customValidator.validateDatasource(clazz));
-                    }
-                }
-
-                if (!classErrors.isEmpty()) {
-                    errors.put(clazz.getName(), classErrors);
-                }
-            }
-
-            if (!errors.isEmpty()) {
-                logger.error(ValidatorUtils.getFormattedErrorMessages(errors));
-                System.exit(-1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

@@ -30,6 +30,7 @@ public class PoseidonRequest implements Request {
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private final String url;
+    private final HttpServletRequest httpRequest;
     private final ImmutableMap<String, Cookie> cookies;
     private final ImmutableMap<String, String> headers;
 
@@ -37,7 +38,7 @@ public class PoseidonRequest implements Request {
         this.url = url;
         this.cookies = cookies;
         this.headers = headers;
-
+        this.httpRequest = null;
         if (attributes != null) {
             this.attributes.putAll(attributes);
         }
@@ -47,10 +48,14 @@ public class PoseidonRequest implements Request {
         this.url = httpRequest.getPathInfo();
         headers = extractHeaders(httpRequest);
         cookies = extractCookies(httpRequest);
-
+        this.httpRequest = httpRequest;
         if (httpRequest.getParameterMap() != null) {
             attributes.putAll(httpRequest.getParameterMap());
         }
+    }
+
+    public HttpServletRequest getHttpRequest() {
+        return httpRequest;
     }
 
     public String getUrl() {

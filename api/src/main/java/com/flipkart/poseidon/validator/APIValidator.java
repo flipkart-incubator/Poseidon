@@ -42,78 +42,81 @@ public class APIValidator {
     private static final List<EndpointPOJO> pojos = new ArrayList<>();
 
     public static void main(String[] args) {
-        Path dir = Paths.get(args[0]);
-        CustomValidator customValidator = null;
+        boolean skipAPIValidator = Boolean.valueOf(System.getProperty("skipAPIValidator").toUpperCase());
+        if (!skipAPIValidator) {
+            Path dir = Paths.get(args[0]);
+            CustomValidator customValidator = null;
 
-        boolean validateDataSources = false;
-        List<String> packagesToScan = new ArrayList<>();
+            boolean validateDataSources = false;
+            List<String> packagesToScan = new ArrayList<>();
 
-        if (args.length > 1) {
-            if (!StringUtils.isNullOrEmpty(args[1].trim())) {
-                try {
-                    final Class<?> customValidatorClass = Class.forName(args[1]);
-                    if (!CustomValidator.class.isAssignableFrom(customValidatorClass)) {
-                        logger.error("Validator class passed does not implement CustomValidator");
+            if (args.length > 1) {
+                if (!StringUtils.isNullOrEmpty(args[1].trim())) {
+                    try {
+                        final Class<?> customValidatorClass = Class.forName(args[1]);
+                        if (!CustomValidator.class.isAssignableFrom(customValidatorClass)) {
+                            logger.error("Validator class passed does not implement CustomValidator");
+                            System.exit(-1);
+                        } else {
+                            customValidator = (CustomValidator) customValidatorClass.newInstance();
+                        }
+                    } catch (ClassNotFoundException e) {
+                        logger.error("Wrong CustomValidator passed", e);
                         System.exit(-1);
-                    } else {
-                        customValidator = (CustomValidator) customValidatorClass.newInstance();
+                    } catch (Exception e) {
+                        logger.error("Something went wrong while constructing CustomValidator", e);
+                        System.exit(-1);
                     }
-                } catch (ClassNotFoundException e) {
-                    logger.error("Wrong CustomValidator passed", e);
+                }
+
+                if (args.length > 2) {
+                    validateDataSources = true;
+                    final String[] datasourcePackages = args[2].split(",");
+                    packagesToScan = Arrays.asList(datasourcePackages);
+                }
+            }
+
+            List<String> validConfigs = new ArrayList<>();
+            try {
+                APIManager.scanAndAdd(dir, validConfigs);
+                for (String config : validConfigs) {
+                    pojos.add(getMapper().readValue(config, EndpointPOJO.class));
+                }
+
+                Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), packagesToScan);
+                Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
+                for (ClassPath.ClassInfo classInfo : classInfos) {
+                    Class clazz = Class.forName(classInfo.getName());
+                    if (Modifier.isAbstract(clazz.getModifiers())) {
+                        continue;
+                    }
+
+                    if (DataSource.class.isAssignableFrom(clazz)) {
+                        datasources.put(PoseidonLegoSet.getBlockId(clazz).get(), clazz);
+                    }
+                }
+
+                Map<String, List<String>> errors = new HashMap<>();
+                for (EndpointPOJO pojo : pojos) {
+                    List<String> pojoErrors = EndpointValidator.validate(pojo, datasources, validateDataSources);
+
+                    if (customValidator != null) {
+                        pojoErrors.addAll(customValidator.validate(pojo));
+                    }
+
+                    if (!pojoErrors.isEmpty()) {
+                        errors.put(pojo.getHttpMethod() + " " + pojo.getUrl(), pojoErrors);
+                    }
+                }
+
+                if (!errors.isEmpty()) {
+                    logger.error(ValidatorUtils.getFormattedErrorMessages(errors));
                     System.exit(-1);
-                } catch (Exception e) {
-                    logger.error("Something went wrong while constructing CustomValidator", e);
-                    System.exit(-1);
                 }
-            }
-
-            if (args.length > 2) {
-                validateDataSources = true;
-                final String[] datasourcePackages = args[2].split(",");
-                packagesToScan = Arrays.asList(datasourcePackages);
-            }
-        }
-
-        List<String> validConfigs = new ArrayList<>();
-        try {
-            APIManager.scanAndAdd(dir, validConfigs);
-            for (String config : validConfigs) {
-                pojos.add(getMapper().readValue(config, EndpointPOJO.class));
-            }
-
-            Set<ClassPath.ClassInfo> classInfos = ClassPathHelper.getPackageClasses(Thread.currentThread().getContextClassLoader(), packagesToScan);
-            Map<String, Class<? extends DataSource<?>>> datasources = new HashMap<>();
-            for (ClassPath.ClassInfo classInfo : classInfos) {
-                Class clazz = Class.forName(classInfo.getName());
-                if (Modifier.isAbstract(clazz.getModifiers())) {
-                    continue;
-                }
-
-                if (DataSource.class.isAssignableFrom(clazz)) {
-                    datasources.put(PoseidonLegoSet.getBlockId(clazz).get(), clazz);
-                }
-            }
-
-            Map<String, List<String>> errors = new HashMap<>();
-            for (EndpointPOJO pojo : pojos) {
-                List<String> pojoErrors = EndpointValidator.validate(pojo, datasources, validateDataSources);
-
-                if (customValidator != null) {
-                    pojoErrors.addAll(customValidator.validate(pojo));
-                }
-
-                if (!pojoErrors.isEmpty()) {
-                    errors.put(pojo.getHttpMethod() + " " + pojo.getUrl(), pojoErrors);
-                }
-            }
-
-            if (!errors.isEmpty()) {
-                logger.error(ValidatorUtils.getFormattedErrorMessages(errors));
+            } catch (Exception e) {
+                e.printStackTrace();
                 System.exit(-1);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
         }
     }
 }
