@@ -42,7 +42,7 @@ public class APIValidator {
     private static final List<EndpointPOJO> pojos = new ArrayList<>();
 
     public static void main(String[] args) {
-        boolean skipAPIValidator = Boolean.valueOf(System.getProperty("skipAPIValidator").toUpperCase());
+        boolean skipAPIValidator = Boolean.valueOf(System.getProperty("skipAPIValidator"));
         if (!skipAPIValidator) {
             Path dir = Paths.get(args[0]);
             CustomValidator customValidator = null;

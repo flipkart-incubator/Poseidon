@@ -33,7 +33,7 @@ public class BlocksValidator {
     private static final Logger logger = LoggerFactory.getLogger(BlocksValidator.class);
 
     public static void main(String[] args) {
-        boolean skipBlocksValidator = Boolean.valueOf(System.getProperty("skipBlocksValidator").toUpperCase());
+        boolean skipBlocksValidator = Boolean.valueOf(System.getProperty("skipBlocksValidator"));
         if (!skipBlocksValidator) {
             try {
                 final String customValidatorClass = System.getProperty("poseidon.validator.block.custom");
