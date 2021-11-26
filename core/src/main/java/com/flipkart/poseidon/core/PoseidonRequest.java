@@ -39,7 +39,7 @@ public class PoseidonRequest implements Request {
         this.url = url;
         this.cookies = cookies;
         this.headers = headers;
-        this.httpRequestOpt = null;
+        this.httpRequestOpt = Optional.empty();
         if (attributes != null) {
             this.attributes.putAll(attributes);
         }
