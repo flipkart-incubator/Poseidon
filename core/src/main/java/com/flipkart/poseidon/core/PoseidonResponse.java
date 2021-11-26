@@ -37,7 +37,7 @@ public class PoseidonResponse implements Response {
     private Object response;
     private MediaType contentType;
     private int statusCode;
-    private Optional<HttpServletResponse> httpResponseOpt;
+    private Optional<HttpServletResponse> httpResponse;
 
     @Override
     public Object getResponse() {
@@ -152,11 +152,11 @@ public class PoseidonResponse implements Response {
         this.mappedBeans.addAll(mappedBeans);
     }
 
-    public Optional<HttpServletResponse> getHttpResponseOpt() {
-        return httpResponseOpt;
+    public Optional<HttpServletResponse> getHttpResponse() {
+        return httpResponse;
     }
 
-    public void setHttpResponseOpt(Optional<HttpServletResponse> httpResponseOpt) {
-        this.httpResponseOpt = httpResponseOpt;
+    public void setHttpResponse(Optional<HttpServletResponse> httpResponse) {
+        this.httpResponse = httpResponse;
     }
 }
