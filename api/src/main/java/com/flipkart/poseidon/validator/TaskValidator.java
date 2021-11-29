@@ -37,6 +37,7 @@ import static com.flipkart.poseidon.validator.ValidatorUtils.*;
 public class TaskValidator {
     public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
+        boolean skipClassFieldValidation = Boolean.valueOf(System.getProperty("skipClassFieldValidation"));
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();
@@ -65,7 +66,7 @@ public class TaskValidator {
             final Map<String, Object> context = Optional.ofNullable(task.getContext()).orElse(new HashMap<>());
             for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
                 final String key = contextEntry.getKey();
-                if (!datasourceRequestAttributes.contains(key)) {
+                if (!datasourceRequestAttributes.contains(key) && !skipClassFieldValidation) {
                     errors.add("ContextParam: " + braced(key) + " used in Task: " + braced(taskName) + " is not used in the Datasource");
                 }
 

@@ -404,6 +404,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
+                    <systemPropertyVariables>
+                        <environment>skipClassFieldValidation</environment>
+                    </systemPropertyVariables>
                     <reuseForks>true</reuseForks>
                     <forkCount>4</forkCount>
                     <argLine>-Xverify:none</argLine>
