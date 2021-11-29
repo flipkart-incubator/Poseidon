@@ -62,7 +62,6 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
         this.logger = logger;
         this.serviceResponseInfoMap.putAll(serviceResponseInfoMap);
         this.collectedHeaders = collectedHeaders;
-        this.objectMapper.getFactory().configure(JsonFactory.Feature.INTERN_FIELD_NAMES, false);
     }
 
     private Map<String, String> getHeaders(HttpResponse httpResponse) {

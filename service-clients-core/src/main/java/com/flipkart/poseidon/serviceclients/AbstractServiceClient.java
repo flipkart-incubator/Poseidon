@@ -16,8 +16,10 @@
 
 package com.flipkart.poseidon.serviceclients;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.InternCache;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +57,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     static {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.getFactory().configure(JsonFactory.Feature.INTERN_FIELD_NAMES, false);
     }
 
     protected Map<String, Class<? extends ServiceClientException>> exceptions = new HashMap<>();
