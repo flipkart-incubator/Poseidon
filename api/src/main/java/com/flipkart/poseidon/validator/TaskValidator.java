@@ -37,7 +37,7 @@ import static com.flipkart.poseidon.validator.ValidatorUtils.*;
 public class TaskValidator {
     public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
-        boolean skipClassFieldValidation = Boolean.valueOf(System.getProperty("skipClassFieldValidation"));
+        boolean skipClassFieldValidation = Boolean.valueOf(System.getProperty("poseidon.skip.unused_params.validator"));
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();

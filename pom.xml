@@ -405,7 +405,7 @@
                 <version>2.18.1</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <environment>skipClassFieldValidation</environment>
+                        <environment>poseidon.skip.unused_params.validator</environment>
                     </systemPropertyVariables>
                     <reuseForks>true</reuseForks>
                     <forkCount>4</forkCount>
