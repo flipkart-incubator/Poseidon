@@ -22,8 +22,8 @@ import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
 import flipkart.lego.api.entities.DataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.trpr.platform.core.impl.logging.LogFactory;
-import org.trpr.platform.core.spi.logging.Logger;
 
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
