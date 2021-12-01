@@ -42,7 +42,7 @@ public class TaskValidator {
 
     public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
-        boolean skipUnusedFieldValidation = Boolean.valueOf(System.getProperty("poseidon.skip.unused_params.validator"));
+        boolean skipUnusedFieldValidation = Boolean.valueOf(System.getProperty("poseidon.validator.skip.unused_params"));
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();
@@ -75,7 +75,7 @@ public class TaskValidator {
                     if (!skipUnusedFieldValidation) {
                         errors.add("ContextParam: " + braced(key) + " used in Task: " + braced(taskName) + " is not used in the Datasource");
                     }else {
-                        logger.info("Unused fields validation is disabled");
+                        logger.warn("ContextParam: {} used in Task: {} is not used in the Datasource", braced(key), braced(taskName));
                     }
                 }
 
