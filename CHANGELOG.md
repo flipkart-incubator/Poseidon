@@ -3,7 +3,8 @@
 - Support for session management
 - Added type safe execute Sync and Async methods in AbstractDataSource
 - Disabled intern_field_names in ServiceClient ObjectMapper
-- Http Request and Response in Poseidon Request and Response 
+- Http Request and Response in Poseidon Request and Response
+- Upgrade to Phantom 3.6.0
 
 ## 5.10.0 (Sep 2, 2020)
 - Upgrade to Spring 5.2.5.RELEASE
