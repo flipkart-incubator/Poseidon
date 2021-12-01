@@ -23,7 +23,7 @@ import com.flipkart.poseidon.pojos.TaskPOJO;
 import flipkart.lego.api.entities.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-import org.trpr.platform.core.impl.logging.LogFactory;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
@@ -38,7 +38,7 @@ import static com.flipkart.poseidon.validator.ValidatorUtils.*;
  */
 public class TaskValidator {
 
-    private static final Logger logger = LogFactory.getLogger(TaskValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(TaskValidator.class);
 
     public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
