@@ -1,3 +1,6 @@
+## 5.12.0-SNAPSHOT (Dec 10, 2021)
+- Upgrading log4j to 2.15.0
+
 ## 5.11.0 (Dec 1, 2021)
 - Support for multipart forms in ServiceClients
 - Support for session management
