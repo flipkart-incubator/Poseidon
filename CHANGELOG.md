@@ -1,3 +1,8 @@
+## 5.12.0 (Dec 10, 2021)
+- Upgrading log4j to 2.15.0
+- Upgrading jetty to 9.4.44.v20210927
+- Upgrading phantom to 3.7.0
+
 ## 5.11.0 (Dec 1, 2021)
 - Support for multipart forms in ServiceClients
 - Support for session management
