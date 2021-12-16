@@ -1,3 +1,7 @@
+## 5.13.0 (Dec 16, 2021)
+- Upgrading log4j to 2.16.0
+- Upgrading phantom to 3.8.0
+
 ## 5.12.0 (Dec 10, 2021)
 - Upgrading log4j to 2.15.0
 - Upgrading jetty to 9.4.44.v20210927
