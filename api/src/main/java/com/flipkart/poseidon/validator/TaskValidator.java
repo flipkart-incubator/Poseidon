@@ -22,6 +22,8 @@ import com.flipkart.poseidon.pojos.ParamsPOJO;
 import com.flipkart.poseidon.pojos.TaskPOJO;
 import flipkart.lego.api.entities.DataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
@@ -35,8 +37,12 @@ import static com.flipkart.poseidon.validator.ValidatorUtils.*;
  * Created by shrey.garg on 06/07/16.
  */
 public class TaskValidator {
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskValidator.class);
+
     public static List<String> validate(Map<String, TaskPOJO> tasks, ParamsPOJO params, Map<String, Class<? extends DataSource<?>>> datasources, boolean validateDataSources) {
         List<String> errors = new ArrayList<>();
+        boolean skipUnusedFieldValidation = Boolean.valueOf(System.getProperty("poseidon.validator.skip.unused_params"));
         for (Map.Entry<String, TaskPOJO> entry : tasks.entrySet()) {
             String taskName = entry.getKey();
             TaskPOJO task = entry.getValue();
@@ -66,7 +72,11 @@ public class TaskValidator {
             for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
                 final String key = contextEntry.getKey();
                 if (!datasourceRequestAttributes.contains(key)) {
-                    errors.add("ContextParam: " + braced(key) + " used in Task: " + braced(taskName) + " is not used in the Datasource");
+                    if (!skipUnusedFieldValidation) {
+                        errors.add("ContextParam: " + braced(key) + " used in Task: " + braced(taskName) + " is not used in the Datasource");
+                    }else {
+                        logger.warn("ContextParam: {} used in Task: {} is not used in the Datasource", braced(key), braced(taskName));
+                    }
                 }
 
                 Object contextEntryValue = contextEntry.getValue();

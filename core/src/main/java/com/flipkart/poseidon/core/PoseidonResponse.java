@@ -20,6 +20,7 @@ import com.google.common.net.MediaType;
 import flipkart.lego.api.entities.Response;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +37,7 @@ public class PoseidonResponse implements Response {
     private Object response;
     private MediaType contentType;
     private int statusCode;
+    private Optional<HttpServletResponse> httpResponse;
 
     @Override
     public Object getResponse() {
@@ -148,5 +150,13 @@ public class PoseidonResponse implements Response {
 
     public void addMappedBeans(Collection<Object> mappedBeans) {
         this.mappedBeans.addAll(mappedBeans);
+    }
+
+    public Optional<HttpServletResponse> getHttpResponse() {
+        return httpResponse;
+    }
+
+    public void setHttpResponse(Optional<HttpServletResponse> httpResponse) {
+        this.httpResponse = httpResponse;
     }
 }
