@@ -15,13 +15,14 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 ## Releases
 
-| Release | Date | Description |
-|:------------|:----------------|:------------|
-| Version 6.0.0-BETA        | Oct 12 2020      |    Encode path parameters using URLBuilder in service client generated code
-| Version 5.11.0            | Sep 11 2020      |    Support for multipart forms in ServiceClients and session management
-| Version 5.10.0            | Sep 02 2020      |    Upgrade to Spring 5.2.5.RELEASE
-| Version 5.9.0             | Aug 05 2020      |    Custom servlets, singleton DS, bug fixes
-| Version 5.8.0             | May 31 2019      |    Support for byte[] in ServiceResponseDecoder
+| Release            | Date        | Description |
+|:-------------------|:------------|:------------|
+| Version 6.0.1-BETA | Jan 31 2022 |    Upgrade log4j to 2.17.1, phantom to 3.8.0 and jetty to 9.4.44.v20210927
+| Version 6.0.0-BETA | Oct 12 2020 |    Encode path parameters using URLBuilder in service client generated code
+| Version 5.11.0     | Sep 11 2020 |    Support for multipart forms in ServiceClients and session management
+| Version 5.10.0     | Sep 02 2020 |    Upgrade to Spring 5.2.5.RELEASE
+| Version 5.9.0      | Aug 05 2020 |    Custom servlets, singleton DS, bug fixes
+| Version 5.8.0      | May 31 2019 |    Support for byte[] in ServiceResponseDecoder
 
 ## Changelog
 

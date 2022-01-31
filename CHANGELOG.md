@@ -1,3 +1,8 @@
+## 6.0.1-BETA (Jan 31, 2022)
+- Upgrading log4j to 2.17.1 
+- Upgrading jetty to 9.4.44.v20210927 
+- Upgrading phantom to 3.8.0
+
 ## 6.0.0-BETA (Oct 12, 2020)
 - Encode path parameters using URLBuilder in service client generated code
 
