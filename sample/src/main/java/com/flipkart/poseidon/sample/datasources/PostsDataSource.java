@@ -46,7 +46,7 @@ public class PostsDataSource extends AbstractDataSource<PostsDataType> {
     public PostsDataType call() throws Exception {
         try {
             String userId = request.getAttribute("userId");
-            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_1.0.0");
+            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_5.13.0");
             Posts posts = serviceClient.getAllPostsOfUser(userId).get();
             if (posts == null || posts.isEmpty()) {
                 return null;
