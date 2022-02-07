@@ -51,8 +51,25 @@
 
     <bean id="poseidonContext" class="com.flipkart.poseidon.PoseidonContext"/>
 
+    <bean id="rotationManager" class="com.flipkart.poseidon.rotation.RotationManager"/>
+
+    <bean id="rotationCheckServlet" class="com.flipkart.poseidon.rotation.RotationCheckServlet">
+        <constructor-arg name="manager" ref="rotationManager"/>
+    </bean>
+
+    <bean id="backInRotationServlet" class="com.flipkart.poseidon.rotation.BackInRotationServlet">
+        <constructor-arg name="manager" ref="rotationManager"/>
+    </bean>
+
+    <bean id="outOfRotationServlet" class="com.flipkart.poseidon.rotation.OutOfRotationServlet">
+        <constructor-arg name="manager" ref="rotationManager"/>
+    </bean>
+
     <bean id="poseidon" class="com.flipkart.poseidon.Poseidon">
         <constructor-arg name="configuration" ref="sampleConfiguration"/>
         <constructor-arg name="application" ref="sampleApplication"/>
+        <constructor-arg name="rotationCheckServlet" ref="rotationCheckServlet"/>
+        <constructor-arg name="backInRotationServlet" ref="backInRotationServlet"/>
+        <constructor-arg name="outOfRotationServlet" ref="outOfRotationServlet"/>
     </bean>
 </beans>
