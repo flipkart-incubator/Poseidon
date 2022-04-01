@@ -1,5 +1,6 @@
 ## 5.14.0 (Apr 1, 2022)
 - Upgrading spring to 5.3.18
+- Upgrading jackson to 2.12.6.1
 
 ## 5.13.0 (Dec 16, 2021)
 - Upgrading log4j to 2.16.0
