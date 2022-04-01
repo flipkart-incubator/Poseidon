@@ -17,7 +17,7 @@ Poseidon is a platform to build API applications that have to aggregate data fro
 
 | Release | Date | Description |
 |:------------|:----------------|:------------|
-| Version 5.14.0            | Apr 01 2022      |    Upgrade spring to 5.3.18
+| Version 5.14.0            | Apr 01 2022      |    Upgrade spring to 5.3.18 and jackson to 2.12.6.1
 | Version 5.13.0            | Dec 16 2021      |    Upgrade log4j to 2.16.0 and phantom to 3.8.0
 | Version 5.12.0            | Dec 10 2021      |    Upgrade log4j to 2.15.0, phantom to 3.7.0 and jetty to 9.4.44.v20210927
 | Version 5.11.0            | Dec 01 2021      |    Support for multipart forms in ServiceClients and session management
