@@ -78,7 +78,7 @@
         <spring.version>5.3.18</spring.version>
         <hystrix.version>1.5.8</hystrix.version>
         <hystrix.metrics.plugin.version>1.4.0-RC5</hystrix.metrics.plugin.version>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.12.6.1</jackson.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <phantom.version>3.8.0</phantom.version>
         <brave.version>2.2.1</brave.version>
