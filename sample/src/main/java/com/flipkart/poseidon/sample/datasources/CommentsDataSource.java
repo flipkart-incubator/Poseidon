@@ -50,7 +50,7 @@ public class CommentsDataSource extends AbstractDataSource<PostWithCommentsDataT
             logger.info("Index: {}, Post Id: {}", index, post.getPostId());
 
             // Fetch comments through service client
-            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_5.13.0");
+            SampleServiceClient serviceClient = (SampleServiceClient) legoset.getServiceClient("sampleSC_5.14.0");
             Comments comments = serviceClient.getAllCommentsOfPost(post.getPostId()).get();
 
             // Map comments to datatype

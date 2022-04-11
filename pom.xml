@@ -78,7 +78,7 @@
         <spring.version>5.3.18</spring.version>
         <hystrix.version>1.5.8</hystrix.version>
         <hystrix.metrics.plugin.version>1.4.0-RC5</hystrix.metrics.plugin.version>
-        <jackson.version>2.13.2.1</jackson.version>
+        <jackson.version>2.13.2.20220328</jackson.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
         <phantom.version>3.8.0</phantom.version>
         <brave.version>2.2.1</brave.version>
@@ -299,14 +299,11 @@
 
             <!-- Jackson -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <!-- Jackson -->
 
