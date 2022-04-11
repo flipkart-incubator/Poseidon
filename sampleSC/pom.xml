@@ -10,7 +10,7 @@
     <parent>
         <artifactId>poseidon</artifactId>
         <groupId>com.flipkart.poseidon</groupId>
-        <version>5.13.0</version>
+        <version>5.14.0</version>
     </parent>
 
     <artifactId>sampleSC</artifactId>
