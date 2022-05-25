@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>5.14.0</version>
+    <version>5.14.0-MAPI-FANOUT-SNAPSHOT</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>
@@ -412,27 +412,59 @@
         </plugins>
     </build>
 
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>clojars</id>-->
+<!--            <name>Clojars Maven Repository</name>-->
+<!--            <url>https://clojars.org/repo/</url>-->
+<!--        </repository>-->
+<!--        <repository>-->
+<!--            <id>maven-central</id>-->
+<!--            <name>Maven Central Repo</name>-->
+<!--            <url>https://repo1.maven.org/maven2/</url>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
+<!--    </repositories>-->
+
+<!--    <distributionManagement>-->
+<!--        <repository>-->
+<!--            <id>clojars</id>-->
+<!--            <name>Clojars repository</name>-->
+<!--            <url>https://clojars.org/repo</url>-->
+<!--        </repository>-->
+<!--    </distributionManagement>-->
+
     <repositories>
         <repository>
-            <id>clojars</id>
-            <name>Clojars Maven Repository</name>
-            <url>https://clojars.org/repo/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <id>fk-art-snapshot</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
         </repository>
         <repository>
-            <id>maven-central</id>
-            <name>Maven Central Repo</name>
-            <url>https://repo1.maven.org/maven2/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+            <id>fk-art-release</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
     </repositories>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>fk-art-snapshot</id>
+            <name>libs-snapshot</name>
+            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-snapshots-local</url>
+        </snapshotRepository>
         <repository>
-            <id>clojars</id>
-            <name>Clojars repository</name>
-            <url>https://clojars.org/repo</url>
+            <id>fk-art-release</id>
+            <name>libs-rel</name>
+            <url>http://artifactory.fkinternal.com/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
     </distributionManagement>
 

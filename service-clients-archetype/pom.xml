@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.flipkart.poseidon</groupId>
         <artifactId>poseidon</artifactId>
-        <version>5.14.0</version>
+        <version>5.14.0-MAPI-FANOUT-SNAPSHOT</version>
     </parent>
 
     <artifactId>service-clients-archetype</artifactId>
