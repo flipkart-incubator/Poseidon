@@ -17,12 +17,16 @@
 package com.flipkart.poseidon.helpers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
 
 public class ObjectMapperHelper {
 
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper()
+         .registerModule(new Jdk8Module())
+         .registerModule(new JavaTimeModule());
 
     public static ObjectMapper getMapper() {
         return mapper.configure(FAIL_ON_EMPTY_BEANS, false);
