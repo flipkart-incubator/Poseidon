@@ -78,7 +78,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
 
     protected final <T> FutureTaskResultToDomainObjectPromiseWrapper<T> execute(ServiceExecuteProperties properties) throws IOException {
         Logger logger = LoggerFactory.getLogger(getClass());
-
+        long startTime = System.currentTimeMillis();
         String commandName = properties.getCommandName();
         String uri = properties.getUri();
         String httpMethod = properties.getHttpMethod();
@@ -158,7 +158,8 @@ public abstract class AbstractServiceClient implements ServiceClient {
             properties.setHeadersMap(injectedHeadersMap);
             ServiceContext.addDebugResponse(this.getClass().getName(), new ServiceDebug(properties, futureWrapper));
         }
-        ServiceContext.addFanoutContext(this.getCommandName());
+        long endTime = System.currentTimeMillis();
+        ServiceContext.addFanoutContext(this.getCommandName(), 1, startTime, endTime);
 
         return futureWrapper;
     }

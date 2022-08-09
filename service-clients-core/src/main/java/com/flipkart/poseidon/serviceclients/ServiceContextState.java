@@ -12,5 +12,5 @@ public class ServiceContextState {
     boolean debug;
     Map<String, List<ServiceDebug>> serviceResponses;
     Map<String, Queue<String>> collectedHeaders;
-    Map<String, Integer> fanoutContext;
+    Map<String, FanoutContext> fanoutContext;
 }
