@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.phantom.task.impl.TaskContextFactory;
 import com.flipkart.phantom.task.spi.TaskContext;
@@ -52,7 +54,8 @@ import static com.flipkart.poseidon.serviceclients.ServiceClientConstants.HEADER
  * Generated service client implementations will extend this abstract class
  */
 public abstract class AbstractServiceClient implements ServiceClient {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new Jdk8Module())
+          .registerModule(new JavaTimeModule());
 
     static {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
