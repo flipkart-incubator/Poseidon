@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.poseidon</groupId>
     <artifactId>poseidon</artifactId>
-    <version>5.14.1</version>
+    <version>5.14.2</version>
 
     <name>Poseidon</name>
     <description>A platform to build API applications that have to aggregate data from distributed services in an efficient way</description>
@@ -304,6 +304,16 @@
                 <version>${jackson.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>2.12.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>2.12.6</version>
             </dependency>
             <!-- Jackson -->
 
