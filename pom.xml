@@ -75,7 +75,7 @@
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <spring.version>5.3.18</spring.version>
+        <spring.version>6.0.0</spring.version>
         <hystrix.version>1.5.8</hystrix.version>
         <hystrix.metrics.plugin.version>1.4.0-RC5</hystrix.metrics.plugin.version>
         <jackson.version>2.13.2.20220328</jackson.version>
