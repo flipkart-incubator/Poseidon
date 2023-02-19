@@ -44,7 +44,7 @@ public class ServiceContext {
     private static final ThreadLocal<Boolean> isDebug = ThreadLocal.withInitial(() -> false);
 
     private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
-    private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(() -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
 
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool

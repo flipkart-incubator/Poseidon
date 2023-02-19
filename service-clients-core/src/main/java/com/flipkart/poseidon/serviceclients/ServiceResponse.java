@@ -19,6 +19,7 @@ package com.flipkart.poseidon.serviceclients;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by venkata.lakshmi on 30/03/15.
@@ -35,12 +36,14 @@ public class ServiceResponse<T> {
     public ServiceResponse(T data, Map<String, String> headers) {
         this.isSuccess = true;
         this.dataList.add(data);
-        this.headers = headers;
+        this.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        headers.forEach((k,v) -> this.headers.put(k,v));
     }
 
     public ServiceResponse(ServiceClientException e, Map<String, String> headers) {
         this.exception = e;
-        this.headers = headers;
+        this.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        headers.forEach((k,v) -> this.headers.put(k,v));
     }
 
     public void addData(List<T> data) {
