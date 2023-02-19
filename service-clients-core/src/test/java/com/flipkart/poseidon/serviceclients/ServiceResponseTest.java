@@ -49,4 +49,14 @@ public class ServiceResponseTest {
         assertTrue(response.getDataList().isEmpty());
     }
 
+    @Test
+    public void testCaseInsensitiveGetHeader() throws Exception {
+        ServiceResponse<String> response = new ServiceResponse<>("string", new HashMap<String, String>() {{
+            put("heAder1", "value1");
+        }});
+        assertEquals("value1", response.getHeaders().get("Header1"));
+        assertEquals("value1", response.getHeaders().get("header1"));
+        assertEquals("value1", response.getHeaders().get("hEader1"));
+    }
+
 }

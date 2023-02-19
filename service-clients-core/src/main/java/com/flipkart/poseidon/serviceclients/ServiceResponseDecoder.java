@@ -64,7 +64,7 @@ public class ServiceResponseDecoder<T> implements HttpResponseDecoder<ServiceRes
     }
 
     private Map<String, String> getHeaders(HttpResponse httpResponse) {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Header[] responseHeaders = httpResponse.getAllHeaders();
         if (responseHeaders == null || responseHeaders.length == 0) {
             return headers;
