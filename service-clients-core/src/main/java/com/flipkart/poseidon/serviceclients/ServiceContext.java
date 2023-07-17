@@ -46,7 +46,7 @@ public class ServiceContext {
     private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
     private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
 
-    private static final ThreadLocal<Map<String, FanoutContext>> fanoutContext = ThreadLocal.withInitial(ConcurrentHashMap::new);
+    private static final ThreadLocal<Map<String, Integer>> fanoutContext = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool
@@ -151,18 +151,15 @@ public class ServiceContext {
         return debugResponses.get();
     }
 
-    public static Map<String, FanoutContext> getFanoutContext(){
+    public static Map<String, Integer> getFanoutContext(){
         return fanoutContext.get();
     }
 
-    public static void addFanoutContext(String key, int count, long startTime, long endTime){
-        fanoutContext.get().putIfAbsent(key, new FanoutContext());
-        int newCount = fanoutContext.get().get(key).getCount() + count;
-        int newTotalCount = fanoutContext.get().get(key).getTotalCount() + count;
-        fanoutContext.get().get(key).getStarTime().add(startTime);
-        fanoutContext.get().get(key).setCount(newCount);
-        fanoutContext.get().get(key).setTotalCount(newTotalCount);
-        fanoutContext.get().get(key).getEndTime().add(endTime);
+    public static void addFanoutContext(String key){
+        fanoutContext.get().putIfAbsent(key, 0);
+        int count = fanoutContext.get().get(key);
+        count++;
+        fanoutContext.get().put(key, count);
     }
     /**
      * Get's the value for a given key from the service context.
