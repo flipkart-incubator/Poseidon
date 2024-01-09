@@ -38,6 +38,8 @@ import static com.google.common.net.MediaType.JSON_UTF_8;
 public class APIBuildable implements Buildable {
 
     private static final String RESPONSE_KEY = "response_key";
+    private static final LinkedHashSet<Filter> topLevelFilters = new LinkedHashSet();
+
     private final PoseidonLegoSet legoSet;
     private final EndpointPOJO pojo;
     private final Configuration configuration;
@@ -54,6 +56,10 @@ public class APIBuildable implements Buildable {
             loadJavaTypes(pojo.getParams().getRequired());
             loadJavaTypes(pojo.getParams().getOptional());
         }
+    }
+
+    public static boolean addTopLevelFilter(Filter filter) {
+        return topLevelFilters.add(filter);
     }
 
     @Override
@@ -90,6 +96,9 @@ public class APIBuildable implements Buildable {
     @Override
     public LinkedHashSet<Filter> getFilters(Request request) throws InternalErrorException {
         LinkedHashSet<Filter> filters = new LinkedHashSet<>();
+        topLevelFilters.stream().forEach(filter -> {
+            filters.add(filter);
+        });
         filters.add(legoSet.wrapFilter(new ParamValidationFilter(pojo.getParams(), configuration)));
 
         try {
