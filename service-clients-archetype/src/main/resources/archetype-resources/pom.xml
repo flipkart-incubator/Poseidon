@@ -21,7 +21,7 @@
         <dependency>
             <groupId>com.flipkart.poseidon</groupId>
             <artifactId>service-clients-core</artifactId>
-            <version>5.11.0</version>
+            <version>5.14.0-MAPI-FANOUT-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -51,12 +51,12 @@
                     <dependency>
                         <groupId>com.flipkart.poseidon</groupId>
                         <artifactId>service-clients-core</artifactId>
-                        <version>5.11.0</version>
+                        <version>5.14.0-MAPI-FANOUT-SNAPSHOT</version>
                     </dependency>
                     <dependency>
                         <groupId>com.flipkart.poseidon</groupId>
                         <artifactId>service-clients-gen</artifactId>
-                        <version>5.11.0</version>
+                        <version>5.14.0-MAPI-FANOUT-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>

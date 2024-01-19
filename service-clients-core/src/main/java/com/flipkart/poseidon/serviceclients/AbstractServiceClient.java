@@ -158,6 +158,7 @@ public abstract class AbstractServiceClient implements ServiceClient {
             properties.setHeadersMap(injectedHeadersMap);
             ServiceContext.addDebugResponse(this.getClass().getName(), new ServiceDebug(properties, futureWrapper));
         }
+        ServiceContext.addFanoutContext(this.getCommandName());
 
         return futureWrapper;
     }

@@ -46,6 +46,8 @@ public class ServiceContext {
     private static final ThreadLocal<Map<String, List<ServiceDebug>>> debugResponses = ThreadLocal.withInitial(ConcurrentHashMap::new);
     private static final ThreadLocal<Map<String, Queue<String>>> collectedHeaders = ThreadLocal.withInitial(HashMap::new);
 
+    private static final ThreadLocal<Map<String, Integer>> fanoutContext = ThreadLocal.withInitial(ConcurrentHashMap::new);
+
     /**
      * initialize an empty service context, it will cleanup previous value of the threadlocal if used in a threadpool
      * @param responseHeadersToCollect
@@ -86,8 +88,11 @@ public class ServiceContext {
 
             debugResponses.remove();
             debugResponses.set(state.serviceResponses);
+
         }
 
+        fanoutContext.remove();
+        fanoutContext.set(state.fanoutContext);
         collectedHeaders.remove();
         collectedHeaders.set(state.collectedHeaders);
         isImmutable.set(false);
@@ -146,6 +151,16 @@ public class ServiceContext {
         return debugResponses.get();
     }
 
+    public static Map<String, Integer> getFanoutContext(){
+        return fanoutContext.get();
+    }
+
+    public static void addFanoutContext(String key){
+        fanoutContext.get().putIfAbsent(key, 0);
+        int count = fanoutContext.get().get(key);
+        count++;
+        fanoutContext.get().put(key, count);
+    }
     /**
      * Get's the value for a given key from the service context.
      *
@@ -173,6 +188,7 @@ public class ServiceContext {
         isImmutable.remove();
         isDebug.remove();
         debugResponses.remove();
+        fanoutContext.remove();
     }
 
     static Map<String, Queue<String>> getCollectedHeaders() {
@@ -192,6 +208,7 @@ public class ServiceContext {
         state.collectedHeaders = getCollectedHeaders();
         state.debug = isDebug();
         state.serviceResponses = getDebugResponses();
+        state.fanoutContext = getFanoutContext();
         return state;
     }
 }
