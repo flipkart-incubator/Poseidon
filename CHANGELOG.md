@@ -1,3 +1,7 @@
+## 5.14.1 (Apr 12, 2022)
+- Adding jackson-datatype-jsr310
+- Adding jackson-datatype-jdk8
+
 ## 5.14.0 (Apr 11, 2022)
 - Upgrading spring to 5.3.18
 - Upgrading jackson to 2.13.2.2
